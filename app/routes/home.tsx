@@ -1,5 +1,4 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 import type { ManyProductsResponse } from "~/modules/product/schema";
 import { motion } from "framer-motion";
 
@@ -14,10 +13,21 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const response = await fetch("http://localhost:3000/products");
-  const products: ManyProductsResponse = await response.json();
-  return products;
+export async function loader({}: Route.LoaderArgs) {
+  try {
+    const response = await fetch(`${process.env.BACKEND_API_URL}/products`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch products: ${response.statusText}`);
+    }
+
+    const products: ManyProductsResponse = await response.json();
+    return products;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    // throw new Response("Failed to load products", { status: 500 });
+    return [];
+  }
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
