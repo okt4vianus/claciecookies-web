@@ -1,13 +1,13 @@
+import { Link } from "react-router";
+import { Button } from "~/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardFooter,
   CardHeader,
 } from "~/components/ui/card";
-import type { Route } from "./+types/home";
 import type { ManyProductsResponse } from "~/modules/product/schema";
-import { Button } from "~/components/ui/button";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -63,7 +63,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
               <CardFooter className="mt-auto justify-center">
                 <div>
-                  <Button>Buy now</Button>
+                  <Button asChild>
+                    <Link to={`/products/${product.slug}`}>View Product</Link>
+                  </Button>
                 </div>
               </CardFooter>
             </Card>
