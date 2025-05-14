@@ -11,6 +11,7 @@ export default [
     route("products/:slug", "routes/products-slug.tsx"),
   ]),
 
+  // LATER
   // layout("layouts/admin.tsx", [
   //   index("routes/admin/dashboard.tsx"),
   //   route("admin/products", "routes/admin/products.tsx"),

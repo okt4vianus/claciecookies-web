@@ -20,16 +20,14 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-// Server-Side
 export async function loader({}: Route.LoaderArgs) {
   const response = await fetch(`${process.env.BACKEND_API_URL}/products`);
   const products: ManyProductsResponse = await response.json();
-  return products;
+  return { products };
 }
 
-// Client-Side
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const products = loaderData as ManyProductsResponse;
+  const { products } = loaderData;
 
   return (
     <div className="p-4 max-w-7xl mx-auto min-h-screen">
