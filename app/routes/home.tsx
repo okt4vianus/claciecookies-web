@@ -15,38 +15,13 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const response = await fetch("http:localhost:3000/products");
+  const response = await fetch("http://localhost:3000/products");
   const products: ManyProductsResponse = await response.json();
   return products;
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   const products = loaderData as ManyProductsResponse;
-
-  // return <Welcome />;
-
-  // return (
-  //   <div>
-  //     <h1>Home</h1>
-  //     {products.map((product) => {
-  //       return (
-  //         <div key={product.id}>
-  //           <h2>{product.name}</h2>
-  //           <p>{product.description}</p>
-  //           <p>Price: {product.price}</p>
-  //           ck<p>Sto: {product.stockQuantity}</p>
-  //           {product.images && product.images.length > 0 && (
-  //             <div>
-  //               {product.images.map((image) => (
-  //                 <img key={image.id} src={image.url} alt={image.alt} />
-  //               ))}
-  //             </div>
-  //           )}
-  //         </div>
-  //       );
-  //     })}
-  //   </div>
-  // );
 
   return (
     <div className="p-4 max-w-7xl mx-auto bg-[#5C4033] text-white min-h-screen">
