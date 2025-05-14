@@ -29,17 +29,15 @@ export const CreateProductSchema = ProductSchema.omit({
   images: z.array(UpsertProductImageSchema).optional(),
 });
 
-export const UpsertProductSchema = CreateProductSchema.partial();
-
-// export const UpsertProductSchema = ProductSchema.partial()
-//   .omit({
-//     id: true,
-//     createdAt: true,
-//     updatedAt: true,
-//   })
-//   .extend({
-//     images: z.array(UpsertProductImageSchema).optional(),
-//   });
+export const UpsertProductSchema = ProductSchema.partial()
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    images: z.array(UpsertProductImageSchema).optional(),
+  });
 
 export const ParamProductIdSchema = z.object({
   id: z.string().min(3, "Product ID is required"),
@@ -61,4 +59,5 @@ export const OneProductResponseSchema = ProductSchema;
 
 export const ManyProductsResponseSchema = z.array(ProductSchema);
 
+export type OneProductResponse = z.infer<typeof OneProductResponseSchema>;
 export type ManyProductsResponse = z.infer<typeof ManyProductsResponseSchema>;
