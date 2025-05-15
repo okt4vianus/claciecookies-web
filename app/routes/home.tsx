@@ -1,3 +1,11 @@
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/home";
 import type { ManyProductsResponse } from "~/modules/product/schema";
 
@@ -32,45 +40,41 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const products = loaderData as ManyProductsResponse;
 
   return (
-    <div
-      className="p-4 max-w-7xl mx-auto bg-yellow-950
- text-white min-h-screen"
-    >
-      <h1 className="text-3xl font-bold mb-6 text-center">Home</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 items-stretch">
+    <div className="p-4 max-w-7xl mx-auto ">
+      <h1 className="text-3xl font-bold mb-6 text-center">Clacie Cookies</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         {products.map((product) => {
           const image = product.images?.[0];
 
           if (!image) return null; // Skip rendering if no image is available
 
           return (
-            <div
-              key={product.id}
-              className="bg-amber-950 text-white rounded-2xl overflow-hidden flex flex-col h-120 shadow-md transition-shadow border border-white"
-            >
-              <picture className="rounded-lg block overflow-hidden">
-                <img
-                  className="hover:scale-110 transition duration-500 ease-in-out h-70 w-full object-cover"
-                  src={image.url}
-                  alt={image.name || "Product image"}
-                />
-              </picture>
+            <Card key={product.id}>
+              <CardHeader>
+                <picture className="rounded-lg block overflow-hidden">
+                  <img
+                    className="hover:scale-110 transition duration-500 ease-in-out h-70 w-full object-cover"
+                    src={image.url}
+                    alt={image.name || "Product image"}
+                  />
+                </picture>
+              </CardHeader>
 
-              <div className="p-4 flex flex-col flex-grow">
+              <CardContent>
+                <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
                 <p className="font-medium mb-3">
                   Rp {product.price.toLocaleString("id-ID")}
                 </p>
-                <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
                 {/* <p className="text-sm mb-1 flex-grow">{product.description}</p> */}
                 {/* <p className="font-medium mb-4">Stock: {product.stockQuantity}</p> */}
-
-                <div className="mt-auto flex justify-center">
-                  <button className="w-1/2 bg-[#FFF5E1] text-[#5C4033] border border-[#5C4033] py-2 px-4 rounded-full hover:bg-red-600 hover:text-white transition-colors">
-                    Buy now
-                  </button>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+              <CardFooter className="mt-auto justify-center">
+                <Button>
+                  {/* className="rounded-full hover:bg-red-600 hover:text-white transition-colors"> */}
+                  Buy now
+                </Button>
+              </CardFooter>
+            </Card>
           );
         })}
       </div>
