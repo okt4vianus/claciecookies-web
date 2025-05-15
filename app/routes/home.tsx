@@ -1,13 +1,13 @@
+import { Link } from "react-router";
+import { Button } from "~/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardFooter,
   CardHeader,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import type { Route } from "./+types/home";
 import type { ManyProductsResponse } from "~/modules/product/schema";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -65,14 +65,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                 <p className="font-medium mb-3">
                   Rp {product.price.toLocaleString("id-ID")}
                 </p>
-                {/* <p className="text-sm mb-1 flex-grow">{product.description}</p> */}
-                {/* <p className="font-medium mb-4">Stock: {product.stockQuantity}</p> */}
               </CardContent>
               <CardFooter className="mt-auto justify-center">
-                <Button>
-                  {/* className="rounded-full hover:bg-red-600 hover:text-white transition-colors"> */}
-                  Buy now
-                </Button>
+                <div>
+                  <Button asChild>
+                    <Link to={`/products/${product.slug}`}>View Product</Link>
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
           );
