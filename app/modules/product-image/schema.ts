@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { OneProductResponseSchema } from "../product/schema";
+import { createdAt, id, updatedAt } from "../common/schema";
 
 export const ProductImageSchema = z.object({
-  id: z.string(),
+  id,
   name: z.string().min(3, "Name is required"),
   url: z.string().url("URL is required"),
-  productId: z.string(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  productId: id,
+  createdAt,
+  updatedAt,
 });
 
 export const UpsertProductImageSchema = ProductImageSchema.pick({

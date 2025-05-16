@@ -3,9 +3,10 @@ import {
   ProductImageSchema,
   UpsertProductImageSchema,
 } from "../product-image/schema";
+import { createdAt, id, updatedAt } from "../common/schema";
 
 export const ProductSchema = z.object({
-  id: z.string(),
+  id,
   name: z.string().min(3, "Name is required"),
   slug: z.string(),
   description: z.string().optional(),
@@ -15,9 +16,11 @@ export const ProductSchema = z.object({
     .int()
     .nonnegative("Stock quantity must be more than or equal to 0"),
   images: z.array(ProductImageSchema).optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt,
+  updatedAt,
 });
+
+export const ProductsSchema = z.array(ProductSchema);
 
 export const CreateProductSchema = ProductSchema.omit({
   id: true,
@@ -45,7 +48,3 @@ export const ParamProductIdentifierSchema = z.object({
 export const QuerySearchProductSchema = z.object({
   q: z.string().min(3, "Search query is required"),
 });
-
-export const OneProductResponseSchema = ProductSchema;
-
-export const ManyProductsResponseSchema = z.array(ProductSchema);
