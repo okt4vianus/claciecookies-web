@@ -1,9 +1,10 @@
-import type { OneProductResponse } from "~/modules/product/type";
-import type { Route } from "./+types/products-slug";
-import { Card, CardContent } from "~/components/ui/card";
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { $fetch } from "~/lib/fetch";
+import { ProductSchema } from "~/modules/product/schema";
+import type { Route } from "./+types/products-slug";
 
 export function meta({ data }: Route.MetaArgs) {
   const { product } = data;
@@ -17,35 +18,18 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  try {
-    const response = await fetch(
-      `${process.env.BACKEND_API_URL}/products/${params.slug}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch products: ${response.statusText}`);
-    }
-
-    const product: OneProductResponse = await response.json();
-    return { product };
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    throw new Response("Failed to fetch product", {
-      status: 500,
-    });
-
-    // return [];
-  }
+  const { data, error } = await $fetch("/products/:slug", {
+    params: { slug: params.slug },
+    output: ProductSchema,
+  });
+  if (error) throw new Response(error.message, { status: 500 });
+  return { product: data };
 }
 
 export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
   const { product } = loaderData;
-  return (
-    // <div>
-    //   <h1> Product Details </h1>
-    //   <pre>{JSON.stringify(product, null, 2)}</pre>
-    // </div>
 
+  return (
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-card text-card-foreground shadow-lg rounded-xl">
         <CardContent className="p-6 grid md:grid-cols-2 gap-6">

@@ -20,6 +20,8 @@ export const ProductSchema = z.object({
   updatedAt,
 });
 
+export const ProductsSchema = z.array(ProductSchema);
+
 export const CreateProductSchema = ProductSchema.omit({
   id: true,
   createdAt: true,
@@ -46,7 +48,3 @@ export const ParamProductIdentifierSchema = z.object({
 export const QuerySearchProductSchema = z.object({
   q: z.string().min(3, "Search query is required"),
 });
-
-export const OneProductResponseSchema = ProductSchema;
-
-export const ManyProductsResponseSchema = z.array(ProductSchema);
