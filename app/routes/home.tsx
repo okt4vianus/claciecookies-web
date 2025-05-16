@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardHeader,
 } from "~/components/ui/card";
-import type { ManyProductsResponse } from "~/modules/product/schema";
+import type { ManyProductsResponse } from "~/modules/product/type";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {

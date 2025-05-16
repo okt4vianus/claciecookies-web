@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-  CreateProductImageSchema,
   ProductImageSchema,
   UpsertProductImageSchema,
 } from "../product-image/schema";
@@ -50,6 +49,3 @@ export const QuerySearchProductSchema = z.object({
 export const OneProductResponseSchema = ProductSchema;
 
 export const ManyProductsResponseSchema = z.array(ProductSchema);
-
-export type OneProductResponse = z.infer<typeof OneProductResponseSchema>;
-export type ManyProductsResponse = z.infer<typeof ManyProductsResponseSchema>;
