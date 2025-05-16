@@ -19,12 +19,6 @@ export const CreateProductImageSchema = UpsertProductImageSchema.extend({
   productSlug: z.string().optional(),
 });
 
-// export const UpdatePatchProductImageSchema = z.object({
-//   name: z.string().min(3).optional(),
-//   url: z.string().url().optional(),
-//   productSlug: z.string().optional(),
-// });
-
 export const ParamProductImageIdSchema = z.object({
   id: z.string().min(3, "Product Image ID is required"),
 });

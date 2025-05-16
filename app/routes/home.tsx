@@ -29,18 +29,20 @@ export async function loader({}: Route.LoaderArgs) {
     }
 
     const products: ManyProductsResponse = await response.json();
-    return products;
+    return { products };
   } catch (error) {
     console.error("Error fetching products:", error);
-    return [];
+    throw new Response("Failed to fetch products", {
+      status: 500,
+    });
   }
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const products = loaderData as ManyProductsResponse;
+  const { products } = loaderData;
 
   return (
-    <div className="p-4 max-w-7xl mx-auto ">
+    <div>
       <h1 className="text-3xl font-bold mb-6 text-center">Clacie Cookies</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         {products.map((product) => {
