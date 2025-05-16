@@ -1,4 +1,4 @@
-import type { OneProductResponse } from "~/modules/product/schema";
+import type { OneProductResponse } from "~/modules/product/type";
 import type { Route } from "./+types/products-slug";
 import { Card, CardContent } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";

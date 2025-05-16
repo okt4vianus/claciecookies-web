@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { betterFetch } from "@better-fetch/fetch";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -6,8 +7,8 @@ import {
   CardFooter,
   CardHeader,
 } from "~/components/ui/card";
-import type { ManyProductsResponse } from "~/modules/product/type";
 import type { Route } from "./+types/home";
+import { ManyProductsResponseSchema } from "~/modules/product/schema";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -21,21 +22,12 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({}: Route.LoaderArgs) {
-  try {
-    const response = await fetch(`${process.env.BACKEND_API_URL}/products`);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch products: ${response.statusText}`);
-    }
-
-    const products: ManyProductsResponse = await response.json();
-    return { products };
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    throw new Response("Failed to fetch products", {
-      status: 500,
-    });
-  }
+  const { data: products, error } = await betterFetch(
+    `${process.env.BACKEND_API_URL}/products`,
+    { output: ManyProductsResponseSchema }
+  );
+  if (error) throw new Response(error.message, { status: 500 });
+  return { products };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
