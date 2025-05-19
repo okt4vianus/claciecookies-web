@@ -1,11 +1,23 @@
-import type { OneProductResponse } from "~/modules/product/schema";
-import type { Route } from "./+types/products-slug";
-import { Card, CardContent } from "~/components/ui/card";
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
+import { isRouteErrorResponse, useRouteError } from "react-router";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { $fetch } from "~/lib/fetch";
+import { ProductSchema } from "~/modules/product/schema";
+import type { Route } from "./+types/products-slug";
 
 export function meta({ data }: Route.MetaArgs) {
+  if (!data || !data.product) {
+    return [
+      { title: "Produk tidak ditemukan - Clacie Cookies" },
+      {
+        name: "description",
+        content: "Produk yang Anda cari tidak tersedia atau terjadi kesalahan.",
+      },
+    ];
+  }
+
   const { product } = data;
   return [
     { title: `${product.name} - Clacie Cookies` },
@@ -17,35 +29,23 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  try {
-    const response = await fetch(
-      `${process.env.BACKEND_API_URL}/products/${params.slug}`
-    );
+  const { data, error } = await $fetch("/products/:slug", {
+    params: { slug: params.slug },
+    output: ProductSchema,
+  });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch products: ${response.statusText}`);
-    }
-
-    const product: OneProductResponse = await response.json();
-    return { product };
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    throw new Response("Failed to fetch product", {
+  if (error) {
+    throw new Response(`Failed to fetch products: ${error.message}`, {
       status: 500,
     });
-
-    // return [];
   }
+
+  return { product: data };
 }
 
 export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
   const { product } = loaderData;
   return (
-    // <div>
-    //   <h1> Product Details </h1>
-    //   <pre>{JSON.stringify(product, null, 2)}</pre>
-    // </div>
-
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-card text-card-foreground shadow-lg rounded-xl">
         <CardContent className="p-6 grid md:grid-cols-2 gap-6">
@@ -89,6 +89,27 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  let message = "Terjadi kesalahan yang tidak terduga.";
+
+  if (isRouteErrorResponse(error)) {
+    if (typeof error.data === "object" && error.data?.message) {
+      message = error.data.message;
+    } else if (typeof error.data === "string") {
+      message = error.data;
+    }
+  }
+
+  return (
+    <div>
+      <h1>Oops 😢</h1>
+      <p>{message}</p>
     </div>
   );
 }

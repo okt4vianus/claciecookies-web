@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { OneProductResponseSchema } from "../product/schema";
+import { createdAt, id, name, slug, updatedAt } from "../common/schema";
 
 export const ProductImageSchema = z.object({
-  id: z.string(),
-  name: z.string().min(3, "Name is required"),
+  id,
+  name,
   url: z.string().url("URL is required"),
-  productId: z.string(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  productId: id,
+  createdAt,
+  updatedAt,
 });
 
 export const UpsertProductImageSchema = ProductImageSchema.pick({
@@ -16,15 +16,16 @@ export const UpsertProductImageSchema = ProductImageSchema.pick({
 });
 
 export const CreateProductImageSchema = UpsertProductImageSchema.extend({
-  productSlug: z.string().optional(),
+  // productSlug: z.string().optional(),
+  productSlug: slug.optional(),
 });
 
 export const ParamProductImageIdSchema = z.object({
-  id: z.string().min(3, "Product Image ID is required"),
+  id: id.min(3, "Product Image ID is required"),
 });
 
 export const ParamProductImageIdentifierSchema = z.object({
-  identifier: z.string().min(3, "Identifier is required"), // Product Image ID or name
+  identifier: id.min(3, "Identifier is required"), // Product Image ID or name
 });
 
 export const ProductImageResponseSchema = ProductImageSchema;

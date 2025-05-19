@@ -1,23 +1,33 @@
 import { z } from "zod";
 import {
+  createdAt,
+  description,
+  id,
+  name,
+  price,
+  slug,
+  stockQuantity,
+  updatedAt,
+} from "../common/schema";
+import {
   ProductImageSchema,
   UpsertProductImageSchema,
 } from "../product-image/schema";
 
 export const ProductSchema = z.object({
-  id: z.string(),
-  name: z.string().min(3, "Name is required"),
-  slug: z.string(),
-  description: z.string().optional(),
-  price: z.number().int().positive("Price must be a positive number"),
-  stockQuantity: z
-    .number()
-    .int()
-    .nonnegative("Stock quantity must be more than or equal to 0"),
+  //id: id
+  id,
+  name,
+  slug,
+  description,
+  price,
+  stockQuantity,
   images: z.array(ProductImageSchema).optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt,
+  updatedAt,
 });
+
+export const ProductsSchema = z.array(ProductSchema);
 
 export const CreateProductSchema = ProductSchema.omit({
   id: true,
@@ -45,7 +55,3 @@ export const ParamProductIdentifierSchema = z.object({
 export const QuerySearchProductSchema = z.object({
   q: z.string().min(3, "Search query is required"),
 });
-
-export const OneProductResponseSchema = ProductSchema;
-
-export const ManyProductsResponseSchema = z.array(ProductSchema);
