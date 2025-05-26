@@ -3,9 +3,8 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { $fetch } from "~/lib/fetch";
-import { ProductSchema } from "~/modules/product/schema";
 import type { Route } from "./+types/products-slug";
+import { apiClient } from "~/lib/api-client";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -29,27 +28,26 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const { data, error } = await $fetch("/products/:slug", {
-    params: { slug: params.slug },
-    output: ProductSchema,
-  });
-
+  const { data: product, error } = await apiClient.GET(
+    "/products/{identifier}",
+    { params: { path: { identifier: params.slug } } }
+  );
   if (error) {
-    throw new Response(`Failed to fetch products: ${error.message}`, {
-      status: 500,
-    });
+    throw new Response(`Failed to fetch one product`);
   }
-
-  return { product: data };
+  if (!product) {
+    throw new Response(`Product not found`, { status: 404 });
+  }
+  return { product };
 }
 
 export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
   const { product } = loaderData;
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-card text-card-foreground shadow-lg rounded-xl">
         <CardContent className="p-6 grid md:grid-cols-2 gap-6">
-          {/* Gambar Produk */}
           <div className="bg-muted rounded-lg flex items-center justify-center p-4">
             <img
               src={product.images?.[0]?.url ?? "/placeholder.png"}

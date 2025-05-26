@@ -1,39 +1,28 @@
-# Welcome to React Router!
+# ClacieCookies Web
 
-A modern, production-ready template for building full-stack React applications using React Router.
+ClacieCookies frontend web with React Router v7 Framework.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+Links:
 
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- <https://claciecookies.oktavianusrtasak.com>
+- <https://claciecookies.vercel.app>
 
 ## Getting Started
-
-### Link
-
-https://claciecookies.oktavianusrtasak.com/
 
 ### Installation
 
 Install the dependencies:
 
-```bash
-npm install
+```sh
+bun install
 ```
 
 ### Development
 
 Start the development server with HMR:
 
-```bash
-npm run dev
+```sh
+bun dev
 ```
 
 Your application will be available at `http://localhost:5173`.
@@ -42,8 +31,8 @@ Your application will be available at `http://localhost:5173`.
 
 Create a production build:
 
-```bash
-npm run build
+```sh
+bun run build
 ```
 
 ## Deployment
@@ -52,7 +41,7 @@ npm run build
 
 To build and run using Docker:
 
-```bash
+```sh
 docker build -t my-app .
 
 # Run the container
@@ -72,11 +61,11 @@ The containerized application can be deployed to any platform that supports Dock
 
 If you're familiar with deploying Node applications, the built-in app server is production-ready.
 
-Make sure to deploy the output of `npm run build`
+Make sure to deploy the output of `bun run build`
 
 ```
 ├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
+├── package-lock.json (or pbun-lock.yaml, or bun.lockb)
 ├── build/
 │   ├── client/    # Static assets
 │   └── server/    # Server-side code
