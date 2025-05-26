@@ -6,12 +6,9 @@ import {
   CardFooter,
   CardHeader,
 } from "~/components/ui/card";
-
-import { $fetch } from "~/lib/fetch";
-import { ProductsSchema } from "~/modules/product/schema";
-import type { Route } from "./+types/home";
 import { Separator } from "~/components/ui/separator";
 import { apiClient } from "~/lib/api-client";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -25,9 +22,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({}: Route.LoaderArgs) {
-  const { data, error } = await apiClient.GET("/products");
+  const { data: products, error } = await apiClient.GET("/products");
   if (error) throw new Response(`Failed to fetch products`, { status: 500 });
-  return { products: data };
+  return { products };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
