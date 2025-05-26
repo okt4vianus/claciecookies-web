@@ -11,6 +11,7 @@ import { $fetch } from "~/lib/fetch";
 import { ProductsSchema } from "~/modules/product/schema";
 import type { Route } from "./+types/home";
 import { Separator } from "~/components/ui/separator";
+import { apiClient } from "~/lib/api-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -24,16 +25,8 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({}: Route.LoaderArgs) {
-  const { data, error } = await $fetch("/products", {
-    output: ProductsSchema,
-  });
-
-  if (error) {
-    throw new Response(`Failed to fetch products: ${error.message}`, {
-      status: 500,
-    });
-  }
-
+  const { data, error } = await apiClient.GET("/products");
+  if (error) throw new Response(`Failed to fetch products`, { status: 500 });
   return { products: data };
 }
 
@@ -100,101 +93,45 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       <Separator />
 
       {/* Featured Products Section */}
-      <section>
-        <div
-          style={{
-            padding: "3rem 1rem",
-            maxWidth: "720px",
-            margin: "0 auto",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: "2rem",
-            }}
-          >
-            Featured Cookies
-          </h2>
+      <section className="p-12 max-w-screen-lg mx-auto">
+        <h2 className="text-2xl font-bold text-center mb-8">
+          Featured Cookies
+        </h2>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "2rem",
-            }}
-          >
-            {products.map((product) => {
-              const image = product.images?.[0];
-              if (!image) return null;
+        <div className="gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map((product) => {
+            const image = product.images?.[0];
+            if (!image) return null;
 
-              return (
-                <Card key={product.id}>
-                  <CardHeader>
-                    <img
-                      src={image.url}
-                      alt={image.name || product.name}
-                      style={{
-                        width: "100%",
-                        height: "12rem",
-                        objectFit: "cover",
-                        borderRadius: "0.5rem",
-                      }}
-                    />
-                  </CardHeader>
-                  <CardContent>
-                    <h3>{product.name}</h3>
-                    <p>Rp {product.price.toLocaleString("id-ID")}</p>
-                  </CardContent>
-                  <CardFooter style={{ justifyContent: "center" }}>
-                    <Button asChild>
-                      <Link to={`/products/${product.slug}`}>View Product</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
+            return (
+              <Card key={product.id}>
+                <CardHeader>
+                  <img
+                    src={image.url}
+                    alt={image.name || product.name}
+                    style={{
+                      width: "100%",
+                      height: "12rem",
+                      objectFit: "cover",
+                      borderRadius: "0.5rem",
+                    }}
+                  />
+                </CardHeader>
+                <CardContent>
+                  <h3>{product.name}</h3>
+                  <p>Rp {product.price.toLocaleString("id-ID")}</p>
+                </CardContent>
+                <CardFooter style={{ justifyContent: "center" }}>
+                  <Button asChild>
+                    <Link to={`/products/${product.slug}`}>View Product</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       </section>
     </>
-    // <div className="p-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-    //   {products.map((product) => {
-    //     const image = product.images?.[0];
-
-    //     if (!image) return null; // Skip rendering if no image is available
-
-    //     return (
-    //       <Card key={product.id}>
-    //         <CardHeader>
-    //           <picture className=" block overflow-hidden">
-    //             <img
-    //               className="hover:scale-110 transition duration-500 ease-in-out h-70 w-full object-cover"
-    //               src={image.url}
-    //               alt={image.name || "Product image"}
-    //             />
-    //           </picture>
-    //         </CardHeader>
-
-    //         <CardContent>
-    //           <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-    //           <p className="font-medium mb-3">
-    //             Rp {product.price.toLocaleString("id-ID")}
-    //           </p>
-    //         </CardContent>
-    //         <CardFooter className="mt-auto justify-center">
-    //           <div>
-    //             <Button variant={"destructive"} asChild>
-    //               <Link to={`/products/${product.slug}`}>View Product</Link>
-    //             </Button>
-    //           </div>
-    //         </CardFooter>
-    //       </Card>
-    //     );
-    //   })}
-    // </div>
   );
 }
 

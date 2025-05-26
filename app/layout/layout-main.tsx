@@ -1,8 +1,7 @@
-import { Link, Outlet } from "react-router";
-import type { Route } from "./+types/layout-main";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
+import { Form, href, Link, Outlet } from "react-router";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 
 export default function MainLayoutRoute() {
   return (
@@ -16,14 +15,13 @@ export default function MainLayoutRoute() {
             CLACIE
           </Link>
 
-          {/* Search Box (Sunset Horizon style) */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault(); /* handleSearch() */
-            }}
+          <Form
+            // action="/search"
+            method="get"
             className="relative w-full max-w-md"
           >
             <Input
+              name="q"
               type="search"
               placeholder="Search cookies..."
               className="rounded-full bg-white/90 backdrop-blur-md placeholder:text-muted-foreground text-sm px-5 py-2 pr-10 shadow-inner focus:ring-2 focus:ring-primary transition"
@@ -36,21 +34,21 @@ export default function MainLayoutRoute() {
             >
               <Search className="w-4 h-4" />
             </Button>
-          </form>
+          </Form>
 
           <div className="space-x-6 text-sm font-medium font-[Sunday]">
-            <Link to="/" className="hover:text-accent ">
+            <Link to={href("/")} className="hover:text-accent ">
               Home
             </Link>
-            <Link to="/products" className="hover:text-accent ">
+            <Link to={href("/products")} className="hover:text-accent ">
               Products
             </Link>
-            <Link to="/about" className="hover:text-accent ">
+            {/* <Link to={href("/about")} className="hover:text-accent ">
               About Us
             </Link>
-            <Link to="/contact" className="hover:text-accent ">
+            <Link to={href("/contact")} className="hover:text-accent ">
               Contact
-            </Link>
+            </Link> */}
           </div>
         </div>
       </nav>
