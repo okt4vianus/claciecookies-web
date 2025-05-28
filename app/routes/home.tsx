@@ -41,9 +41,14 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
       <section
-        className="relative h-[90vh] w-full bg-cover bg-center"
-        style={{ backgroundImage: 'url("/background.png")' }}
+        className="relative h-[90vh] w-full bg-contain bg-center"
+        style={{ backgroundImage: 'url("/Collection-Display.png")' }}
       >
+        {/* <img
+          src="/Collection-Display.png"
+          alt="Hero Clacie"
+          className="object-contain h-full w-auto"
+        /> */}
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/40"></div>
 
@@ -52,7 +57,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           {/* Left Text */}
           <div className="text-white max-w-lg">
             <h1 className="text-5xl font-bold mb-4">Clacie Cookies</h1>
-            <p className="text-xl">Rasa yang menghangatkan.</p>
+            {/* <p className="text-xl">Rasa yang menghangatkan.</p> */}
           </div>
 
           {/* Right Social Media Icons */}
