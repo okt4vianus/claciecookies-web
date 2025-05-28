@@ -106,6 +106,14 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       className="w-full h-48 object-cover rounded-md"
                     />
                   </CardHeader>
+                  {/* <CardContent>
+                    <h2 className="text-xl font-semibold mb-2">
+                      {product.name}
+                    </h2>
+                    <p className="font-medium mb-3">
+                      Rp {product.price.toLocaleString("id-ID")}
+                    </p>
+                  </CardContent> */}
                   <CardContent>
                     <h3 className="text-lg font-semibold">{product.name}</h3>
                     <p className="font-medium mb-3">
