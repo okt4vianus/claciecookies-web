@@ -7,10 +7,8 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 
-import { $fetch } from "~/lib/fetch";
-import { ProductsSchema } from "~/modules/product/schema";
-// import type { Route } from "./+types/home";
 import type { Route } from "./+types/products";
+import { apiClient } from "~/lib/api-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -23,17 +21,13 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({}: Route.LoaderArgs) {
-  const { data, error } = await $fetch("/products", {
-    output: ProductsSchema,
-  });
+  const { data: products, error } = await apiClient.GET("/products");
 
   if (error) {
-    throw new Response(`Failed to fetch products: ${error.message}`, {
-      status: 500,
-    });
+    throw new Response(`Failed to fetch products`, { status: 500 });
   }
 
-  return { products: data };
+  return { products };
 }
 
 export default function Products({ loaderData }: Route.ComponentProps) {
