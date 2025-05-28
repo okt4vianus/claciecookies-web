@@ -3,9 +3,8 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { $fetch } from "~/lib/fetch";
-import { ProductSchema } from "~/modules/product/schema";
 import type { Route } from "./+types/products-slug";
+import { apiClient } from "~/lib/api-client";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -29,18 +28,22 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const { data, error } = await $fetch("/products/:slug", {
-    params: { slug: params.slug },
-    output: ProductSchema,
-  });
+  const { data: product, error } = await apiClient.GET(
+    "/products/{identifier}",
+    {
+      params: { path: { identifier: params.slug } }, // Replace with actual slug or identifier
+    }
+  );
 
   if (error) {
-    throw new Response(`Failed to fetch products: ${error.message}`, {
-      status: 500,
-    });
+    throw new Response(`Failed to fetch one product ${error.message}`);
   }
 
-  return { product: data };
+  if (!product) {
+    throw new Response("Product not found", { status: 404 });
+  }
+
+  return { product };
 }
 
 export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {

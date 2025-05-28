@@ -7,10 +7,9 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 
-import { $fetch } from "~/lib/fetch";
-import { ProductsSchema } from "~/modules/product/schema";
 import type { Route } from "./+types/home";
 import { Separator } from "~/components/ui/separator";
+import { apiClient } from "~/lib/api-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -24,17 +23,16 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({}: Route.LoaderArgs) {
-  const { data, error } = await $fetch("/products", {
-    output: ProductsSchema,
-  });
+  const {
+    data: products, // only present if the request was successful 2xx
+    error, // only present if the request failed 4xx or 5xx
+  } = await apiClient.GET("/products");
 
   if (error) {
-    throw new Response(`Failed to fetch products: ${error.message}`, {
-      status: 500,
-    });
+    throw new Response(`Failed to fetch products`, { status: 500 });
   }
 
-  return { products: data };
+  return { products };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
@@ -81,18 +79,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                 className="w-8 h-8 hover:opacity-80"
               />
             </a>
-
-            <a
-              href="https://shopee.co.id/clacie"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/831/831276.png"
-                alt="Shopee"
-                className="w-8 h-8 hover:opacity-80"
-              />
-            </a>
           </div>
         </div>
       </section>
@@ -101,31 +87,12 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
       {/* Featured Products Section */}
       <section>
-        <div
-          style={{
-            padding: "3rem 1rem",
-            maxWidth: "720px",
-            margin: "0 auto",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: "2rem",
-            }}
-          >
+        <div className="px-4 py-12 max-w-6xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
             Featured Cookies
           </h2>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "2rem",
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => {
               const image = product.images?.[0];
               if (!image) return null;
@@ -136,20 +103,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                     <img
                       src={image.url}
                       alt={image.name || product.name}
-                      style={{
-                        width: "100%",
-                        height: "12rem",
-                        objectFit: "cover",
-                        borderRadius: "0.5rem",
-                      }}
+                      className="w-full h-48 object-cover rounded-md"
                     />
                   </CardHeader>
                   <CardContent>
-                    <h3>{product.name}</h3>
-                    <p>Rp {product.price.toLocaleString("id-ID")}</p>
+                    <h3 className="text-lg font-semibold">{product.name}</h3>
+                    <p className="font-medium mb-3">
+                      Rp {product.price.toLocaleString("id-ID")}
+                    </p>
                   </CardContent>
-                  <CardFooter style={{ justifyContent: "center" }}>
-                    <Button asChild>
+                  <CardFooter className="justify-center">
+                    <Button variant={"destructive"} asChild>
                       <Link to={`/products/${product.slug}`}>View Product</Link>
                     </Button>
                   </CardFooter>
@@ -160,41 +124,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
       </section>
     </>
-    // <div className="p-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-    //   {products.map((product) => {
-    //     const image = product.images?.[0];
-
-    //     if (!image) return null; // Skip rendering if no image is available
-
-    //     return (
-    //       <Card key={product.id}>
-    //         <CardHeader>
-    //           <picture className=" block overflow-hidden">
-    //             <img
-    //               className="hover:scale-110 transition duration-500 ease-in-out h-70 w-full object-cover"
-    //               src={image.url}
-    //               alt={image.name || "Product image"}
-    //             />
-    //           </picture>
-    //         </CardHeader>
-
-    //         <CardContent>
-    //           <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-    //           <p className="font-medium mb-3">
-    //             Rp {product.price.toLocaleString("id-ID")}
-    //           </p>
-    //         </CardContent>
-    //         <CardFooter className="mt-auto justify-center">
-    //           <div>
-    //             <Button variant={"destructive"} asChild>
-    //               <Link to={`/products/${product.slug}`}>View Product</Link>
-    //             </Button>
-    //           </div>
-    //         </CardFooter>
-    //       </Card>
-    //     );
-    //   })}
-    // </div>
   );
 }
 
