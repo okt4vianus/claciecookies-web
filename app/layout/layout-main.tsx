@@ -12,7 +12,7 @@ export default function MainLayoutRoute() {
             to="/"
             className="text-2xl font-semibold tracking-tight text-primary hover:text-accent"
           >
-            CLACIE
+            Clacie
           </Link>
 
           <Form
@@ -40,9 +40,11 @@ export default function MainLayoutRoute() {
             <Link to="/" className="hover:text-accent ">
               Home
             </Link>
+
             <Link to="/products" className="hover:text-accent ">
               Products
             </Link>
+
             {/* <Link to="/about" className="hover:text-accent ">
               About Us
             </Link>
