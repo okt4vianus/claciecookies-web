@@ -3,13 +3,7 @@ import { apiClient } from "~/lib/api-client";
 import type { Route } from "./+types/products";
 
 export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Product Clacie Cookies" },
-    {
-      name: "description",
-      content: "All Products Clacie Cookies",
-    },
-  ];
+  return [{ title: "Search Results - Clacie Cookies" }];
 }
 
 export async function loader({}: Route.LoaderArgs) {

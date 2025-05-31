@@ -4,10 +4,10 @@ import type { Route } from "./+types/products";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Product Clacie Cookies" },
+    { title: "Products by Clacie Cookies" },
     {
       name: "description",
-      content: "All Products Clacie Cookies",
+      content: "All products by Clacie Cookies",
     },
   ];
 }
