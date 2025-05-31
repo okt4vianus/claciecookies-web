@@ -1,15 +1,8 @@
-import { isRouteErrorResponse, Link, useRouteError } from "react-router";
-import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "~/components/ui/card";
-
-import type { Route } from "./+types/home";
+import { isRouteErrorResponse, useRouteError } from "react-router";
+import { ProductItems } from "~/components/product/product-items";
 import { Separator } from "~/components/ui/separator";
 import { apiClient } from "~/lib/api-client";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -80,58 +73,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             Featured Cookies
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => {
-              const image = product.images?.[0];
-              if (!image) return null;
-
-              return (
-                <Card key={product.id}>
-                  <CardHeader>
-                    <img
-                      src={image.url}
-                      alt={image.name || product.name}
-                      className="w-full h-48 object-cover rounded-md"
-                    />
-                  </CardHeader>
-                  <CardContent>
-                    <h3 className="text-lg font-semibold">{product.name}</h3>
-                    <p className="font-medium mb-3">
-                      Rp {product.price.toLocaleString("id-ID")}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="justify-center">
-                    <Button variant={"destructive"} asChild>
-                      <Link to={`/products/${product.slug}`}>View Product</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
+          <ProductItems products={products} />
         </div>
       </section>
     </>
-  );
-}
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-
-  let message = "Terjadi kesalahan yang tidak terduga.";
-
-  if (isRouteErrorResponse(error)) {
-    if (typeof error.data === "object" && error.data?.message) {
-      message = error.data.message;
-    } else if (typeof error.data === "string") {
-      message = error.data;
-    }
-  }
-
-  return (
-    <div>
-      <h1>Oops 😢</h1>
-      <p>{message}</p>
-    </div>
   );
 }

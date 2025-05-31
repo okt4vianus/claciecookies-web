@@ -10,6 +10,7 @@ export default [
     index("routes/home.tsx"),
     route("products", "routes/products.tsx"),
     route("products/:slug", "routes/products-slug.tsx"),
+    route("search", "routes/search.tsx"),
   ]),
 
   //   layout("layout/admin.tsx", [
