@@ -2,10 +2,19 @@ import { Form, Link, Outlet } from "react-router";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
+import type { Route } from "./+types/layout-main";
 
-export default function MainLayoutRoute() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q") || "";
+  return { q };
+}
+
+export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
+  const { q } = loaderData;
+
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <nav className="bg-background text-foreground border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <Link
@@ -23,6 +32,7 @@ export default function MainLayoutRoute() {
             <Input
               name="q"
               type="search"
+              defaultValue={q}
               placeholder="Search cookies..."
               className="rounded-full bg-white/90 backdrop-blur-md placeholder:text-muted-foreground text-sm px-5 py-2 shadow-inner focus:ring-2 focus:ring-primary transition"
             />
@@ -50,9 +60,11 @@ export default function MainLayoutRoute() {
           </div>
         </div>
       </nav>
-      <div>
+
+      <main className="flex-auto">
         <Outlet />
-      </div>
+      </main>
+
       <footer className="bg-card text-card-foreground border-t border-border font-[Sunday]">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm leading-relaxed">
           <p className="mb-1">Soft-baked with premium ingredients.</p>
