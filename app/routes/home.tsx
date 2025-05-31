@@ -23,15 +23,8 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({}: Route.LoaderArgs) {
-  const {
-    data: products, // only present if the request was successful 2xx
-    error, // only present if the request failed 4xx or 5xx
-  } = await apiClient.GET("/products");
-
-  if (error) {
-    throw new Response(`Failed to fetch products`, { status: 500 });
-  }
-
+  const { data: products, error } = await apiClient.GET("/products");
+  if (error) throw new Response(`Failed to fetch products`, { status: 500 });
   return { products };
 }
 
@@ -42,25 +35,16 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     <>
       <section
         className="relative h-[90vh] w-full bg-contain bg-center"
-        style={{ backgroundImage: 'url("/Collection-Display.png")' }}
+        style={{ backgroundImage: 'url("/home-cover.jpg")' }}
       >
-        {/* <img
-          src="/Collection-Display.png"
-          alt="Hero Clacie"
-          className="object-contain h-full w-auto"
-        /> */}
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/20"></div>
 
-        {/* Content */}
         <div className="relative z-10 flex justify-between items-center h-full px-10">
-          {/* Left Text */}
           <div className="text-white max-w-lg">
             <h1 className="text-5xl font-bold mb-4">Clacie Cookies</h1>
-            {/* <p className="text-xl">Rasa yang menghangatkan.</p> */}
+            <p className="text-xl">Rasa yang menghangatkan.</p>
           </div>
 
-          {/* Right Social Media Icons */}
           <div className="flex flex-col items-end gap-4">
             <a
               href="https://www.instagram.com/clacie.cookies"
@@ -90,7 +74,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
       <Separator />
 
-      {/* Featured Products Section */}
       <section>
         <div className="px-4 py-12 max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
@@ -111,14 +94,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       className="w-full h-48 object-cover rounded-md"
                     />
                   </CardHeader>
-                  {/* <CardContent>
-                    <h2 className="text-xl font-semibold mb-2">
-                      {product.name}
-                    </h2>
-                    <p className="font-medium mb-3">
-                      Rp {product.price.toLocaleString("id-ID")}
-                    </p>
-                  </CardContent> */}
                   <CardContent>
                     <h3 className="text-lg font-semibold">{product.name}</h3>
                     <p className="font-medium mb-3">
