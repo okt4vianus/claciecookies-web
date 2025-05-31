@@ -1,16 +1,8 @@
-import { isRouteErrorResponse, Link, useRouteError } from "react-router";
-import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "~/components/ui/card";
-
-import type { Route } from "./+types/home";
+import { isRouteErrorResponse, useRouteError } from "react-router";
+import { ProductItems } from "~/components/product/product-items";
 import { Separator } from "~/components/ui/separator";
 import { apiClient } from "~/lib/api-client";
-import { ProductItems } from "~/components/product/product-items";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -85,26 +77,5 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
       </section>
     </>
-  );
-}
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-
-  let message = "Terjadi kesalahan yang tidak terduga.";
-
-  if (isRouteErrorResponse(error)) {
-    if (typeof error.data === "object" && error.data?.message) {
-      message = error.data.message;
-    } else if (typeof error.data === "string") {
-      message = error.data;
-    }
-  }
-
-  return (
-    <div>
-      <h1>Oops 😢</h1>
-      <p>{message}</p>
-    </div>
   );
 }

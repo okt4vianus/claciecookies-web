@@ -85,24 +85,3 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
     </div>
   );
 }
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-
-  let message = "An unexpected error occurred.";
-
-  if (isRouteErrorResponse(error)) {
-    if (typeof error.data === "object" && error.data?.message) {
-      message = error.data.message;
-    } else if (typeof error.data === "string") {
-      message = error.data;
-    }
-  }
-
-  return (
-    <div>
-      <h1>Oops 😢</h1>
-      <p>{message}</p>
-    </div>
-  );
-}
