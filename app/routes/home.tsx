@@ -10,6 +10,7 @@ import {
 import type { Route } from "./+types/home";
 import { Separator } from "~/components/ui/separator";
 import { apiClient } from "~/lib/api-client";
+import { ProductItems } from "~/components/product/product-items";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -80,35 +81,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             Featured Cookies
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => {
-              const image = product.images?.[0];
-              if (!image) return null;
-
-              return (
-                <Card key={product.id}>
-                  <CardHeader>
-                    <img
-                      src={image.url}
-                      alt={image.name || product.name}
-                      className="w-full h-48 object-cover rounded-md"
-                    />
-                  </CardHeader>
-                  <CardContent>
-                    <h3 className="text-lg font-semibold">{product.name}</h3>
-                    <p className="font-medium mb-3">
-                      Rp {product.price.toLocaleString("id-ID")}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="justify-center">
-                    <Button variant={"destructive"} asChild>
-                      <Link to={`/products/${product.slug}`}>View Product</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
+          <ProductItems products={products} />
         </div>
       </section>
     </>
