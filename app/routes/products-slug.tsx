@@ -31,18 +31,11 @@ export async function loader({ params }: Route.LoaderArgs) {
   const { data: product, error } = await apiClient.GET(
     "/products/{identifier}",
     {
-      params: { path: { identifier: params.slug } }, // Replace with actual slug or identifier
+      params: { path: { identifier: params.slug } },
     }
   );
-
-  if (error) {
-    throw new Response(`Failed to fetch one product ${error.message}`);
-  }
-
-  if (!product) {
-    throw new Response("Product not found", { status: 404 });
-  }
-
+  if (error) throw new Response(`Failed to fetch one product ${error.message}`);
+  if (!product) throw new Response("Product not found", { status: 404 });
   return { product };
 }
 
@@ -52,7 +45,6 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-card text-card-foreground shadow-lg rounded-xl">
         <CardContent className="p-6 grid md:grid-cols-2 gap-6">
-          {/* Gambar Produk */}
           <div className="bg-muted rounded-lg flex items-center justify-center p-4">
             <img
               src={product.images?.[0]?.url ?? "/placeholder.png"}
@@ -61,7 +53,6 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
             />
           </div>
 
-          {/* Detail Produk */}
           <div className="flex flex-col justify-between">
             <div>
               <h1 className="text-2xl font-bold text-primary mb-6 border-b border-primary pb-1">
@@ -78,7 +69,6 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
 
-            {/* Jumlah & Tombol Add to Cart */}
             <div className="flex items-center gap-4 mt-4">
               <div>
                 <Label htmlFor="quantity"></Label>
@@ -92,27 +82,6 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-
-  let message = "Terjadi kesalahan yang tidak terduga.";
-
-  if (isRouteErrorResponse(error)) {
-    if (typeof error.data === "object" && error.data?.message) {
-      message = error.data.message;
-    } else if (typeof error.data === "string") {
-      message = error.data;
-    }
-  }
-
-  return (
-    <div>
-      <h1>Oops 😢</h1>
-      <p>{message}</p>
     </div>
   );
 }

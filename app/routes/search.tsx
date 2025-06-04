@@ -1,0 +1,48 @@
+import { ProductItems } from "~/components/product/product-items";
+import { apiClient } from "~/lib/api-client";
+import type { Route } from "./+types/search";
+// import { count } from "console";
+
+export function meta({}: Route.MetaArgs) {
+  return [{ title: "Search Results - Clacie Cookies" }];
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q");
+  if (!q) {
+    return { products: [], count: 0 };
+  }
+
+  const { data: products, error } = await apiClient.GET("/search", {
+    params: { query: { q: q } },
+  });
+
+  if (error) throw new Response(`Failed to search products`, { status: 500 });
+
+  return { products, count: products.length };
+}
+
+export default function Products({ loaderData }: Route.ComponentProps) {
+  const { products, count } = loaderData;
+
+  return (
+    <div className="p-10">
+      {count <= 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold">No Products Found</h2>
+          <p className="text-muted-foreground">
+            Try searching for something else.
+          </p>
+        </div>
+      )}
+
+      {count > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold">Found {count} products </h2>
+          <ProductItems products={products} />;
+        </div>
+      )}
+    </div>
+  );
+}
