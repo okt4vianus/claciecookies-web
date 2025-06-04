@@ -25,7 +25,7 @@ export default function Products({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="p-10">
-      <ProductItems products={products} />;
+      <ProductItems products={products} />
     </div>
   );
 }

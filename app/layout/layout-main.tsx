@@ -2,7 +2,7 @@ import { Form, Link, Outlet } from "react-router";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
-import { ThemeToggle } from "~/components/ui/toogle";
+import { ThemeToggle } from "~/components/ui/toggle";
 import type { Route } from "./+types/layout-main";
 
 export async function loader({ request }: Route.LoaderArgs) {

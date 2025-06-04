@@ -1,7 +1,6 @@
 import { ProductItems } from "~/components/product/product-items";
 import { apiClient } from "~/lib/api-client";
 import type { Route } from "./+types/search";
-// import { count } from "console";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Search Results - Clacie Cookies" }];
@@ -40,7 +39,7 @@ export default function Products({ loaderData }: Route.ComponentProps) {
       {count > 0 && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold">Found {count} products </h2>
-          <ProductItems products={products} />;
+          <ProductItems products={products} />
         </div>
       )}
     </div>
