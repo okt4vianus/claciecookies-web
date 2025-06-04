@@ -14,9 +14,7 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({}: Route.LoaderArgs) {
   const { data: products, error } = await apiClient.GET("/products");
-
   if (error) throw new Response(`Failed to fetch products`, { status: 500 });
-
   return { products };
 }
 

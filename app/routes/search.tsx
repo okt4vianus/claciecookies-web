@@ -9,14 +9,11 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const q = url.searchParams.get("q");
-  if (!q) {
-    return { products: [], count: 0 };
-  }
+  if (!q) return { products: [], count: 0 };
 
   const { data: products, error } = await apiClient.GET("/search", {
-    params: { query: { q: q } },
+    params: { query: { q } },
   });
-
   if (error) throw new Response(`Failed to search products`, { status: 500 });
 
   return { products, count: products.length };
