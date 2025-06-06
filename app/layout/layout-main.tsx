@@ -1,7 +1,7 @@
 import { Form, Link, Outlet } from "react-router";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import { ThemeToggle } from "~/components/ui/toggle";
 import type { Route } from "./+types/layout-main";
 
@@ -47,7 +47,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
           </Form>
 
           <ThemeToggle />
-          <div className="space-x-6 text-sm font-medium font-[Sunday]">
+          <div className="space-x-6 text-sm font-medium ">
             <Link to="/" className="hover:text-accent ">
               Home
             </Link>
@@ -60,6 +60,9 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
             <Link to="/contact" className="hover:text-accent ">
               Contact
             </Link> */}
+            <Button variant="secondary">
+              <ShoppingCart className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </nav>

@@ -1,10 +1,11 @@
-import { isRouteErrorResponse, useRouteError } from "react-router";
+import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import type { Route } from "./+types/products-slug";
 import { apiClient } from "~/lib/api-client";
+import type { Route } from "./+types/products-slug";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -41,6 +42,32 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
   const { product } = loaderData;
+
+  const [quantity, setQuantity] = useState(1);
+
+  const handleIncrease = () => {
+    if (quantity < product.stockQuantity) {
+      setQuantity((prev) => prev + 1);
+    }
+  };
+
+  const handleDecrease = () => {
+    if (quantity > 1) {
+      setQuantity((prev) => prev - 1);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 1;
+    if (value >= 1 && value <= product.stockQuantity) {
+      setQuantity(value);
+    } else if (value > product.stockQuantity) {
+      setQuantity(product.stockQuantity);
+    } else {
+      setQuantity(1);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-card text-card-foreground shadow-lg rounded-xl">
@@ -69,12 +96,50 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-end gap-4 mt-4">
               <div>
-                <Label htmlFor="quantity"></Label>
-                <Input type="number" defaultValue={1} className="w-20" />
+                <Label htmlFor="quantity" className="mb-2 block">
+                  Quantity
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDecrease}
+                    disabled={quantity <= 1}
+                    className="border border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    id="quantity"
+                    // type="number"
+                    value={quantity}
+                    onChange={handleInputChange}
+                    min="1"
+                    max={product.stockQuantity}
+                    className="w-15 text-center border border-gray-300 rounded-md focus:ring-0 focus:border-gray-300"
+                  />
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleIncrease}
+                    disabled={quantity >= product.stockQuantity}
+                    className="border-1 border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <Button>Add to Cart</Button>
+              <Button
+                variant="secondary"
+                // onClick={handleAddToCart}
+                className="flex items-center gap-2"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Add to Cart
+              </Button>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
               Stock: {product.stockQuantity}
