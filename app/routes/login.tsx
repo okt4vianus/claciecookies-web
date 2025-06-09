@@ -72,6 +72,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   session.set("userId", loginResponse.user.id);
+  session.set("token", loginResponse.token);
 
   // TODO: Prepare /dashboard
   return redirect(href("/"), {
