@@ -9,7 +9,7 @@ import { apiClient } from "~/lib/api-client";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { z } from "zod";
-import { AlertError } from "~/components/common/alert-error";
+import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -38,7 +38,15 @@ export async function action({ request }: Route.ActionArgs) {
   });
 
   if (error || !user) {
-    throw new Response(`Failed to register user`, { status: 500 });
+    // Prisma error, not Zod
+    const fields = ["username", "email"];
+    const target = (error as any).details?.meta?.target?.[0];
+    return submission.reply({
+      formErrors: [error.message],
+      fieldErrors: fields.includes(target)
+        ? { [target]: [`${target} already exist`] }
+        : undefined,
+    });
   }
 
   return redirect(href("/login"));
@@ -101,7 +109,7 @@ export default function Register({ actionData }: Route.ComponentProps) {
                 placeholder="John Doe"
               />
               {fields.fullName.errors && (
-                <AlertError errors={fields.fullName.errors} />
+                <AlertErrorSimple errors={fields.fullName.errors} />
               )}
             </div>
 
@@ -118,7 +126,7 @@ export default function Register({ actionData }: Route.ComponentProps) {
                 placeholder="johndoe"
               />
               {fields.username.errors && (
-                <AlertError errors={fields.username.errors} />
+                <AlertErrorSimple errors={fields.username.errors} />
               )}
             </div>
 
@@ -135,7 +143,7 @@ export default function Register({ actionData }: Route.ComponentProps) {
                 placeholder="john.doe@example.com"
               />
               {fields.email.errors && (
-                <AlertError errors={fields.email.errors} />
+                <AlertErrorSimple errors={fields.email.errors} />
               )}
             </div>
 
@@ -164,7 +172,7 @@ export default function Register({ actionData }: Route.ComponentProps) {
                   type="password"
                   required
                   minLength={6}
-                  className="w-full px-3 py-2.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300"
                   placeholder="Create a strong password"
                 />
               </div>
@@ -172,7 +180,7 @@ export default function Register({ actionData }: Route.ComponentProps) {
                 Password must be at least 6 characters long
               </p>
               {fields.password.errors && (
-                <AlertError errors={fields.password.errors} />
+                <AlertErrorSimple errors={fields.password.errors} />
               )}
             </div>
 
