@@ -21,7 +21,7 @@ export default function Login() {
   return (
     <>
       <section
-        className="relative min-h-[40vh] sm:min-h-[50vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
+        className="relative min-h-[20vh] sm:min-h-[25vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
         style={{ backgroundImage: 'url("/home-cover.jpg")' }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
@@ -82,19 +82,19 @@ export default function Login() {
             </Button>
 
             <div className="text-center space-y-3 sm:space-y-2">
-              <a
+              {/* <a
                 href="/forgot-password"
                 className="block text-sm text-amber-600 hover:text-amber-700 underline"
               >
                 Forgot your password?
-              </a>
+              </a> */}
               <p className="text-sm text-gray-600">
                 Don't have an account?{" "}
                 <a
                   href="/register"
                   className="text-amber-600 hover:text-amber-700 font-medium underline"
                 >
-                  Sign up here
+                  Register here
                 </a>
               </p>
             </div>

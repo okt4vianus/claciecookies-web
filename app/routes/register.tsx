@@ -42,10 +42,11 @@ export default function Register() {
             className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4"
             style={{ fontFamily: "Dancing Script" }}
           >
-            Join Clacie
+            Register New Account
           </h1>
           <p className="text-base sm:text-lg lg:text-xl opacity-90">
-            Create your account and start ordering delicious cookies
+            Join Clacie with your new account, and start ordering delicious
+            cookies
           </p>
         </div>
       </section>
