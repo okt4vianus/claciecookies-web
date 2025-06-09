@@ -1,9 +1,15 @@
-import { Form } from "react-router";
+import { Form, href, redirect } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/login";
+
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { z } from "zod";
+import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
+import { apiClient } from "~/lib/api-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,9 +21,54 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action() {}
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
-export default function Login() {
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const submission = parseWithZod(formData, { schema: loginSchema });
+  if (submission.status !== "success") return submission.reply();
+
+  const { data: user, error } = await apiClient.POST("/auth/login", {
+    body: submission.value,
+  });
+
+  if (error || !user) {
+    const errorField = error.field as any;
+    const fields = ["email", "password"];
+    const target = (error as any).details?.meta?.target?.[0]; // Prisma error, not Zod
+
+    if (!target) {
+      return submission.reply({
+        formErrors: [error.message],
+        fieldErrors: { [errorField]: [error.message] },
+      });
+    }
+
+    return submission.reply({
+      formErrors: [error.message],
+      fieldErrors: fields.includes(target)
+        ? { [target]: [error.message] }
+        : undefined,
+    });
+  }
+
+  // TODO: Prepare /dashboard
+  return redirect(href("/"));
+}
+
+export default function LoginRoute({ actionData }: Route.ComponentProps) {
+  const lastResult = actionData;
+
+  const [form, fields] = useForm({
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: loginSchema });
+    },
+  });
+
   return (
     <>
       <section
@@ -42,19 +93,29 @@ export default function Login() {
 
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
         <div className="max-w-md mx-auto w-full">
-          <Form method="post" className="space-y-4 sm:space-y-6">
+          <Form
+            method="post"
+            id={form.id}
+            onSubmit={form.onSubmit}
+            className="space-y-4 sm:space-y-6"
+          >
+            {form.errors && <AlertError errors={form.errors} />}
+
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="email" className="text-sm font-medium block">
                 Email Address
               </Label>
               <Input
                 id="email"
-                name="email"
+                name={fields.email.name}
                 type="email"
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                className="border-gray-300 "
                 placeholder="Enter your email"
               />
+              {fields.email.errors && (
+                <AlertErrorSimple errors={fields.email.errors} />
+              )}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -64,14 +125,17 @@ export default function Login() {
               <div className="relative">
                 <Input
                   id="password"
-                  name="password"
+                  name={fields.password.name}
                   type="password"
                   required
-                  className="w-full px-3 py-2.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300 "
                   placeholder="Enter your password"
                 />
-                <button type="button"></button>
+                {/* <button type="button">Show/Hide</button> */}
               </div>
+              {fields.password.errors && (
+                <AlertErrorSimple errors={fields.password.errors} />
+              )}
             </div>
 
             <Button
