@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
+    "@conform-to/react": "^1.6.1",
+    "@conform-to/zod": "^1.6.1",
     "@fontsource/dancing-script": "^5.2.5",
     "@radix-ui/react-label": "^2.1.6",
     "@radix-ui/react-separator": "^1.1.7",
@@ -28,7 +30,7 @@
     "react-dom": "^19.1.0",
     "react-router": "^7.5.3",
     "tailwind-merge": "^3.3.0",
-    "zod": "^3.24.4"
+    "zod": "^3.25.56"
   },
   "devDependencies": {
     "@react-router/dev": "^7.5.3",

@@ -1,9 +1,16 @@
-import { Form } from "react-router";
+import { data, Form, href, redirect } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/login";
+
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { z } from "zod";
+import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
+import { apiClient } from "~/lib/api-client";
+import { commitSession, getSession } from "~/sessions.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,13 +22,78 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action() {}
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
 
-export default function Login() {
+  if (session.has("userId")) {
+    return redirect("/");
+  }
+
+  return data(
+    { error: session.get("error") },
+    { headers: { "Set-Cookie": await commitSession(session) } }
+  );
+}
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export async function action({ request }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+
+  const formData = await request.formData();
+  const submission = parseWithZod(formData, { schema: loginSchema });
+  if (submission.status !== "success") return submission.reply();
+
+  const { data: loginResponse, error } = await apiClient.POST("/auth/login", {
+    body: submission.value,
+  });
+
+  if (error || !loginResponse) {
+    const errorField = error.field as any;
+    const fields = ["email", "password"];
+    const target = (error as any).details?.meta?.target?.[0]; // Prisma error, not Zod
+
+    if (!target) {
+      return submission.reply({
+        formErrors: [error.message],
+        fieldErrors: { [errorField]: [error.message] },
+      });
+    }
+
+    return submission.reply({
+      formErrors: [error.message],
+      fieldErrors: fields.includes(target)
+        ? { [target]: [error.message] }
+        : undefined,
+    });
+  }
+
+  session.set("userId", loginResponse.user.id);
+  session.set("token", loginResponse.token);
+
+  // TODO: Prepare /dashboard
+  return redirect(href("/"), {
+    headers: { "Set-Cookie": await commitSession(session) },
+  });
+}
+
+export default function LoginRoute({ actionData }: Route.ComponentProps) {
+  const lastResult = actionData;
+
+  const [form, fields] = useForm({
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: loginSchema });
+    },
+  });
+
   return (
     <>
       <section
-        className="relative min-h-[40vh] sm:min-h-[50vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
+        className="relative min-h-[20vh] sm:min-h-[25vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
         style={{ backgroundImage: 'url("/home-cover.jpg")' }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
@@ -42,19 +114,29 @@ export default function Login() {
 
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
         <div className="max-w-md mx-auto w-full">
-          <Form method="post" className="space-y-4 sm:space-y-6">
+          <Form
+            method="post"
+            id={form.id}
+            onSubmit={form.onSubmit}
+            className="space-y-4 sm:space-y-6"
+          >
+            {form.errors && <AlertError errors={form.errors} />}
+
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="email" className="text-sm font-medium block">
                 Email Address
               </Label>
               <Input
                 id="email"
-                name="email"
+                name={fields.email.name}
                 type="email"
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                className="border-gray-300 "
                 placeholder="Enter your email"
               />
+              {fields.email.errors && (
+                <AlertErrorSimple errors={fields.email.errors} />
+              )}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -64,14 +146,17 @@ export default function Login() {
               <div className="relative">
                 <Input
                   id="password"
-                  name="password"
+                  name={fields.password.name}
                   type="password"
                   required
-                  className="w-full px-3 py-2.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300 "
                   placeholder="Enter your password"
                 />
-                <button type="button"></button>
+                {/* <button type="button">Show/Hide</button> */}
               </div>
+              {fields.password.errors && (
+                <AlertErrorSimple errors={fields.password.errors} />
+              )}
             </div>
 
             <Button
@@ -82,19 +167,19 @@ export default function Login() {
             </Button>
 
             <div className="text-center space-y-3 sm:space-y-2">
-              <a
+              {/* <a
                 href="/forgot-password"
                 className="block text-sm text-amber-600 hover:text-amber-700 underline"
               >
                 Forgot your password?
-              </a>
+              </a> */}
               <p className="text-sm text-gray-600">
                 Don't have an account?{" "}
                 <a
                   href="/register"
                   className="text-amber-600 hover:text-amber-700 font-medium underline"
                 >
-                  Sign up here
+                  Register here
                 </a>
               </p>
             </div>
