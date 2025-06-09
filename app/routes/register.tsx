@@ -21,19 +21,18 @@ export function meta({}: Route.MetaArgs) {
 }
 
 const registerSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
+  fullName: z.string().min(2),
   username: z.string().min(2),
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(6),
 });
 
 export async function action() {
   const { data: products, error } = await apiClient.POST("/auth/register", {
     body: {
+      fullName: "",
       username: "",
       email: "",
-      fullName: "",
       password: "",
     },
   });
@@ -144,7 +143,7 @@ export default function Register() {
               </p>
             </div>
 
-            <div className="space-y-1 sm:space-y-2">
+            {/* <div className="space-y-1 sm:space-y-2">
               <Label
                 htmlFor="confirmPassword"
                 className="text-sm font-medium block"
@@ -158,11 +157,11 @@ export default function Register() {
                   type="password"
                   required
                   minLength={6}
-                  className="w-full px-3 py-2.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300"
                   placeholder="Confirm your password"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="address" className="text-sm font-medium block">
@@ -173,7 +172,7 @@ export default function Register() {
                 name="address"
                 rows={3}
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm resize-none"
+                className="border-gray-300"
                 placeholder="Enter your full delivery address"
               />
             </div> */}
