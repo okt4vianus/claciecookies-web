@@ -1,19 +1,27 @@
-import { Form, Link, Outlet } from "react-router";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
-import { ThemeToggle } from "~/components/ui/toggle";
+import { Menu, Search, ShoppingCart, X } from "lucide-react";
 import { useState } from "react";
+import { Form, Link, Outlet } from "react-router";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { ThemeToggle } from "~/components/ui/toggle";
 import type { Route } from "./+types/layout-main";
+import { getSession } from "~/sessions.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const isAuthenticated = session.has("userId");
+
   const url = new URL(request.url);
   const q = url.searchParams.get("q") || "";
-  return { q: q };
+
+  return {
+    q,
+    isAuthenticated,
+  };
 }
 
 export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
-  const { q } = loaderData;
+  const { q, isAuthenticated } = loaderData;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -56,9 +64,9 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
             </Form>
 
             {/* Desktop navigation - hidden on mobile */}
-            <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-4 flex-shrink-0">
               <ThemeToggle />
-              <div className="flex items-center space-x-4 text-sm font-medium">
+              <div className="flex items-center gap-4 text-sm font-medium">
                 <Link to="/" className="hover:text-accent whitespace-nowrap">
                   Home
                 </Link>
@@ -68,17 +76,33 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                 >
                   Products
                 </Link>
-                <Button variant="secondary" size="sm">
-                  <ShoppingCart className="h-4 w-4" />
-                </Button>
+
+                {isAuthenticated && (
+                  <div className="flex gap-4">
+                    <Button variant="secondary" size="sm" asChild>
+                      <Link to="/cart" className="inline-flex gap-2">
+                        <ShoppingCart className="h-4 w-4" />
+                        <span>Cart</span>
+                      </Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link to="/dashboard">Dashboard</Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Mobile menu button and cart */}
             <div className="flex md:hidden items-center space-x-1 sm:space-x-2 flex-shrink-0">
-              <Button variant="secondary" size="sm" className="px-2 sm:px-3">
-                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
+              {isAuthenticated && (
+                <Button variant="secondary" size="sm" asChild>
+                  <Link to="/cart" className="inline-flex gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
+
               <Button
                 variant="ghost"
                 size="sm"

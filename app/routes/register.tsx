@@ -205,20 +205,6 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
               </div>
             </div> */}
 
-            {/* <div className="space-y-1 sm:space-y-2">
-              <Label htmlFor="address" className="text-sm font-medium block">
-                Delivery Address
-              </Label>
-              <textarea
-                id="address"
-                name="address"
-                rows={3}
-                required
-                className="border-gray-300"
-                placeholder="Enter your full delivery address"
-              />
-            </div> */}
-
             <Button type="submit" className="w-full">
               Create Account
             </Button>
