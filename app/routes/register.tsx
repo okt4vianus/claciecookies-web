@@ -4,6 +4,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/register";
+import { apiClient } from "~/lib/api-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,13 +16,24 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action() {}
+export async function action() {
+  const { data: products, error } = await apiClient.POST("/auth/register", {
+    body: {
+      username: "",
+      email: "",
+      fullName: "",
+      password: "",
+    },
+  });
+  if (error) throw new Response(`Failed to register`, { status: 500 });
+  return { products };
+}
 
 export default function Register() {
   return (
     <>
       <section
-        className="relative min-h-[40vh] sm:min-h-[50vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
+        className="relative min-h-[20vh] sm:min-h-[25vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
         style={{ backgroundImage: 'url("/home-cover.jpg")' }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
@@ -56,7 +68,7 @@ export default function Register() {
                   name="firstName"
                   type="text"
                   required
-                  className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300"
                   placeholder="John"
                 />
               </div>
@@ -70,7 +82,7 @@ export default function Register() {
                   name="lastName"
                   type="text"
                   required
-                  className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300"
                   placeholder="Doe"
                 />
               </div>
@@ -85,12 +97,12 @@ export default function Register() {
                 name="email"
                 type="email"
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                className="border-gray-300"
                 placeholder="john.doe@example.com"
               />
             </div>
 
-            <div className="space-y-1 sm:space-y-2">
+            {/* <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="phone" className="text-sm font-medium block">
                 Phone Number
               </Label>
@@ -99,10 +111,10 @@ export default function Register() {
                 name="phone"
                 type="tel"
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                className="border-gray-300"
                 placeholder="+62 812 3456 7890"
               />
-            </div>
+            </div> */}
 
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="password" className="text-sm font-medium block">
@@ -144,7 +156,7 @@ export default function Register() {
               </div>
             </div>
 
-            <div className="space-y-1 sm:space-y-2">
+            {/* <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="address" className="text-sm font-medium block">
                 Delivery Address
               </Label>
@@ -156,7 +168,7 @@ export default function Register() {
                 className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm resize-none"
                 placeholder="Enter your full delivery address"
               />
-            </div>
+            </div> */}
 
             <Button
               type="submit"
