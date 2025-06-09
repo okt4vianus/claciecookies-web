@@ -9,6 +9,7 @@ import { apiClient } from "~/lib/api-client";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { z } from "zod";
+import { AlertError } from "~/components/common/alert-error";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -43,7 +44,17 @@ export async function action({ request }: Route.ActionArgs) {
   return redirect(href("/login"));
 }
 
-export default function Register() {
+export default function Register({ actionData }: Route.ComponentProps) {
+  const lastResult = actionData;
+
+  const [form, fields] = useForm({
+    // shouldValidate: "onBlur",
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: registerSchema });
+    },
+  });
+
   return (
     <>
       <section
@@ -69,19 +80,29 @@ export default function Register() {
 
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
         <div className="max-w-md mx-auto w-full">
-          <Form method="post" className="space-y-4 sm:space-y-6">
+          <Form
+            method="post"
+            id={form.id}
+            onSubmit={form.onSubmit}
+            className="space-y-4 sm:space-y-6"
+          >
+            {form.errors && <AlertError errors={form.errors} />}
+
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="fullName" className="text-sm font-medium block">
                 Full Name
               </Label>
               <Input
                 id="fullName"
-                name="fullName"
+                name={fields.fullName.name}
                 type="text"
                 required
                 className="border-gray-300"
                 placeholder="John Doe"
               />
+              {fields.fullName.errors && (
+                <AlertError errors={fields.fullName.errors} />
+              )}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -90,12 +111,15 @@ export default function Register() {
               </Label>
               <Input
                 id="username"
-                name="username"
-                type="username"
+                name={fields.username.name}
+                type="text"
                 required
                 className="border-gray-300"
                 placeholder="johndoe"
               />
+              {fields.username.errors && (
+                <AlertError errors={fields.username.errors} />
+              )}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -104,12 +128,15 @@ export default function Register() {
               </Label>
               <Input
                 id="email"
-                name="email"
+                name={fields.email.name}
                 type="email"
                 required
                 className="border-gray-300"
                 placeholder="john.doe@example.com"
               />
+              {fields.email.errors && (
+                <AlertError errors={fields.email.errors} />
+              )}
             </div>
 
             {/* <div className="space-y-1 sm:space-y-2">
@@ -133,7 +160,7 @@ export default function Register() {
               <div className="relative">
                 <Input
                   id="password"
-                  name="password"
+                  name={fields.password.name}
                   type="password"
                   required
                   minLength={6}
@@ -144,6 +171,9 @@ export default function Register() {
               <p className="text-xs text-gray-500 mt-1">
                 Password must be at least 6 characters long
               </p>
+              {fields.password.errors && (
+                <AlertError errors={fields.password.errors} />
+              )}
             </div>
 
             {/* <div className="space-y-1 sm:space-y-2">
@@ -180,10 +210,7 @@ export default function Register() {
               />
             </div> */}
 
-            <Button
-              type="submit"
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 sm:py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-sm touch-manipulation"
-            >
+            <Button type="submit" className="w-full">
               Create Account
             </Button>
 
