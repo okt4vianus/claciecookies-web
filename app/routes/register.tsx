@@ -1,4 +1,4 @@
-import { Form } from "react-router";
+import { Form, href, redirect } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -27,17 +27,20 @@ const registerSchema = z.object({
   password: z.string().min(6),
 });
 
-export async function action() {
-  const { data: products, error } = await apiClient.POST("/auth/register", {
-    body: {
-      fullName: "",
-      username: "",
-      email: "",
-      password: "",
-    },
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const submission = parseWithZod(formData, { schema: registerSchema });
+  if (submission.status !== "success") return submission.reply();
+
+  const { data: user, error } = await apiClient.POST("/auth/register", {
+    body: submission.value,
   });
-  if (error) throw new Response(`Failed to register`, { status: 500 });
-  return { products };
+
+  if (error || !user) {
+    throw new Response(`Failed to register user`, { status: 500 });
+  }
+
+  return redirect(href("/login"));
 }
 
 export default function Register() {
