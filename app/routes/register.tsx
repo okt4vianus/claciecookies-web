@@ -33,11 +33,12 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = parseWithZod(formData, { schema: registerSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data: user, error } = await apiClient.POST("/auth/register", {
-    body: submission.value,
-  });
+  const { data: registerResponse, error } = await apiClient.POST(
+    "/auth/register",
+    { body: submission.value }
+  );
 
-  if (error || !user) {
+  if (error || !registerResponse) {
     // Prisma error, not Zod
     const fields = ["username", "email"];
     const target = (error as any).details?.meta?.target?.[0];

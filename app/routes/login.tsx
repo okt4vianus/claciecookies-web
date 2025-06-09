@@ -1,4 +1,4 @@
-import { Form, href, redirect } from "react-router";
+import { data, Form, href, redirect } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -10,6 +10,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { z } from "zod";
 import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
 import { apiClient } from "~/lib/api-client";
+import { commitSession, getSession } from "~/sessions.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -21,21 +22,36 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+
+  if (session.has("userId")) {
+    return redirect("/");
+  }
+
+  return data(
+    { error: session.get("error") },
+    { headers: { "Set-Cookie": await commitSession(session) } }
+  );
+}
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
 
 export async function action({ request }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: loginSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data: user, error } = await apiClient.POST("/auth/login", {
+  const { data: loginResponse, error } = await apiClient.POST("/auth/login", {
     body: submission.value,
   });
 
-  if (error || !user) {
+  if (error || !loginResponse) {
     const errorField = error.field as any;
     const fields = ["email", "password"];
     const target = (error as any).details?.meta?.target?.[0]; // Prisma error, not Zod
@@ -55,8 +71,12 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
+  session.set("userId", loginResponse.user.id);
+
   // TODO: Prepare /dashboard
-  return redirect(href("/"));
+  return redirect(href("/"), {
+    headers: { "Set-Cookie": await commitSession(session) },
+  });
 }
 
 export default function LoginRoute({ actionData }: Route.ComponentProps) {
