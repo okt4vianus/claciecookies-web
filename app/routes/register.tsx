@@ -6,6 +6,10 @@ import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/register";
 import { apiClient } from "~/lib/api-client";
 
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { z } from "zod";
+
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Register - Clacie Cookies" },
@@ -15,6 +19,14 @@ export function meta({}: Route.MetaArgs) {
     },
   ];
 }
+
+const registerSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  username: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(8),
+});
 
 export async function action() {
   const { data: products, error } = await apiClient.POST("/auth/register", {
@@ -56,37 +68,32 @@ export default function Register() {
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
         <div className="max-w-md mx-auto w-full">
           <Form method="post" className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1 sm:space-y-2">
-                <Label
-                  htmlFor="firstName"
-                  className="text-sm font-medium block"
-                >
-                  First Name
-                </Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  required
-                  className="border-gray-300"
-                  placeholder="John"
-                />
-              </div>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="fullName" className="text-sm font-medium block">
+                Full Name
+              </Label>
+              <Input
+                id="fullName"
+                name="fullName"
+                type="text"
+                required
+                className="border-gray-300"
+                placeholder="John Doe"
+              />
+            </div>
 
-              <div className="space-y-1 sm:space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-medium block">
-                  Last Name
-                </Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  required
-                  className="border-gray-300"
-                  placeholder="Doe"
-                />
-              </div>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="username" className="text-sm font-medium block">
+                Username
+              </Label>
+              <Input
+                id="username"
+                name="username"
+                type="username"
+                required
+                className="border-gray-300"
+                placeholder="johndoe"
+              />
             </div>
 
             <div className="space-y-1 sm:space-y-2">
