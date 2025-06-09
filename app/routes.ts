@@ -11,10 +11,11 @@ export default [
     route("products", "routes/products.tsx"),
     route("products/:slug", "routes/products-slug.tsx"),
     route("search", "routes/search.tsx"),
-    route("cart", "routes/cart.tsx"),
     route("register", "routes/register.tsx"),
     route("login", "routes/login.tsx"),
     route("logout", "routes/logout.tsx"),
+    route("dashboard", "routes/dashboard.tsx"),
+    route("cart", "routes/cart.tsx"),
   ]),
 
   //   layout("layout/admin.tsx", [

@@ -6,22 +6,28 @@ import { Input } from "~/components/ui/input";
 import { ThemeToggle } from "~/components/ui/toggle";
 import type { Route } from "./+types/layout-main";
 import { getSession } from "~/sessions.server";
+import { apiClient } from "~/lib/api-client";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const isAuthenticated = session.has("userId");
-
   const url = new URL(request.url);
   const q = url.searchParams.get("q") || "";
 
-  return {
-    q,
-    isAuthenticated,
-  };
+  const session = await getSession(request.headers.get("Cookie"));
+  const isAuthenticated = session.has("userId");
+  const token = session.get("token");
+
+  if (!token) return { q, isAuthenticated: false, user: null };
+
+  const { data: user, error } = await apiClient.GET("/auth/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (error) return { q, isAuthenticated: false, user: null };
+
+  return { q, isAuthenticated, user };
 }
 
 export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
-  const { q, isAuthenticated } = loaderData;
+  const { q, isAuthenticated, user } = loaderData;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -77,7 +83,17 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                   Products
                 </Link>
 
-                {isAuthenticated && (
+                {!isAuthenticated && (
+                  <div className="flex gap-4">
+                    <Button variant="secondary" size="sm" asChild>
+                      <Link to="/login" className="inline-flex gap-2">
+                        <span>Login</span>
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+
+                {isAuthenticated && user && (
                   <div className="flex gap-4">
                     <Button variant="secondary" size="sm" asChild>
                       <Link to="/cart" className="inline-flex gap-2">
@@ -86,7 +102,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                       </Link>
                     </Button>
                     <Button size="sm" asChild>
-                      <Link to="/dashboard">Dashboard</Link>
+                      <Link to="/dashboard">{user.email}</Link>
                     </Button>
                   </div>
                 )}

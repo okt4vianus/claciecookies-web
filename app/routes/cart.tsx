@@ -1,4 +1,3 @@
-import { apiClient } from "~/lib/api-client";
 import type { Route } from "./+types/cart";
 
 export function meta() {
@@ -12,9 +11,16 @@ export function meta() {
 }
 
 export async function loader() {
-  return {};
+  return {
+    items: [],
+  };
 }
 
-export default function CartRoute() {
-  return <h1>Keranjang Belanja</h1>;
+export default function CartRoute({ loaderData }: Route.ComponentProps) {
+  return (
+    <div>
+      <h1>Keranjang Belanja</h1>
+      <pre>{JSON.stringify(loaderData, null, 2)}</pre>
+    </div>
+  );
 }

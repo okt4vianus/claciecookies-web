@@ -132,13 +132,9 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
                   </Button>
                 </div>
               </div>
-              <Button
-                variant="secondary"
-                // onClick={handleAddToCart}
-                className="flex items-center gap-2"
-              >
+              <Button variant="secondary" className="flex items-center gap-2">
                 <ShoppingCart className="h-4 w-4" />
-                Add to Cart
+                <span>Add to Cart</span>
               </Button>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
