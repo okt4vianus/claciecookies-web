@@ -90,7 +90,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                       size="sm"
                       className="px-2 sm:px-3"
                     >
-                      <Link to="/dashboard">Dashbboard</Link>
+                      <Link to="/dashboard">Dashboard</Link>
                     </Button>
                   </div>
                 )}
@@ -117,7 +117,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                     size="sm"
                     className="px-2 sm:px-3"
                   >
-                    <Link to="/dashboard">Dashbboard</Link>
+                    <Link to="/dashboard">Dashboard</Link>
                   </Button>
                 </div>
               )}
