@@ -29,7 +29,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
   if (session.has("userId")) {
-    return redirect("/dashboard");
+    return redirect(href("/dashboard"));
+    // return redirect("/dashboard");
   }
 
   return data(
