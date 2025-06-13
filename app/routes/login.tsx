@@ -1,4 +1,4 @@
-import { Form, href, redirect } from "react-router";
+import { data, Form, href, redirect } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -13,6 +13,7 @@ import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
 import { apiClient } from "~/lib/api-client";
 
 import { Eye, EyeOff } from "lucide-react";
+import { commitSession, getSession } from "~/sessions.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -24,23 +25,38 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+
+  if (session.has("userId")) {
+    return redirect("/dashboard");
+  }
+
+  return data(
+    { error: session.get("error") },
+    { headers: { "Set-Cookie": await commitSession(session) } }
+  );
+}
+
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
 export async function action({ request }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: loginSchema });
 
   if (submission.status !== "success") return submission.reply();
 
-  const { data: user, error } = await apiClient.POST("/auth/login", {
+  const { data: loginResponse, error } = await apiClient.POST("/auth/login", {
     body: submission.value,
   });
 
-  if (error || !user) {
+  if (error || !loginResponse) {
     const fields = [error.field];
     const target = (error as any).details?.meta?.target?.[0]; // prisma error format
 
@@ -62,7 +78,11 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
-  return redirect(href("/dashboard"));
+  session.set("userId", loginResponse.user.id);
+
+  return redirect(href("/dashboard"), {
+    headers: { "Set-Cookie": await commitSession(session) },
+  });
 }
 
 export default function LoginRoute({ actionData }: Route.ComponentProps) {

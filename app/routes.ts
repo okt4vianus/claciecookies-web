@@ -14,6 +14,8 @@ export default [
     route("cart", "routes/cart.tsx"),
     route("register", "routes/register.tsx"),
     route("login", "routes/login.tsx"),
+    route("logout", "routes/logout.tsx"),
+    route("dashboard", "routes/dashboard.tsx"),
   ]),
 
   //   layout("layout/admin.tsx", [
