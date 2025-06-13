@@ -79,6 +79,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   session.set("userId", loginResponse.user.id);
+  session.set("token", loginResponse.token);
 
   return redirect(href("/dashboard"), {
     headers: { "Set-Cookie": await commitSession(session) },
