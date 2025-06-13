@@ -1,9 +1,16 @@
-import { Form } from "react-router";
+import { Form, href, redirect } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/register";
+
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { z } from "zod";
+import { apiClient } from "~/lib/api-client";
+
+import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,13 +22,56 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action() {}
+const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters long"),
+  email: z.string().email("Invalid email format"),
+  fullName: z.string().min(3, "Full name cannot be empty"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
-export default function Register() {
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+
+  const submission = parseWithZod(formData, { schema: registerSchema });
+
+  if (submission.status !== "success") return submission.reply();
+
+  const { data: user, error } = await apiClient.POST("/auth/register", {
+    body: submission.value,
+  });
+
+  if (error || !user) {
+    // console.log(JSON.stringify(error, null, 2));
+    const fields = ["username", "email"];
+    const target = (error as any).details?.meta?.target?.[0];
+
+    return submission.reply({
+      formErrors: [error.message],
+      fieldErrors: fields.includes(target)
+        ? { [target]: [`${target} already exists`] }
+        : undefined,
+    });
+  }
+
+  // return redirect("/login");
+  return redirect(href("/login"));
+}
+
+export default function Register({ actionData }: Route.ComponentProps) {
+  const lastResult = actionData;
+
+  const [form, fields] = useForm({
+    shouldValidate: "onBlur",
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: registerSchema });
+    },
+  });
+
   return (
     <>
       <section
-        className="relative min-h-[40vh] sm:min-h-[50vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
+        className="relative min-h-[20vh] sm:min-h-[25vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
         style={{ backgroundImage: 'url("/home-cover.jpg")' }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
@@ -30,10 +80,11 @@ export default function Register() {
             className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4"
             style={{ fontFamily: "Dancing Script" }}
           >
-            Join Clacie
+            Register New Account
           </h1>
           <p className="text-base sm:text-lg lg:text-xl opacity-90">
-            Create your account and start ordering delicious cookies
+            Join Clacie with your new account and start ordering delicious
+            cookies
           </p>
         </div>
       </section>
@@ -42,38 +93,45 @@ export default function Register() {
 
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
         <div className="max-w-md mx-auto w-full">
-          <Form method="post" className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1 sm:space-y-2">
-                <Label
-                  htmlFor="firstName"
-                  className="text-sm font-medium block"
-                >
-                  First Name
-                </Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  required
-                  className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
-                  placeholder="John"
-                />
-              </div>
+          <Form
+            method="post"
+            id={form.id}
+            onSubmit={form.onSubmit}
+            className="space-y-4 sm:space-y-6"
+          >
+            {form.errors && <AlertError errors={form.errors} />}
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="fullName" className="text-sm font-medium block">
+                Full Name
+              </Label>
+              <Input
+                id="fullName"
+                name={fields.fullName.name}
+                type="text"
+                required
+                className="border-gray-300"
+                placeholder="Create your display name"
+              />
+              {fields.fullName.errors && (
+                <AlertErrorSimple errors={fields.fullName.errors} />
+              )}
+            </div>
 
-              <div className="space-y-1 sm:space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-medium block">
-                  Last Name
-                </Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  required
-                  className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
-                  placeholder="Doe"
-                />
-              </div>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="username" className="text-sm font-medium block">
+                User Name
+              </Label>
+              <Input
+                id="username"
+                name={fields.username.name}
+                type="text"
+                required
+                className="border-gray-300"
+                placeholder="Choose a unique username"
+              />
+              {fields.username.errors && (
+                <AlertErrorSimple errors={fields.username.errors} />
+              )}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -82,15 +140,18 @@ export default function Register() {
               </Label>
               <Input
                 id="email"
-                name="email"
+                name={fields.email.name}
                 type="email"
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
-                placeholder="john.doe@example.com"
+                className="border-gray-300"
+                placeholder="Enter your email address"
               />
+              {fields.email.errors && (
+                <AlertErrorSimple errors={fields.email.errors} />
+              )}
             </div>
 
-            <div className="space-y-1 sm:space-y-2">
+            {/* <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="phone" className="text-sm font-medium block">
                 Phone Number
               </Label>
@@ -99,10 +160,10 @@ export default function Register() {
                 name="phone"
                 type="tel"
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                className="border-gray-300"
                 placeholder="+62 812 3456 7890"
               />
-            </div>
+            </div> */}
 
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="password" className="text-sm font-medium block">
@@ -111,20 +172,23 @@ export default function Register() {
               <div className="relative">
                 <Input
                   id="password"
-                  name="password"
+                  name={fields.password.name}
                   type="password"
                   required
                   minLength={6}
-                  className="w-full px-3 py-2.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300"
                   placeholder="Create a strong password"
                 />
+                {fields.password.errors && (
+                  <AlertErrorSimple errors={fields.password.errors} />
+                )}
               </div>
               <p className="text-xs text-gray-500 mt-1">
                 Password must be at least 6 characters long
               </p>
             </div>
 
-            <div className="space-y-1 sm:space-y-2">
+            {/* <div className="space-y-1 sm:space-y-2">
               <Label
                 htmlFor="confirmPassword"
                 className="text-sm font-medium block"
@@ -138,13 +202,13 @@ export default function Register() {
                   type="password"
                   required
                   minLength={6}
-                  className="w-full px-3 py-2.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300"
                   placeholder="Confirm your password"
                 />
               </div>
-            </div>
+            </div> */}
 
-            <div className="space-y-1 sm:space-y-2">
+            {/* <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="address" className="text-sm font-medium block">
                 Delivery Address
               </Label>
@@ -153,15 +217,12 @@ export default function Register() {
                 name="address"
                 rows={3}
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm resize-none"
+                className="border-gray-300"
                 placeholder="Enter your full delivery address"
               />
-            </div>
+            </div> */}
 
-            <Button
-              type="submit"
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 sm:py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-sm touch-manipulation"
-            >
+            <Button type="submit" className="w-full">
               Create Account
             </Button>
 
