@@ -2,31 +2,19 @@ import { useEffect, useState } from "react";
 import { MoonStar, SunMedium } from "lucide-react";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("theme") as "light" | "dark") || "light";
-    }
-    return "light";
-  });
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [isDark]);
 
   return (
     <button
-      onClick={toggleTheme}
+      onClick={() => setIsDark(!isDark)}
       aria-label="Toggle Theme"
       className="p-2 rounded-full hover:bg-accent transition"
     >
-      {theme === "dark" ? (
+      {isDark ? (
         <SunMedium className="w-5 h-5 text-yellow-400" />
       ) : (
         <MoonStar className="w-5 h-5 text-gray-800" />
