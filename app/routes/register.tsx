@@ -57,7 +57,7 @@ export async function action({ request }: Route.ActionArgs) {
   return redirect(href("/login"));
 }
 
-export default function Register({ actionData }: Route.ComponentProps) {
+export default function RegisterRoute({ actionData }: Route.ComponentProps) {
   const lastResult = actionData;
 
   const [form, fields] = useForm({
