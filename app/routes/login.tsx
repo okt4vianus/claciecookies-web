@@ -1,9 +1,18 @@
-import { Form } from "react-router";
+import { Form, href, redirect } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/login";
+
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { useState } from "react";
+import { z } from "zod";
+import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
+import { apiClient } from "~/lib/api-client";
+
+import { Eye, EyeOff } from "lucide-react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,9 +24,60 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action() {}
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
-export default function Login() {
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+
+  const submission = parseWithZod(formData, { schema: loginSchema });
+
+  if (submission.status !== "success") return submission.reply();
+
+  const { data: user, error } = await apiClient.POST("/auth/login", {
+    body: submission.value,
+  });
+
+  if (error || !user) {
+    const fields = [error.field];
+    const target = (error as any).details?.meta?.target?.[0]; // prisma error format
+
+    if (!target) {
+      return submission.reply({
+        formErrors: [error.message],
+        fieldErrors:
+          typeof error.field === "string" && fields.includes(error.field)
+            ? { [error.field]: [`invalid ${error.field}`] }
+            : undefined,
+      });
+    }
+
+    return submission.reply({
+      formErrors: [error.message],
+      fieldErrors: fields.includes(target)
+        ? { [target]: [`${target} does not exist`] }
+        : undefined,
+    });
+  }
+
+  return redirect(href("/dashboard"));
+}
+
+export default function LoginRoute({ actionData }: Route.ComponentProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const lastResult = actionData;
+
+  const [form, fields] = useForm({
+    shouldValidate: "onBlur",
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: loginSchema });
+    },
+  });
+
   return (
     <>
       <section
@@ -42,19 +102,29 @@ export default function Login() {
 
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
         <div className="max-w-md mx-auto w-full">
-          <Form method="post" className="space-y-4 sm:space-y-6">
+          <Form
+            method="post"
+            id={form.id}
+            onSubmit={form.onSubmit}
+            className="space-y-4 sm:space-y-6"
+          >
+            {form.errors && <AlertError errors={form.errors} />}
+
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="email" className="text-sm font-medium block">
                 Email Address
               </Label>
               <Input
                 id="email"
-                name="email"
+                name={fields.email.name}
                 type="email"
                 required
-                className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                className="border-gray-300"
                 placeholder="Enter your email"
               />
+              {fields.email.errors && (
+                <AlertErrorSimple errors={fields.email.errors} />
+              )}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -64,20 +134,28 @@ export default function Login() {
               <div className="relative">
                 <Input
                   id="password"
-                  name="password"
-                  type="password"
+                  name={fields.password.name}
+                  type={showPassword ? "text" : "password"}
                   required
-                  className="w-full px-3 py-2.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-base sm:text-sm"
+                  className="border-gray-300 pr-10"
                   placeholder="Enter your password"
                 />
-                <button type="button"></button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
+
+              {fields.password.errors && (
+                <AlertErrorSimple errors={fields.password.errors} />
+              )}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 sm:py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-sm touch-manipulation"
-            >
+            <Button type="submit" className="w-full">
               Login
             </Button>
 
@@ -94,7 +172,7 @@ export default function Login() {
                   href="/register"
                   className="text-amber-600 hover:text-amber-700 font-medium underline"
                 >
-                  Sign up here
+                  Register here
                 </a>
               </p>
             </div>
