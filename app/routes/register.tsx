@@ -36,12 +36,14 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (submission.status !== "success") return submission.reply();
 
-  const { data: user, error } = await apiClient.POST("/auth/register", {
-    body: submission.value,
-  });
+  const { data: registerResponse, error } = await apiClient.POST(
+    "/auth/register",
+    {
+      body: submission.value,
+    }
+  );
 
-  if (error || !user) {
-    // console.log(JSON.stringify(error, null, 2));
+  if (error || !registerResponse) {
     const fields = ["username", "email"];
     const target = (error as any).details?.meta?.target?.[0];
 
@@ -53,7 +55,6 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
-  // return redirect("/login");
   return redirect(href("/login"));
 }
 
@@ -206,20 +207,6 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
                   placeholder="Confirm your password"
                 />
               </div>
-            </div> */}
-
-            {/* <div className="space-y-1 sm:space-y-2">
-              <Label htmlFor="address" className="text-sm font-medium block">
-                Delivery Address
-              </Label>
-              <textarea
-                id="address"
-                name="address"
-                rows={3}
-                required
-                className="border-gray-300"
-                placeholder="Enter your full delivery address"
-              />
             </div> */}
 
             <Button type="submit" className="w-full">
