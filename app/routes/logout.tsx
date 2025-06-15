@@ -1,6 +1,7 @@
 import { Form, Link, redirect } from "react-router";
 import { destroySession, getSession } from "~/sessions.server";
 import type { Route } from "./+types/logout";
+import { Button } from "~/components/ui/button";
 
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -13,14 +14,20 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function LogoutRoute() {
   return (
-    <>
-      <p>Are you sure you want to log out?</p>
+    <div className="max-w-md mx-auto mt-24 px-4 text-center space-y-6">
+      <h1 className="text-2xl font-semibold text-foreground">Log out</h1>
+      <p className="text-sm text-muted-foreground">
+        Are you sure you want to log out from your account?
+      </p>
 
-      <Form method="post">
-        <button>Logout</button>
+      <Form method="post" className="flex justify-center gap-4">
+        <Button variant="destructive" type="submit">
+          Logout
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/">Cancel</Link>
+        </Button>
       </Form>
-
-      <Link to="/">Never mind</Link>
-    </>
+    </div>
   );
 }
