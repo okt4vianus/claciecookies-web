@@ -6,31 +6,47 @@ import { ThemeToggle } from "~/components/ui/toggle";
 import { useState } from "react";
 import type { Route } from "./+types/layout-main";
 import { getSession } from "~/sessions.server";
+import { apiClient } from "~/lib/api-client";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "~/components/ui/dropdown-menu";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const isAuthenticated = session.has("userId");
-  if (!isAuthenticated) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-  // Extract search query from URL
-
   const url = new URL(request.url);
   const q = url.searchParams.get("q") || "";
-  return { q, isAuthenticated };
+
+  const session = await getSession(request.headers.get("Cookie"));
+  const isAuthenticated = session.has("userId");
+
+  const token = session.get("token");
+
+  if (!token) return { q, isAuthenticated: false, user: null };
+
+  const { data: user, error } = await apiClient.GET("/auth/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (error) return { q, isAuthenticated: false, user: null };
+
+  return { q, isAuthenticated, user };
 }
 
 export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
-  const { q, isAuthenticated } = loaderData;
+  const { q, isAuthenticated, user } = loaderData;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen">
       <nav className="bg-background text-foreground border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Main nav bar */}
           <div className="py-3 flex items-center gap-2 sm:gap-4 md:justify-between">
-            {/* Logo */}
             <Link to="/" className="flex items-center flex-shrink-0">
               <span
                 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-primary hover:text-accent"
@@ -40,7 +56,6 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
               </span>
             </Link>
 
-            {/* Search form - mobile: flex-1, desktop: centered */}
             <Form
               action="/search"
               method="get"
@@ -63,7 +78,6 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
               </Button>
             </Form>
 
-            {/* Desktop navigation - hidden on mobile */}
             <div className="hidden md:flex items-center gap-4 flex-shrink-0">
               <ThemeToggle />
               <div className="flex items-center gap-4 text-sm font-medium">
@@ -76,7 +90,18 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                 >
                   Products
                 </Link>
-                {isAuthenticated && (
+
+                {!isAuthenticated && (
+                  <div className="flex gap-4">
+                    <Button asChild size="sm">
+                      <Link to="/login">
+                        <span>Login</span>
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+
+                {isAuthenticated && user && (
                   <div className="flex gap-4">
                     <Button asChild variant="secondary" size="sm">
                       <Link to="/cart">
@@ -84,22 +109,37 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                         <span>Cart</span>
                       </Link>
                     </Button>
-                    <Button
-                      asChild
-                      variant="secondary"
-                      size="sm"
-                      className="px-2 sm:px-3"
-                    >
-                      <Link to="/dashboard">Dashboard</Link>
-                    </Button>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" className="px-2 sm:px-3">
+                          {user.email}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard">Profile</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard">Orders</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            document.location.href = "/logout";
+                          }}
+                        >
+                          Logout
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Mobile menu button and cart */}
             <div className="flex md:hidden items-center space-x-1 sm:space-x-2 flex-shrink-0">
-              {isAuthenticated && (
+              {isAuthenticated && user && (
                 <div className="flex gap-2">
                   <Button
                     asChild
@@ -111,16 +151,33 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                       <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Link>
                   </Button>
-                  <Button
-                    asChild
-                    variant="secondary"
-                    size="sm"
-                    className="px-2 sm:px-3"
-                  >
-                    <Link to="/dashboard">Dashboard</Link>
-                  </Button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" className="px-2 sm:px-3">
+                        {user.email}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard/profile">Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard/orders">Orders</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => {
+                          document.location.href = "/logout";
+                        }}
+                      >
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -136,7 +193,6 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
 
-          {/* Mobile menu - collapsible */}
           {isMobileMenuOpen && (
             <div className="md:hidden border-t border-border py-3 space-y-3">
               <div className="flex flex-col space-y-3">
@@ -154,6 +210,17 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                 >
                   Products
                 </Link>
+
+                {!isAuthenticated && (
+                  <div className="flex gap-4">
+                    <Button asChild size="sm">
+                      <Link to="/login">
+                        <span>Login</span>
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+
                 <div className="pt-2 border-t border-border">
                   <ThemeToggle />
                 </div>
