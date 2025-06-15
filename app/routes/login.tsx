@@ -30,6 +30,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   if (session.has("userId")) {
     return redirect(href("/dashboard"));
+<<<<<<< HEAD
+=======
+    // return redirect("/dashboard");
+>>>>>>> 74dfb0a7becd89637006ddf2d83b67641b495345
   }
 
   return data(
