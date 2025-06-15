@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
 import { MoonStar, SunMedium } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
