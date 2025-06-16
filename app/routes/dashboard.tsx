@@ -22,9 +22,7 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const isAuthenticated = session.has("userId");
-
   const token = session.get("token");
-
   if (!token) return { isAuthenticated: false, user: null };
 
   const { data: user } = await apiClient.GET("/auth/me", {

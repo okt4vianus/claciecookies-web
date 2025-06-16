@@ -1,7 +1,7 @@
 import { Form, Link, Outlet } from "react-router";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { Search, ShoppingCartIcon, Menu, X } from "lucide-react";
 import { ThemeToggle } from "~/components/ui/toggle";
 import { useState } from "react";
 import type { Route } from "./+types/layout-main";
@@ -93,7 +93,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
 
                 {!isAuthenticated && (
                   <div className="flex gap-4">
-                    <Button asChild size="sm">
+                    <Button asChild size="sm" variant="secondary">
                       <Link to="/login">
                         <span>Login</span>
                       </Link>
@@ -105,14 +105,18 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                   <div className="flex gap-4">
                     <Button asChild variant="secondary" size="sm">
                       <Link to="/cart">
-                        <ShoppingCart className="h-4 w-4" />
+                        <ShoppingCartIcon className="h-4 w-4" />
                         <span>Cart</span>
                       </Link>
                     </Button>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size="sm" className="px-2 sm:px-3">
+                        <Button
+                          size="sm"
+                          className="px-2 sm:px-3"
+                          variant="secondary"
+                        >
                           {user.email}
                         </Button>
                       </DropdownMenuTrigger>
@@ -145,7 +149,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                     className="px-2 sm:px-3"
                   >
                     <Link to="/cart">
-                      <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <ShoppingCartIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Link>
                   </Button>
 

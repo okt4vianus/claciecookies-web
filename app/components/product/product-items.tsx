@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { href, Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -39,8 +39,10 @@ export function ProductItems({ products }: { products: Products }) {
               </CardContent>
               <CardFooter className="mt-auto justify-center">
                 <div>
-                  <Button variant={"destructive"} asChild>
-                    <Link to={`/products/${product.slug}`}>View Product</Link>
+                  <Button asChild>
+                    <Link to={href("/products/:slug", { slug: product.slug })}>
+                      View Product
+                    </Link>
                   </Button>
                 </div>
               </CardFooter>
