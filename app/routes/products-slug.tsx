@@ -28,13 +28,14 @@ export function meta({ data }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { data: product, error } = await apiClient.GET(
     "/products/{identifier}",
     {
       params: { path: { identifier: params.slug } },
     }
   );
+
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
   if (!product) throw new Response("Product not found", { status: 404 });
   return { product };
@@ -66,6 +67,15 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
     } else {
       setQuantity(1);
     }
+  };
+
+  const handleAddToCart = async () => {
+    const { data: cart, error } = await apiClient.PUT("/cart/items", {
+      body: {
+        productId: product.id,
+        quantity: quantity,
+      },
+    });
   };
 
   return (
@@ -134,7 +144,7 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
               </div>
               <Button
                 variant="secondary"
-                // onClick={handleAddToCart}
+                onClick={handleAddToCart}
                 className="flex items-center gap-2"
               >
                 <ShoppingCart className="h-4 w-4" />
