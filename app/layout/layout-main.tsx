@@ -118,10 +118,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard">Profile</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to="/dashboard">Orders</Link>
+                          <Link to="/dashboard">Dashboard</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -160,10 +157,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard/profile">Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/dashboard/orders">Orders</Link>
+                        <Link to="/dashboard">Dashboard</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
