@@ -47,7 +47,7 @@ export default function Overview({
         <StatCard
           icon={<CreditCard className="text-white" />}
           label="Total Spent"
-          value={`Rp ${userInfo.totalSpent.toLocaleString("id-ID")}`}
+          value={`Rp ${Number(userInfo.totalSpent).toLocaleString("id-ID")}`}
           color="from-emerald-400 to-teal-500"
         />
         <StatCard
