@@ -3,7 +3,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
-import type { Route } from "./+types/login";
+import type { Route } from "./+types/login-h";
 
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
@@ -14,7 +14,6 @@ import { apiClient } from "~/lib/api-client";
 
 import { Eye, EyeOff } from "lucide-react";
 import { commitSession, getSession } from "~/sessions.server";
-import { ThemeToggle } from "~/components/ui/toggle";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -101,56 +100,29 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
   });
 
   return (
-    <div className="min-h-screen flex relative">
-      {/* Theme Toggle - Top Right Corner */}
-      <div className="absolute top-4 right-4 z-20">
-        <ThemeToggle />
-      </div>
-      {/* Hero Image Section - Left Side */}
+    <>
       <section
-        className="hidden lg:flex lg:w-1/2 bg-cover bg-center items-center justify-center px-6 py-12"
+        className="relative min-h-[40vh] sm:min-h-[50vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
         style={{ backgroundImage: 'url("/home-cover.jpg")' }}
       >
-        <div className="absolute inset-0 bg-black/40 lg:w-1/2"></div>
-        {/* Removed text content from left side */}
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative z-10 text-center text-white max-w-lg mx-auto px-4">
+          <h1
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4"
+            style={{ fontFamily: "Dancing Script" }}
+          >
+            Welcome Back
+          </h1>
+          <p className="text-base sm:text-lg lg:text-xl opacity-90">
+            Login to your Clacie account
+          </p>
+        </div>
       </section>
 
-      {/* Form Section - Right Side */}
-      <section className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-10 py-8 sm:py-12">
-        <div className="max-w-md mx-auto w-full">
-          {/* Desktop Title - Show only on desktop */}
-          <div className="hidden lg:block text-center mb-8">
-            <h1
-              className="text-4xl xl:text-5xl font-bold mb-4 text-gray-400"
-              style={{ fontFamily: "Dancing Script" }}
-            >
-              Welcome Back
-            </h1>
-            <p className="text-lg xl:text-xl text-gray-400">
-              Login to your Clacie account
-            </p>
-          </div>
+      <Separator />
 
-          {/* Mobile Hero - Show only on mobile/tablet */}
-          <div className="lg:hidden w-full mb-8">
-            <div
-              className="relative min-h-[30vh] w-full bg-cover bg-center flex items-center justify-center px-4 py-8 rounded-lg"
-              style={{ backgroundImage: 'url("/home-cover.jpg")' }}
-            >
-              <div className="absolute inset-0 bg-black/40 rounded-lg"></div>
-              <div className="relative z-10 text-center text-white">
-                <h1
-                  className="text-3xl sm:text-4xl font-bold mb-3"
-                  style={{ fontFamily: "Dancing Script" }}
-                >
-                  Welcome Back
-                </h1>
-                <p className="text-base sm:text-lg opacity-90">
-                  Login to your Clacie account
-                </p>
-              </div>
-            </div>
-          </div>
+      <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
+        <div className="max-w-md mx-auto w-full">
           <Form
             method="post"
             id={form.id}
@@ -208,19 +180,6 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
               Login
             </Button>
 
-            {/* Login with Google - Right below Login button */}
-            <a
-              href="/auth/google"
-              className="w-full flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 transition-colors touch-manipulation py-2 px-4 rounded-md bg-white hover:bg-gray-50"
-            >
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/2875/2875404.png"
-                alt="Google"
-                className="w-5 h-5"
-              />
-              <span className="text-sm font-medium">Login with Google</span>
-            </a>
-
             <div className="text-center space-y-3 sm:space-y-2">
               <a
                 href="/forgot-password"
@@ -264,6 +223,6 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }

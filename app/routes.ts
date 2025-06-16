@@ -13,10 +13,11 @@ export default [
     route("search", "routes/search.tsx"),
     route("cart", "routes/cart.tsx"),
     route("register", "routes/register.tsx"),
-    route("login", "routes/login.tsx"),
+    // route("login-h", "routes/login-h.tsx"),
     route("logout", "routes/logout.tsx"),
     route("dashboard", "routes/dashboard.tsx"),
   ]),
+  route("login", "routes/login.tsx"),
 
   //   layout("layout/admin.tsx", [
   //     index("routes/admin/dashboard.tsx"),
