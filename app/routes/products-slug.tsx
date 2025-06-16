@@ -56,6 +56,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const { data: cartItem, error } = await apiClient.PUT("/cart/items", {
     body: {
+      intent: "add",
       productId: String(productId),
       quantity,
     },
