@@ -1,4 +1,4 @@
-import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -6,6 +6,8 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { apiClient } from "~/lib/api-client";
 import type { Route } from "./+types/products-slug";
+import { Form, redirect, useNavigation } from "react-router";
+import { getSession } from "~/sessions.server";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -31,9 +33,7 @@ export function meta({ data }: Route.MetaArgs) {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { data: product, error } = await apiClient.GET(
     "/products/{identifier}",
-    {
-      params: { path: { identifier: params.slug } },
-    }
+    { params: { path: { identifier: params.slug } } }
   );
 
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
@@ -41,10 +41,45 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return { product };
 }
 
+export async function action({ request }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const token = session.get("token");
+  if (!token) return new Response("Unauthorized", { status: 400 });
+
+  const formData = await request.formData();
+  const productId = formData.get("productId");
+  const quantity = Number(formData.get("quantity"));
+
+  if (!productId || !quantity || quantity < 1) {
+    return new Response("Invalid product or quantity", { status: 400 });
+  }
+
+  const { data: cartItem, error } = await apiClient.PUT("/cart/items", {
+    body: {
+      productId: String(productId),
+      quantity,
+    },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  console.log({ cartItem, error });
+
+  if (error) {
+    return new Response(error.message || "Failed to add to cart", {
+      status: 500,
+    });
+  }
+
+  return redirect("/cart", 303);
+}
+
 export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
   const { product } = loaderData;
 
   const [quantity, setQuantity] = useState(1);
+
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   const handleIncrease = () => {
     if (quantity < product.stockQuantity) {
@@ -67,15 +102,6 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
     } else {
       setQuantity(1);
     }
-  };
-
-  const handleAddToCart = async () => {
-    const { data: cart, error } = await apiClient.PUT("/cart/items", {
-      body: {
-        productId: product.id,
-        quantity: quantity,
-      },
-    });
   };
 
   return (
@@ -106,51 +132,67 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
 
-            <div className="flex items-end gap-4 mt-4">
+            <Form method="post" className="flex items-end gap-4 mt-4">
+              <input type="hidden" name="productId" value={product.id} />
+              <input type="hidden" name="quantity" value={quantity} />
               <div>
                 <Label htmlFor="quantity" className="mb-2 block">
                   Quantity
                 </Label>
                 <div className="flex items-center gap-2">
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={handleDecrease}
-                    disabled={quantity <= 1}
+                    disabled={isSubmitting || quantity <= 1}
                     className="border border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
                   <Input
                     id="quantity"
-                    // type="number"
                     value={quantity}
                     onChange={handleInputChange}
+                    type="number"
                     min="1"
                     max={product.stockQuantity}
+                    disabled={isSubmitting}
                     className="w-15 text-center border border-gray-300 rounded-md focus:ring-0 focus:border-gray-300"
                   />
-
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={handleIncrease}
-                    disabled={quantity >= product.stockQuantity}
+                    disabled={isSubmitting || quantity >= product.stockQuantity}
                     className="border-1 border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
+
               <Button
+                type="submit"
                 variant="secondary"
-                onClick={handleAddToCart}
                 className="flex items-center gap-2"
+                disabled={isSubmitting}
               >
-                <ShoppingCart className="h-4 w-4" />
-                Add to Cart
+                {isSubmitting ? (
+                  <>
+                    <LoaderIcon className="h-4 w-4 animate-spin" />
+                    <span>Adding...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCartIcon className="h-4 w-4" />
+                    <span>Add to Cart</span>
+                  </>
+                )}
               </Button>
-            </div>
+            </Form>
+
             <p className="text-sm text-muted-foreground mb-4">
               Stock: {product.stockQuantity}
             </p>
