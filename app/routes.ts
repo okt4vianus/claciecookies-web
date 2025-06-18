@@ -14,10 +14,10 @@ export default [
     route("cart", "routes/cart.tsx"),
     route("register", "routes/register.tsx"),
     // route("login-h", "routes/login-h.tsx"),
+    route("login", "routes/login.tsx"),
     route("logout", "routes/logout.tsx"),
     route("dashboard", "routes/dashboard.tsx"),
   ]),
-  route("login", "routes/login.tsx"),
 
   //   layout("layout/admin.tsx", [
   //     index("routes/admin/dashboard.tsx"),

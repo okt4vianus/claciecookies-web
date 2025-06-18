@@ -102,10 +102,6 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
 
   return (
     <div className="min-h-screen flex relative">
-      {/* Theme Toggle - Top Right Corner */}
-      <div className="absolute top-4 right-4 z-20">
-        <ThemeToggle />
-      </div>
       {/* Hero Image Section - Left Side */}
       <section
         className="hidden lg:flex lg:w-1/2 bg-cover bg-center items-center justify-center px-6 py-12"
