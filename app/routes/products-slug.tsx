@@ -6,7 +6,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { apiClient } from "~/lib/api-client";
 import type { Route } from "./+types/products-slug";
-import { Form, redirect, useNavigation } from "react-router";
+import { Form, href, redirect, useNavigation } from "react-router";
 import { getSession } from "~/sessions.server";
 
 export function meta({ data }: Route.MetaArgs) {
@@ -44,7 +44,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
-  if (!token) return new Response("Unauthorized", { status: 400 });
+  // if (!token) return new Response("Unauthorized", { status: 400 });
+
+  if (!token) {
+    // Redirect langsung ke login jika tidak authenticated
+    return redirect(href("/login"));
+  }
 
   const formData = await request.formData();
   const productId = formData.get("productId");
