@@ -8,6 +8,8 @@ import { Label } from "~/components/ui/label";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/products-slug";
+import { Form, redirect, useNavigation } from "react-router";
+import { getSession } from "~/sessions.server";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -44,13 +46,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
-
-  // if (!token) return new Response("Unauthorized", { status: 400 });
-
-  if (!token) {
-    // Redirect to login page if not authenticated
-    return redirect(href("/login"));
-  }
+  if (!token) return new Response("Unauthorized", { status: 400 });
 
   const formData = await request.formData();
   const productId = formData.get("productId");
