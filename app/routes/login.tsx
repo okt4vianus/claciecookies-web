@@ -112,7 +112,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
       </section>
 
       {/* Form Section - Right Side */}
-      <section className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-10 py-8 sm:py-12">
+      <section className="w-full bg-background lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-10 py-8 sm:py-12">
         <div className="max-w-md mx-auto w-full">
           {/* Desktop Title - Show only on desktop */}
           <div className="hidden lg:block text-center mb-8">

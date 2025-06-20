@@ -232,7 +232,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
         <Outlet />
       </main>
 
-      <footer className="bg-card text-card-foreground border-t border-border">
+      <footer className="bg-background text-card-foreground border-t border-border">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-sm leading-relaxed">
           <p className="mb-1">Soft-baked with premium ingredients.</p>
           <p className="mb-1">
