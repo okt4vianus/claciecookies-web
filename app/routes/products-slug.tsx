@@ -74,7 +74,6 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
   const { product } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
-  const [quantity, setQuantity] = useState(1);
 
   // Can be refactored as custom useToastMessage hook
   const message = actionData?.error?.[""];
@@ -97,15 +96,24 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
     },
   });
 
+  const quantityControl = useInputControl(fields.quantity);
+
+  // Transform string to number for your business logic
+  const quantity: number = quantityControl.value ? Number(quantityControl.value) : 0;
+
+  const setQuantity = (value: number | undefined) => {
+    quantityControl.change(value?.toString() ?? "");
+  };
+
   const handleIncrease = () => {
     if (quantity < product.stockQuantity) {
-      setQuantity((prev) => prev + 1);
+      setQuantity(quantity + 1);
     }
   };
 
   const handleDecrease = () => {
     if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
+      setQuantity(quantity - 1);
     }
   };
 
