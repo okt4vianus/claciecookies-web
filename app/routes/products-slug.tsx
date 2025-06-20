@@ -8,7 +8,7 @@ import { Label } from "~/components/ui/label";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/products-slug";
-import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import { getFormProps, getInputProps, useForm, useInputControl } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { AddProductToCartSchema } from "~/modules/product/schema";
 import { toast } from "sonner";
@@ -72,11 +72,30 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function ProductSlugRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { product } = loaderData;
-
-  const [quantity, setQuantity] = useState(1);
-
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const [quantity, setQuantity] = useState(1);
+
+  // Can be refactored as custom useToastMessage hook
+  const message = actionData?.error?.[""];
+  useEffect(() => {
+    if (message) toast(message);
+  }, [message]);
+
+  // 📝 TODO: Controlled with conform, not useState
+  // https://conform.guide/api/react/useInputControl
+  // https://conform.guide/api/react/future/useControl
+  const [form, fields] = useForm({
+    id: `product-slug-quantity-form-${product.id}`,
+    lastResult: actionData,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: AddProductToCartSchema });
+    },
+    defaultValue: {
+      productId: product.id,
+      quantity: 0, // can replace useState
+    },
+  });
 
   const handleIncrease = () => {
     if (quantity < product.stockQuantity) {
@@ -100,26 +119,6 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
       setQuantity(1);
     }
   };
-
-  // 📝 TODO: Controlled with conform, not useState
-  // https://conform.guide/api/react/useInputControl
-  const [form, fields] = useForm({
-    id: `product-slug-quantity-form-${product.id}`,
-    lastResult: actionData,
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: AddProductToCartSchema });
-    },
-    defaultValue: {
-      productId: product.id,
-      quantity: 0,
-    },
-  });
-
-  const message = actionData?.error?.[""];
-
-  useEffect(() => {
-    if (message) toast(message);
-  }, [message]);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -147,7 +146,7 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
               <div className="flex items-end gap-4 mt-4">
                 {/* 📝 TODO: Can be removed with the usage of useInputControl */}
                 <input className="hidden" value={product.id} {...getInputProps(fields.productId, { type: "text" })} />
-                <input className="hidden" value={quantity} {...getInputProps(fields.quantity, { type: "number" })} />
+
                 <div>
                   <Label htmlFor="quantity" className="mb-2 block">
                     Quantity
@@ -165,7 +164,7 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
                     </Button>
                     <Input
                       id="quantity"
-                      value={quantity}
+                      defaultValue={fields.quantity.value}
                       onChange={handleInputChange}
                       type="number"
                       min="1"
