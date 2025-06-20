@@ -8,6 +8,9 @@ import { Label } from "~/components/ui/label";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/products-slug";
+import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { AddProductToCartSchema } from "~/modules/product/schema";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -31,10 +34,9 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { data: product, error } = await apiClient.GET(
-    "/products/{identifier}",
-    { params: { path: { identifier: params.slug } } }
-  );
+  const { data: product, error } = await apiClient.GET("/products/{identifier}", {
+    params: { path: { identifier: params.slug } },
+  });
 
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
   if (!product) throw new Response("Product not found", { status: 404 });
@@ -44,42 +46,30 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
-
-  // if (!token) return new Response("Unauthorized", { status: 400 });
-  if (!token) {
-    // Redirect to login page if not authorized
-    return redirect(href("/login"));
-  }
+  if (!token) return redirect(href("/login"));
 
   const formData = await request.formData();
-  const productId = formData.get("productId");
-  const quantity = Number(formData.get("quantity"));
-
-  if (!productId || !quantity || quantity < 1) {
-    return new Response("Invalid product or quantity", { status: 400 });
-  }
+  const submission = parseWithZod(formData, { schema: AddProductToCartSchema });
+  if (submission.status !== "success") return submission.reply();
 
   const { data: cartItem, error } = await apiClient.PUT("/cart/items", {
-    body: {
-      intent: "add",
-      productId: String(productId),
-      quantity,
-    },
+    body: { intent: "add", ...submission.value },
     headers: { Authorization: `Bearer ${token}` },
   });
 
   console.log({ cartItem, error });
 
   if (error) {
-    return new Response(error.message || "Failed to add to cart", {
-      status: 500,
+    return submission.reply({
+      formErrors: [error.message ?? "Unknown error"],
+      fieldErrors: {},
     });
   }
 
-  return redirect("/cart", 303);
+  return redirect("/cart");
 }
 
-export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
+export default function ProductSlugRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { product } = loaderData;
 
   const [quantity, setQuantity] = useState(1);
@@ -110,6 +100,20 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
     }
   };
 
+  // 📝 TODO: Controlled with conform, not useState
+  // https://conform.guide/api/react/useInputControl
+  const [form, fields] = useForm({
+    id: `product-slug-quantity-form-${product.id}`,
+    lastResult: actionData,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: AddProductToCartSchema });
+    },
+    defaultValue: {
+      productId: product.id,
+      quantity: 0,
+    },
+  });
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-card text-card-foreground shadow-lg rounded-xl">
@@ -124,84 +128,79 @@ export default function ProductSlugRoute({ loaderData }: Route.ComponentProps) {
 
           <div className="flex flex-col justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-primary mb-6 border-b border-primary pb-1">
-                {product.name}
-              </h1>
-              <p className="text-muted-foreground mb-10">
-                {product.description}
-              </p>
+              <h1 className="text-2xl font-bold text-primary mb-6 border-b border-primary pb-1">{product.name}</h1>
+              <p className="text-muted-foreground mb-10">{product.description}</p>
 
               <div className="text-lg font-medium mb-2">
-                <span className="text-primary font-semibold">
-                  Rp {product.price.toLocaleString()}
-                </span>
+                <span className="text-primary font-semibold">Rp {product.price.toLocaleString()}</span>
               </div>
             </div>
 
-            <Form method="post" className="flex items-end gap-4 mt-4">
-              <input type="hidden" name="productId" value={product.id} />
-              <input type="hidden" name="quantity" value={quantity} />
-              <div>
-                <Label htmlFor="quantity" className="mb-2 block">
-                  Quantity
-                </Label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleDecrease}
-                    disabled={isSubmitting || quantity <= 1}
-                    className="border border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    id="quantity"
-                    value={quantity}
-                    onChange={handleInputChange}
-                    type="number"
-                    min="1"
-                    max={product.stockQuantity}
-                    disabled={isSubmitting}
-                    className="w-15 text-center border border-gray-300 rounded-md focus:ring-0 focus:border-gray-300"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleIncrease}
-                    disabled={isSubmitting || quantity >= product.stockQuantity}
-                    className="border-1 border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+            <Form method="post" {...getFormProps(form)}>
+              <div className="flex items-end gap-4 mt-4">
+                <input className="hidden" value={product.id} {...getInputProps(fields.productId, { type: "text" })} />
+                <input className="hidden" value={quantity} {...getInputProps(fields.quantity, { type: "number" })} />
+                <div>
+                  <Label htmlFor="quantity" className="mb-2 block">
+                    Quantity
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDecrease}
+                      disabled={isSubmitting || quantity <= 1}
+                      className="border border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      id="quantity"
+                      value={quantity}
+                      onChange={handleInputChange}
+                      type="number"
+                      min="1"
+                      max={product.stockQuantity}
+                      disabled={isSubmitting}
+                      className="w-15 text-center border border-gray-300 rounded-md focus:ring-0 focus:border-gray-300"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleIncrease}
+                      disabled={isSubmitting || quantity >= product.stockQuantity}
+                      className="border-1 border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
+
+                <Button type="submit" variant="secondary" className="flex items-center gap-2" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <LoaderIcon className="h-4 w-4 animate-spin" />
+                      <span>Adding...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCartIcon className="h-4 w-4" />
+                      <span>Add to Cart</span>
+                    </>
+                  )}
+                </Button>
               </div>
 
-              <Button
-                type="submit"
-                variant="secondary"
-                className="flex items-center gap-2"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <LoaderIcon className="h-4 w-4 animate-spin" />
-                    <span>Adding...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCartIcon className="h-4 w-4" />
-                    <span>Add to Cart</span>
-                  </>
-                )}
-              </Button>
+              {form.errors && (
+                <p id={form.errorId} className="text-sm text-destructive mt-2 text-center">
+                  {form.errors}
+                </p>
+              )}
             </Form>
 
-            <p className="text-sm text-muted-foreground mb-4">
-              Stock: {product.stockQuantity}
-            </p>
+            <p className="text-sm text-muted-foreground mb-4">Stock: {product.stockQuantity}</p>
           </div>
         </CardContent>
       </Card>

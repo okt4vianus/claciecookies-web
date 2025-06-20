@@ -1,26 +1,13 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { Minus, Plus, Trash2 } from "lucide-react";
-import {
-  Form,
-  href,
-  Link,
-  redirect,
-  useActionData,
-  useNavigation,
-} from "react-router";
-import { z } from "zod";
+import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { Form, href, Link, redirect, useActionData, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/cart";
-import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
-
-const updateQuantitySchema = z.object({
-  itemId: z.string(),
-  quantity: z.number().min(0),
-});
+import { UpdateCartItemQuantitySchema } from "~/modules/cart/schema";
 
 export function meta() {
   return [
@@ -58,13 +45,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
-
-  if (!token) {
-    return redirect(href("/login"));
-  }
+  if (!token) return redirect(href("/login"));
 
   const formData = await request.formData();
-  const submission = parseWithZod(formData, { schema: updateQuantitySchema });
+  const submission = parseWithZod(formData, { schema: UpdateCartItemQuantitySchema });
 
   // use submission.reply() for error handling
   if (submission.status !== "success") {
@@ -96,163 +80,6 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-// Component untuk form quantity update
-function QuantityForm({ item }: { item: any }) {
-  const navigation = useNavigation();
-  const lastResult = useActionData<typeof action>();
-  const isSubmitting = navigation.state === "submitting";
-
-  // Get stock quantity from product
-  const stockQuantity = item.product.stockQuantity;
-
-  const [form, fields] = useForm({
-    id: `quantity-form-${item.id}`,
-    lastResult,
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: updateQuantitySchema });
-    },
-    defaultValue: {
-      itemId: item.id,
-      quantity: item.quantity,
-    },
-  });
-
-  // Submit form with new quantity
-  const submitWithQuantity = (newQuantity: number) => {
-    // Ensure quantity doesn't exceed stock
-    const finalQuantity = Math.min(Math.max(0, newQuantity), stockQuantity);
-
-    const formElement = document.getElementById(form.id) as HTMLFormElement;
-    if (formElement) {
-      const quantityInput = formElement.querySelector(
-        '[name="quantity"]'
-      ) as HTMLInputElement;
-      if (quantityInput) {
-        quantityInput.value = finalQuantity.toString();
-        formElement.requestSubmit();
-      }
-    }
-  };
-
-  return (
-    <div>
-      <Form
-        method="post"
-        {...getFormProps(form)}
-        className="flex items-center gap-3 justify-center"
-      >
-        <input {...getInputProps(fields.itemId, { type: "hidden" })} />
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          disabled={isSubmitting}
-          onClick={() => submitWithQuantity(Math.max(0, item.quantity - 1))}
-          className="border-2 border-border bg-secondary hover:bg-secondary/80 rounded-full w-10 h-10 p-0 hover:scale-110 transition-all duration-300 shadow-md"
-        >
-          <Minus className="h-4 w-4 text-foreground" />
-        </Button>
-
-        <div className="flex flex-col items-center">
-          <Input
-            {...getInputProps(fields.quantity, { type: "number" })}
-            min="0"
-            max={stockQuantity}
-            className="w-20 text-center border-2 border-border rounded-xl bg-secondary/50 font-semibold text-foreground shadow-md focus:border-primary focus:ring-2 focus:ring-primary/20"
-            onChange={(e) => {
-              const value = parseInt(e.target.value) || 0;
-              if (value >= 0) {
-                setTimeout(() => submitWithQuantity(value), 500);
-              }
-            }}
-          />
-          {fields.quantity.errors && (
-            <div
-              id={fields.quantity.errorId}
-              className="text-sm text-destructive mt-1"
-            >
-              {fields.quantity.errors}
-            </div>
-          )}
-        </div>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          disabled={isSubmitting || item.quantity >= stockQuantity}
-          onClick={() => submitWithQuantity(item.quantity + 1)}
-          className="border-2 border-border bg-secondary hover:bg-secondary/80 rounded-full w-10 h-10 p-0 hover:scale-110 transition-all duration-300 shadow-md disabled:opacity-50"
-        >
-          <Plus className="h-4 w-4 text-foreground" />
-        </Button>
-      </Form>
-
-      {/* Show stock warning if quantity is at maximum */}
-      {item.quantity >= stockQuantity && (
-        <div className="text-xs text-amber-600 mt-1 text-center">
-          Stok maksimal tercapai
-        </div>
-      )}
-
-      {form.errors && (
-        <div
-          id={form.errorId}
-          className="text-sm text-destructive mt-2 text-center"
-        >
-          {form.errors}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Component for form delete item
-function DeleteItemForm({ item }: { item: any }) {
-  const navigation = useNavigation();
-  const lastResult = useActionData<typeof action>();
-  const isSubmitting = navigation.state === "submitting";
-
-  const [form, fields] = useForm({
-    id: `delete-form-${item.id}`,
-    lastResult,
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: updateQuantitySchema });
-    },
-    defaultValue: {
-      itemId: item.id,
-      quantity: 0,
-    },
-  });
-
-  return (
-    <Form method="post" {...getFormProps(form)}>
-      <input {...getInputProps(fields.itemId, { type: "hidden" })} />
-      <input {...getInputProps(fields.quantity, { type: "hidden" })} />
-
-      <Button
-        type="submit"
-        variant="destructive"
-        size="icon"
-        disabled={isSubmitting}
-        className="w-10 h-10 p-0 hover:scale-110 transition-transform duration-300 shadow-md"
-      >
-        <Trash2 className="h-5 w-5" />
-      </Button>
-
-      {/* Display errors if any */}
-      {form.errors && (
-        <div id={form.errorId} className="text-xs text-destructive mt-1">
-          {form.errors}
-        </div>
-      )}
-    </Form>
-  );
-}
-
 export default function CartRoute({ loaderData }: Route.ComponentProps) {
   const { cart } = loaderData;
 
@@ -262,9 +89,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
         <div className="max-w-2xl mx-auto p-4 text-center py-12">
           <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
             <h2 className="text-xl font-bold mb-4">Keranjang Kosong</h2>
-            <p className="text-muted-foreground mb-6">
-              Belum ada produk dalam keranjang
-            </p>
+            <p className="text-muted-foreground mb-6">Belum ada produk dalam keranjang</p>
             <Button asChild className="bg-primary ">
               <Link to="/products">Mulai Belanja</Link>
             </Button>
@@ -289,9 +114,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-2 sm:p-6 py-2.5">
         <div className="text-left py-3">
-          <h1 className="text-xl sm:text-xl font-bold text-foreground mb-2">
-            Keranjang Belanja
-          </h1>
+          <h1 className="text-xl sm:text-xl font-bold text-foreground mb-2">Keranjang Belanja</h1>
           <p>{cart.items.length} items</p>
         </div>
 
@@ -320,10 +143,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
                       <div className="flex-shrink-0 w-16 h-16">
                         <Link to={`/products/${item.product.slug}`}>
                           <img
-                            src={
-                              item.product.images?.[0]?.url ??
-                              "/placeholder.jpg"
-                            }
+                            src={item.product.images?.[0]?.url ?? "/placeholder.jpg"}
                             alt={item.product.name}
                             className="rounded-lg object-cover w-18 h-18 hover:scale-105 transition-transform duration-300"
                           />
@@ -336,9 +156,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
                           </h3>
                         </Link>
                         {/* Show stock info */}
-                        <p className="text-xs text-muted-foreground">
-                          Stok: {item.product.stockQuantity}
-                        </p>
+                        <p className="text-xs text-muted-foreground">Stok: {item.product.stockQuantity}</p>
                       </div>
                     </div>
 
@@ -359,9 +177,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
 
                     {/* Subtotal */}
                     <div className="sm:col-span-2 text-center sm:text-left order-3 sm:order-none">
-                      <p className="text-foreground mt-4 sm:mt-0">
-                        Rp {item.subTotalPrice.toLocaleString("id-ID")}
-                      </p>
+                      <p className="text-foreground mt-4 sm:mt-0">Rp {item.subTotalPrice.toLocaleString("id-ID")}</p>
                     </div>
                   </div>
                 ))}
@@ -373,16 +189,12 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
           <div className="shadow-xl rounded-2xl p-6 h-fit border-2 border-border flex flex-col justify-between overflow-hidden relative">
             <div>
               <div className="text-center">
-                <h2 className="text-xl font-bold text-foreground mb-4">
-                  Ringkasan Belanja
-                </h2>
+                <h2 className="text-xl font-bold text-foreground mb-4">Ringkasan Belanja</h2>
               </div>
 
               <div className="bg-secondary/30 rounded-xl p-4 border border-border">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-medium">
-                    Total Belanja:
-                  </span>
+                  <span className="text-muted-foreground font-medium">Total Belanja:</span>
                   <span className="text-xl font-bold text-foreground">
                     Rp {cart.totalPrice.toLocaleString("id-ID")}
                   </span>
@@ -402,5 +214,146 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function QuantityForm({ item }: { item: any }) {
+  const navigation = useNavigation();
+  const lastResult = useActionData<typeof action>();
+  const isSubmitting = navigation.state === "submitting";
+  const isOne = item.quantity === 1;
+
+  // Get stock quantity from product
+  const stockQuantity = item.product.stockQuantity;
+
+  const [form, fields] = useForm({
+    id: `quantity-form-${item.id}`,
+    lastResult,
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: UpdateCartItemQuantitySchema });
+    },
+    defaultValue: {
+      itemId: item.id,
+      quantity: item.quantity,
+    },
+  });
+
+  // Submit form with new quantity
+  const submitWithQuantity = (newQuantity: number) => {
+    // Ensure quantity doesn't exceed stock
+    const finalQuantity = Math.min(Math.max(0, newQuantity), stockQuantity);
+
+    const formElement = document.getElementById(form.id) as HTMLFormElement;
+    if (formElement) {
+      const quantityInput = formElement.querySelector('[name="quantity"]') as HTMLInputElement;
+      if (quantityInput) {
+        quantityInput.value = finalQuantity.toString();
+        formElement.requestSubmit();
+      }
+    }
+  };
+
+  // 📝 TODO: Toast / Sonner
+  // Show stock warning if quantity is at maximum
+  // item.quantity >= stockQuantity
+
+  return (
+    <div>
+      <Form method="post" {...getFormProps(form)} className="flex items-center gap-3 justify-center">
+        <input {...getInputProps(fields.itemId, { type: "hidden" })} />
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={isOne || isSubmitting}
+          onClick={() => submitWithQuantity(Math.max(0, item.quantity - 1))}
+          className="border-2 border-border bg-secondary hover:bg-secondary/80 rounded-full w-10 h-10 p-0 hover:scale-110 transition-all duration-300 shadow-md"
+        >
+          <MinusIcon className="h-4 w-4 text-foreground" />
+        </Button>
+
+        <div className="flex flex-col items-center">
+          <Input
+            {...getInputProps(fields.quantity, { type: "number" })}
+            min="0"
+            max={stockQuantity}
+            className="w-20 text-center border-2 border-border rounded-xl bg-secondary/50 font-semibold text-foreground shadow-md focus:border-primary focus:ring-2 focus:ring-primary/20"
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 0;
+              if (value >= 0) {
+                setTimeout(() => submitWithQuantity(value), 500);
+              }
+            }}
+          />
+          {fields.quantity.errors && (
+            <div id={fields.quantity.errorId} className="text-sm text-destructive mt-1">
+              {fields.quantity.errors}
+            </div>
+          )}
+        </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={isSubmitting || item.quantity >= stockQuantity}
+          onClick={() => submitWithQuantity(item.quantity + 1)}
+          className="border-2 border-border bg-secondary hover:bg-secondary/80 rounded-full w-10 h-10 p-0 hover:scale-110 transition-all duration-300 shadow-md disabled:opacity-50"
+        >
+          <PlusIcon className="h-4 w-4 text-foreground" />
+        </Button>
+      </Form>
+
+      {form.errors && (
+        <p id={form.errorId} className="text-sm text-destructive mt-2 text-center">
+          {form.errors}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function DeleteItemForm({ item }: { item: any }) {
+  const navigation = useNavigation();
+  const lastResult = useActionData<typeof action>();
+  const isSubmitting = navigation.state === "submitting";
+
+  const [form, fields] = useForm({
+    id: `delete-form-${item.id}`,
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: UpdateCartItemQuantitySchema });
+    },
+    defaultValue: {
+      itemId: item.id,
+      quantity: 0,
+    },
+  });
+
+  return (
+    <Form method="post" {...getFormProps(form)}>
+      <input {...getInputProps(fields.itemId, { type: "hidden" })} />
+      <input {...getInputProps(fields.quantity, { type: "hidden" })} />
+
+      <Button
+        type="submit"
+        variant="destructive"
+        size="icon"
+        // disabled={isSubmitting}
+        className="w-10 h-10 p-0 hover:scale-110 transition-transform duration-300 shadow-md"
+      >
+        <Trash2Icon className="h-5 w-5" />
+      </Button>
+
+      {/* Display errors if any */}
+      {form.errors && (
+        <div id={form.errorId} className="text-xs text-destructive mt-1">
+          {form.errors}
+        </div>
+      )}
+    </Form>
   );
 }

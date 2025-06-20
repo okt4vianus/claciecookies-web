@@ -1,18 +1,6 @@
 import { z } from "zod";
-import {
-  createdAt,
-  description,
-  id,
-  name,
-  price,
-  slug,
-  stockQuantity,
-  updatedAt,
-} from "../common/schema";
-import {
-  ProductImageSchema,
-  UpsertProductImageSchema,
-} from "../product-image/schema";
+import { createdAt, description, id, name, price, slug, stockQuantity, updatedAt } from "../common/schema";
+import { ProductImageSchema, UpsertProductImageSchema } from "../product-image/schema";
 
 export const ProductSchema = z.object({
   //id: id
@@ -54,4 +42,9 @@ export const ParamProductIdentifierSchema = z.object({
 
 export const QuerySearchProductSchema = z.object({
   q: z.string().min(3, "Search query is required"),
+});
+
+export const AddProductToCartSchema = z.object({
+  productId: z.string(),
+  quantity: z.number(),
 });
