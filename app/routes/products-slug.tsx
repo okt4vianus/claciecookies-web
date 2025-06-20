@@ -1,5 +1,5 @@
 import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, href, redirect, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -11,6 +11,7 @@ import type { Route } from "./+types/products-slug";
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { AddProductToCartSchema } from "~/modules/product/schema";
+import { toast } from "sonner";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -114,6 +115,12 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
     },
   });
 
+  const message = actionData?.error?.[""];
+
+  useEffect(() => {
+    if (message) toast(message);
+  }, [message]);
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-card text-card-foreground shadow-lg rounded-xl">
@@ -138,6 +145,7 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
 
             <Form method="post" {...getFormProps(form)}>
               <div className="flex items-end gap-4 mt-4">
+                {/* 📝 TODO: Can be removed with the usage of useInputControl */}
                 <input className="hidden" value={product.id} {...getInputProps(fields.productId, { type: "text" })} />
                 <input className="hidden" value={quantity} {...getInputProps(fields.quantity, { type: "number" })} />
                 <div>
@@ -192,12 +200,6 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
                   )}
                 </Button>
               </div>
-
-              {form.errors && (
-                <p id={form.errorId} className="text-sm text-destructive mt-2 text-center">
-                  {form.errors}
-                </p>
-              )}
             </Form>
 
             <p className="text-sm text-muted-foreground mb-4">Stock: {product.stockQuantity}</p>
