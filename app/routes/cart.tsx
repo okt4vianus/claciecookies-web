@@ -274,6 +274,17 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
     );
   }
 
+  // Sort items based on createdAt
+  const sortedItems = [...cart.items].sort((a, b) => {
+    // Handle null values - items with null createdAt go to the end
+    if (!a.createdAt && !b.createdAt) return 0;
+    if (!a.createdAt) return 1;
+    if (!b.createdAt) return -1;
+
+    // Reverse the order - newest first (descending)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-2 sm:p-6 py-2.5">
@@ -297,9 +308,9 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
                 <div className="col-span-3 text-center">Subtotal</div>
               </div>
 
-              {/* Items */}
+              {/* Items - Menggunakan sortedItems instead of cart.items */}
               <div className="divide-y divide-border/50">
-                {cart.items.map((item, index) => (
+                {sortedItems.map((item, index) => (
                   <div
                     key={item.id}
                     className="p-6 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center hover:bg-secondary/30 transition-colors duration-300"
