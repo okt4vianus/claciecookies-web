@@ -95,15 +95,39 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
   if (!cart || cart.items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="max-w-2xl mx-auto p-4 text-center py-12">
-          <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Keranjang Kosong</h2>
-            <p className="text-muted-foreground mb-6">
-              Belum ada produk dalam keranjang
-            </p>
-            <Button asChild className="bg-primary ">
-              <Link to="/products">Mulai Belanja</Link>
-            </Button>
+        <div className="max-w-7xl mx-auto p-2 sm:p-6 py-2.5">
+          <div className="text-left py-3">
+            <h1 className="text-xl sm:text-xl font-bold text-foreground mb-2">
+              Keranjang Belanja
+            </h1>
+            <p>0 items</p>
+          </div>
+
+          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
+            {/* Left: Empty Items */}
+            <div className="lg:col-span-2">
+              <div className="rounded-2xl border p-12 text-center">
+                <h3 className="text-lg font-semibold mb-2">Keranjang Kosong</h3>
+                <p className="text-muted-foreground mb-6">
+                  Belum ada produk dalam keranjang
+                </p>
+                <Button asChild>
+                  <Link to="/products">Mulai Belanja</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Right: Summary */}
+            <div className="rounded-2xl border p-6">
+              <h2 className="text-xl font-bold mb-4">Ringkasan Belanja</h2>
+              <div className="flex justify-between mb-4">
+                <span>Total Belanja:</span>
+                <span className="font-bold">Rp 0</span>
+              </div>
+              <Button size="lg" disabled className="w-full">
+                Checkout
+              </Button>
+            </div>
           </div>
         </div>
       </div>
