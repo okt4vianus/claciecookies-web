@@ -14,7 +14,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function LogoutRoute() {
   return (
-    <div className="max-w-md mx-auto mt-24 px-4 text-center space-y-6">
+    <div className="border-2 rounded-2xl max-w-md mx-auto mt-24 px-4 text-center space-y-6 p-7">
       <h1 className="text-2xl font-semibold text-foreground">Log out</h1>
       <p className="text-sm text-muted-foreground">
         Are you sure you want to log out from your account?
