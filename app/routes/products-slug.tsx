@@ -1,5 +1,5 @@
 import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, href, redirect, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -8,9 +8,15 @@ import { Label } from "~/components/ui/label";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/products-slug";
-import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import {
+  getFormProps,
+  getInputProps,
+  useForm,
+  useInputControl,
+} from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { AddProductToCartSchema } from "~/modules/product/schema";
+import { toast } from "sonner";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
@@ -34,9 +40,12 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { data: product, error } = await apiClient.GET("/products/{identifier}", {
-    params: { path: { identifier: params.slug } },
-  });
+  const { data: product, error } = await apiClient.GET(
+    "/products/{identifier}",
+    {
+      params: { path: { identifier: params.slug } },
+    }
+  );
 
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
   if (!product) throw new Response("Product not found", { status: 404 });
@@ -69,39 +78,21 @@ export async function action({ request }: Route.ActionArgs) {
   return redirect("/cart");
 }
 
-export default function ProductSlugRoute({ loaderData, actionData }: Route.ComponentProps) {
+export default function ProductSlugRoute({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
   const { product } = loaderData;
-
-  const [quantity, setQuantity] = useState(1);
-
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
-  const handleIncrease = () => {
-    if (quantity < product.stockQuantity) {
-      setQuantity((prev) => prev + 1);
-    }
-  };
+  // Can be refactored as custom useToastMessage hook
+  const message = actionData?.error?.[""];
 
-  const handleDecrease = () => {
-    if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
-  };
+  useEffect(() => {
+    if (message) toast.warning(`${message}. Check your cart`);
+  }, [message]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 1;
-    if (value >= 1 && value <= product.stockQuantity) {
-      setQuantity(value);
-    } else if (value > product.stockQuantity) {
-      setQuantity(product.stockQuantity);
-    } else {
-      setQuantity(1);
-    }
-  };
-
-  // 📝 TODO: Controlled with conform, not useState
-  // https://conform.guide/api/react/useInputControl
   const [form, fields] = useForm({
     id: `product-slug-quantity-form-${product.id}`,
     lastResult: actionData,
@@ -110,9 +101,41 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
     },
     defaultValue: {
       productId: product.id,
-      quantity: 0,
+      quantity: 1,
     },
   });
+
+  // Use useInputControl for both fields
+  const productIdControl = useInputControl(fields.productId);
+  const quantityControl = useInputControl(fields.quantity);
+
+  // Transform string to number for business logic
+  const quantity: number = quantityControl.value
+    ? Number(quantityControl.value)
+    : 1;
+
+  const handleIncrease = () => {
+    if (quantity < product.stockQuantity) {
+      quantityControl.change((quantity + 1).toString());
+    }
+  };
+
+  const handleDecrease = () => {
+    if (quantity > 1) {
+      quantityControl.change((quantity - 1).toString());
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 1;
+    if (value >= 1 && value <= product.stockQuantity) {
+      quantityControl.change(value.toString());
+    } else if (value > product.stockQuantity) {
+      quantityControl.change(product.stockQuantity.toString());
+    } else {
+      quantityControl.change("1");
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -128,18 +151,29 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
 
           <div className="flex flex-col justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-primary mb-6 border-b border-primary pb-1">{product.name}</h1>
-              <p className="text-muted-foreground mb-10">{product.description}</p>
+              <h1 className="text-2xl font-bold text-primary mb-6 border-b border-primary pb-1">
+                {product.name}
+              </h1>
+              <p className="text-muted-foreground mb-10">
+                {product.description}
+              </p>
 
               <div className="text-lg font-medium mb-2">
-                <span className="text-primary font-semibold">Rp {product.price.toLocaleString()}</span>
+                <span className="text-primary font-semibold">
+                  Rp {product.price.toLocaleString()}
+                </span>
               </div>
             </div>
 
             <Form method="post" {...getFormProps(form)}>
               <div className="flex items-end gap-4 mt-4">
-                <input className="hidden" value={product.id} {...getInputProps(fields.productId, { type: "text" })} />
-                <input className="hidden" value={quantity} {...getInputProps(fields.quantity, { type: "number" })} />
+                {/* Hidden productId field - controlled by useInputControl */}
+                <input
+                  {...getInputProps(fields.productId, { type: "hidden" })}
+                  value={productIdControl.value || product.id}
+                  onChange={(e) => productIdControl.change(e.target.value)}
+                />
+
                 <div>
                   <Label htmlFor="quantity" className="mb-2 block">
                     Quantity
@@ -156,10 +190,10 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
                       <Minus className="h-4 w-4" />
                     </Button>
                     <Input
+                      {...getInputProps(fields.quantity, { type: "number" })}
                       id="quantity"
-                      value={quantity}
+                      value={quantityControl.value || "1"}
                       onChange={handleInputChange}
-                      type="number"
                       min="1"
                       max={product.stockQuantity}
                       disabled={isSubmitting}
@@ -170,7 +204,9 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
                       variant="ghost"
                       size="icon"
                       onClick={handleIncrease}
-                      disabled={isSubmitting || quantity >= product.stockQuantity}
+                      disabled={
+                        isSubmitting || quantity >= product.stockQuantity
+                      }
                       className="border-1 border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
                     >
                       <Plus className="h-4 w-4" />
@@ -178,7 +214,12 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
                   </div>
                 </div>
 
-                <Button type="submit" variant="secondary" className="flex items-center gap-2" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  className="flex items-center gap-2"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <LoaderIcon className="h-4 w-4 animate-spin" />
@@ -192,15 +233,11 @@ export default function ProductSlugRoute({ loaderData, actionData }: Route.Compo
                   )}
                 </Button>
               </div>
-
-              {form.errors && (
-                <p id={form.errorId} className="text-sm text-destructive mt-2 text-center">
-                  {form.errors}
-                </p>
-              )}
             </Form>
 
-            <p className="text-sm text-muted-foreground mb-4">Stock: {product.stockQuantity}</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Stock: {product.stockQuantity}
+            </p>
           </div>
         </CardContent>
       </Card>
