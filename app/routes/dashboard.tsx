@@ -1,9 +1,8 @@
-import { Heart, Package, Settings, User } from "lucide-react";
+import { Package, Settings, User } from "lucide-react";
 import { useState } from "react";
 import { Orders } from "~/components/dashboard/orders";
 import Overview from "~/components/dashboard/overview";
 import { Profile } from "~/components/dashboard/profile";
-import { Wishlist } from "~/components/dashboard/wishlist";
 import type { Route } from "./+types/dashboard";
 import { getSession } from "~/sessions.server";
 import { apiClient } from "~/lib/api-client";
@@ -14,7 +13,7 @@ export function meta({}: Route.MetaArgs) {
     {
       name: "description",
       content:
-        "Your personal dashboard to manage orders, wishlist, and profile at Clacie Cookies.",
+        "Your personal dashboard to manage orders and profile at Clacie Cookies.",
     },
   ];
 }
@@ -52,58 +51,31 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
     avatar:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
     verified: true,
-    totalOrders: cart?.items.length,
-    totalSpent: cart?.totalPrice,
+    totalOrders: cart?.items.length || 0,
+    totalSpent: cart?.totalPrice || 0,
   };
 
-  const orders = cart?.items.map((item) => ({
-    id: item.id,
-    date: item.updatedAt ?? item.createdAt ?? "",
-    shop: "Clacie Shop",
-    status: "delivered",
-    total: item.subTotalPrice,
-    products: [
-      {
-        name: item.product.name,
-        image:
-          item.product.images?.[0]?.url ?? "https://via.placeholder.com/100",
-        quantity: item.quantity,
-        price: item.product.price,
-      },
-    ],
-  }));
-
-  const wishlistItems = [
-    {
-      name: "Matcha Soft Cookies",
-      image: "https://ucarecdn.com/ba783126-112d-4ed2-ac77-97cfdfce22da/",
-      price: 20000,
-      originalPrice: 20000,
-    },
-    {
-      name: "Red Velvet With Melting Chocolate",
-      image: "https://ucarecdn.com/ea02b0d5-44d9-4f51-aea6-1ca31bc3e6fe/",
-      price: 22000,
-      originalPrice: 22000,
-    },
-    {
-      name: "Double Coconut Cookies",
-      image: "https://ucarecdn.com/66d8a272-1c03-4bc7-84f8-82a7636b4538/",
-      price: 18000,
-      originalPrice: 18000,
-    },
-    {
-      name: "Brownies",
-      image: "https://ucarecdn.com/06ce6ab2-f08d-43a2-9852-497a148b678a/",
-      price: 22000,
-      originalPrice: 22000,
-    },
-  ];
+  const orders =
+    cart?.items.map((item) => ({
+      id: item.id,
+      date: item.updatedAt ?? item.createdAt ?? "",
+      shop: "Clacie Shop",
+      status: "delivered",
+      total: item.subTotalPrice,
+      products: [
+        {
+          name: item.product.name,
+          image:
+            item.product.images?.[0]?.url ?? "https://via.placeholder.com/100",
+          quantity: item.quantity,
+          price: item.product.price,
+        },
+      ],
+    })) || [];
 
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: User },
     { id: "orders", label: "My Orders", icon: Package },
-    { id: "wishlist", label: "Wishlist", icon: Heart },
     { id: "profile", label: "Profile", icon: Settings },
   ];
 
@@ -142,16 +114,13 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
         return (
           <Overview
             userInfo={userInfo}
-            orders={orders ?? []}
-            wishlistItems={wishlistItems}
+            orders={orders}
             getStatusBadge={getStatusBadge}
             setActiveTab={setActiveTab}
           />
         );
       case "orders":
-        return <Orders orders={orders ?? []} getStatusBadge={getStatusBadge} />;
-      case "wishlist":
-        return <Wishlist wishlistItems={wishlistItems} />;
+        return <Orders orders={orders} getStatusBadge={getStatusBadge} />;
       case "profile":
         return <Profile userInfo={userInfo} />;
       default:
@@ -160,45 +129,55 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
   };
 
   return (
-    <section
-      className="relative min-h-[40vh] sm:min-h-[50vh] w-full bg-cover bg-center flex items-center justify-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
-      style={{ backgroundImage: 'url("/home-cover.jpg")' }}
-    >
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-7xl overflow-hidden">
-        <div className="flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 py-8">
+        <div className="text-left mb-6">
+          <p className="text-muted-foreground">
+            Manage your orders and profile
+          </p>
+        </div>
+
+        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6">
           {/* Sidebar */}
-          <aside className="lg:w-1/4 border-r border-gray-200 p-4">
-            <div className="flex items-center space-x-3 mb-6">
-              <img
-                src={userInfo.avatar}
-                alt="Avatar"
-                className="w-12 h-12 rounded-full"
-              />
-              <div>
-                <p className="font-medium text-gray-900">{userInfo.name}</p>
-                <p className="text-sm text-gray-500">Edit Profile</p>
+          <aside className="lg:col-span-1">
+            <div className="border border-border rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center space-x-3 mb-6">
+                <img
+                  src={userInfo.avatar}
+                  alt="Avatar"
+                  className="w-12 h-12 rounded-full border-2 border-border"
+                />
+                <div>
+                  <p className="font-medium text-foreground">{userInfo.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {userInfo.email}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {sidebarItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center px-3 py-3 rounded-xl text-left transition-all duration-300 ${
+                      activeTab === item.id
+                        ? "bg-primary text-primary-foreground shadow-lg"
+                        : "text-foreground hover:bg-secondary/50"
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5 mr-3" />
+                    {item.label}
+                  </button>
+                ))}
               </div>
             </div>
-            {sidebarItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center px-3 py-2 rounded-md text-left ${
-                  activeTab === item.id
-                    ? "bg-orange-100 text-orange-600"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <item.icon className="w-5 h-5 mr-2" />
-                {item.label}
-              </button>
-            ))}
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 p-6">{renderContent()}</main>
+          <main className="lg:col-span-3">{renderContent()}</main>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
