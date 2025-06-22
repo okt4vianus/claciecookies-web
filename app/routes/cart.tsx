@@ -255,7 +255,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
                 size="lg"
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                Checkout
+                <Link to="/cart/checkout">Checkout</Link>
               </Button>
             </div>
           </div>
