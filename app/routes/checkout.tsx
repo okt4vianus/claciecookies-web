@@ -148,28 +148,30 @@ function FormSection({
   );
 }
 
-
 export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   const { cart, profile } = loaderData;
   const navigation = useNavigation();
   const lastResult = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
 
-   const [formUser, fieldsAddress] = useForm({
-     onValidate({ formData }) {
-       return parseWithZod(formData, { schema: CheckoutUserSchema });
-     },
-     defaultValue: {
-       fullName: ,
-       shippingMethod: "regular",
-       notes: "",
-     },
-   });
+  const [formUser, fieldsUser] = useForm({
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: CheckoutUserSchema });
+    },
+    // TODO
+    defaultValue: {},
+  });
+
+  const [formAddress, fieldsAddress] = useForm({
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: CheckoutAddressSchema });
+    },
+    // TODO
+    defaultValue: {},
+  });
 
   const [formCheckout, fieldsCheckout] = useForm({
     lastResult,
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: CheckoutSchema });
     },
@@ -201,27 +203,29 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
             <FormSection icon={UserIcon} title="Informasi Pembeli">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsCheckout.fullName.id}>Nama Lengkap *</Label>
+                  <Label htmlFor={fieldsUser.fullName.id}>Nama Lengkap *</Label>
                   <Input
-                    {...getInputProps(fieldsCheckout.fullName, { type: "text" })}
+                    {...getInputProps(fieldsUser.fullName, { type: "text" })}
                     placeholder="Masukkan nama lengkap"
                   />
-                  {fieldsCheckout.fullName.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsCheckout.fullName.errors}</p>
+                  {fieldsUser.fullName.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsUser.fullName.errors}</p>
                   )}
                 </div>
+
                 <div>
-                  <Label htmlFor={fieldsCheckout.email.id}>Email *</Label>
-                  <Input {...getInputProps(fieldsCheckout.email, { type: "email" })} placeholder="email@example.com" />
-                  {fieldsCheckout.email.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsCheckout.email.errors}</p>
+                  <Label htmlFor={fieldsUser.email.id}>Email *</Label>
+                  <Input {...getInputProps(fieldsUser.email, { type: "email" })} placeholder="email@example.com" />
+                  {fieldsUser.email.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsUser.email.errors}</p>
                   )}
                 </div>
+
                 <div className="md:col-span-2">
-                  <Label htmlFor={fieldsCheckout.phone.id}>Nomor Telepon *</Label>
-                  <Input {...getInputProps(fieldsCheckout.phone, { type: "tel" })} placeholder="08xxxxxxxxxx" />
-                  {fieldsCheckout.phone.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsCheckout.phone.errors}</p>
+                  <Label htmlFor={fieldsUser.phoneNumber.id}>Nomor Telepon *</Label>
+                  <Input {...getInputProps(fieldsCheckout.phoneNumber, { type: "tel" })} placeholder="08xxxxxxxxxx" />
+                  {fieldsUser.phoneNumber.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsUser.phoneNumber.errors}</p>
                   )}
                 </div>
               </div>
@@ -230,29 +234,27 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
             {/* Shipping Address */}
             <FormSection icon={MapPinIcon} title="Alamat Pengiriman">
               <div>
-                <Label htmlFor={fieldsCheckout.address.id}>Alamat Lengkap *</Label>
+                <Label htmlFor={fieldsAddress.street.id}>Alamat Lengkap *</Label>
                 <Textarea
-                  {...getInputProps(fieldsCheckout.address, { type: "text" })}
+                  {...getInputProps(fieldsAddress.street, { type: "text" })}
                   placeholder="Masukkan alamat lengkap"
                   rows={3}
                 />
-                {fieldsCheckout.address.errors && (
-                  <p className="text-sm text-destructive mt-1">{fieldsCheckout.address.errors}</p>
-                )}
+                <p className="text-sm text-destructive mt-1">{fieldsAddress.street.errors}</p>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsCheckout.city.id}>Kota *</Label>
-                  <Input {...getInputProps(fieldsCheckout.city, { type: "text" })} placeholder="Nama kota" />
-                  {fieldsCheckout.city.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsCheckout.city.errors}</p>
+                  <Label htmlFor={fieldsAddress.city.id}>Kota *</Label>
+                  <Input {...getInputProps(fieldsAddress.city, { type: "text" })} placeholder="Nama kota" />
+                  {fieldsAddress.city.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.city.errors}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsCheckout.postalCode.id}>Kode Pos *</Label>
-                  <Input {...getInputProps(fieldsCheckout.postalCode, { type: "text" })} placeholder="12345" />
-                  {fieldsCheckout.postalCode.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsCheckout.postalCode.errors}</p>
+                  <Label htmlFor={fieldsAddress.postalCode.id}>Kode Pos *</Label>
+                  <Input {...getInputProps(fieldsAddress.postalCode, { type: "text" })} placeholder="12345" />
+                  {fieldsAddress.postalCode.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.postalCode.errors}</p>
                   )}
                 </div>
               </div>
