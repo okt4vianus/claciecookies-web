@@ -2,6 +2,7 @@ import { Form, Link, redirect } from "react-router";
 import { destroySession, getSession } from "~/sessions.server";
 import type { Route } from "./+types/logout";
 import { Button } from "~/components/ui/button";
+import { LogOut } from "lucide-react";
 
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -22,6 +23,7 @@ export default function LogoutRoute() {
 
       <Form method="post" className="flex justify-center gap-4">
         <Button variant="destructive" type="submit">
+          <LogOut className="h-4 w-4" />
           Logout
         </Button>
         <Button variant="outline" asChild>

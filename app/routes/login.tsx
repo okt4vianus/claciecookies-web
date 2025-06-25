@@ -12,7 +12,7 @@ import { z } from "zod";
 import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
 import { apiClient } from "~/lib/api-client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import { commitSession, getSession } from "~/sessions.server";
 import { ThemeToggle } from "~/components/ui/toggle";
 
@@ -201,7 +201,8 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
             </div>
 
             <Button type="submit" className="w-full">
-              Login
+              <LogIn />
+              <span>Login</span>
             </Button>
 
             {/* Login with Google - Right below Login button */}

@@ -1,7 +1,16 @@
 import { Form, Link, Outlet } from "react-router";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { Search, ShoppingCartIcon, Menu, X } from "lucide-react";
+import {
+  Search,
+  ShoppingCartIcon,
+  Menu,
+  X,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  LogIn,
+} from "lucide-react";
 import { ThemeToggle } from "~/components/ui/toggle";
 import { useState } from "react";
 import type { Route } from "./+types/layout-main";
@@ -44,7 +53,8 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <nav className="bg-background text-foreground border-b border-border shadow-sm">
+      {/* <nav className="bg-background text-foreground border-b border-border shadow-sm"> */}
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-foreground border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="py-3 flex items-center gap-2 sm:gap-4 md:justify-between">
             <Link to="/" className="flex items-center flex-shrink-0">
@@ -81,8 +91,12 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
             <div className="hidden md:flex items-center gap-4 flex-shrink-0">
               <ThemeToggle />
               <div className="flex items-center gap-4 text-sm font-medium">
-                <Link to="/" className="hover:text-accent whitespace-nowrap">
-                  Home
+                <Link
+                  to="/"
+                  className="hover:text-accent whitespace-nowrap flex items-center gap-1"
+                >
+                  <Home className="h-4 w-4" />
+                  <span className="hidden lg:inline">Home</span>
                 </Link>
                 <Link
                   to="/products"
@@ -94,7 +108,8 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                 {!isAuthenticated && (
                   <div className="flex gap-4">
                     <Button asChild size="sm" variant="secondary">
-                      <Link to="/login">
+                      <Link to="/login" className="flex items-center gap-1">
+                        <LogIn className="h-4 w-4" />
                         <span>Login</span>
                       </Link>
                     </Button>
@@ -122,14 +137,22 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard">Dashboard</Link>
+                          <Link
+                            to="/dashboard"
+                            className="flex items-center gap-2"
+                          >
+                            <LayoutDashboard className="h-4 w-4" />
+                            Dashboard
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {
                             document.location.href = "/logout";
                           }}
+                          className="flex items-center gap-2"
                         >
+                          <LogOut className="h-4 w-4" />
                           Logout
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -161,14 +184,22 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard">Dashboard</Link>
+                        <Link
+                          to="/dashboard"
+                          className="flex items-center gap-2"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Dashboard
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => {
                           document.location.href = "/logout";
                         }}
+                        className="flex items-center gap-2"
                       >
+                        <LogOut className="h-4 w-4" />
                         Logout
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -196,9 +227,10 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
               <div className="flex flex-col space-y-3">
                 <Link
                   to="/"
-                  className="hover:text-accent text-sm font-medium py-2"
+                  className="hover:text-accent text-sm font-medium py-2 flex items-center gap-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
+                  <Home className="h-4 w-4" />
                   Home
                 </Link>
                 <Link
@@ -211,8 +243,9 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
 
                 {!isAuthenticated && (
                   <div className="flex gap-4">
-                    <Button asChild size="sm">
-                      <Link to="/login">
+                    <Button asChild size="sm" variant="secondary">
+                      <Link to="/login" className="flex items-center gap-1">
+                        <LogIn className="h-4 w-4" />
                         <span>Login</span>
                       </Link>
                     </Button>
