@@ -12,7 +12,7 @@ export default [
     route("products/:slug", "routes/products-slug.tsx"),
     route("search", "routes/search.tsx"),
     route("cart", "routes/cart.tsx"),
-    route("cart/checkout", "routes/checkout.tsx"),
+    route("checkout", "routes/checkout.tsx"),
     route("register", "routes/register.tsx"),
     route("login", "routes/login.tsx"),
     route("logout", "routes/logout.tsx"),
