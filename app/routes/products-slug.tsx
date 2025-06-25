@@ -1,6 +1,6 @@
 import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Form, href, redirect, useNavigation } from "react-router";
+import { Form, href, Link, redirect, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -90,7 +90,16 @@ export default function ProductSlugRoute({
   const message = actionData?.error?.[""];
 
   useEffect(() => {
-    if (message) toast.warning(`${message}. Check your cart`);
+    if (message) {
+      toast.warning(
+        <>
+          {message}.{" "}
+          <Link to="/cart" className="underline text-primary hover:text-accent">
+            → View your cart 🛒
+          </Link>
+        </>
+      );
+    }
   }, [message]);
 
   const [form, fields] = useForm({
