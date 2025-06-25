@@ -6,6 +6,7 @@ import { Profile } from "~/components/dashboard/profile";
 import type { Route } from "./+types/dashboard";
 import { getSession } from "~/sessions.server";
 import { apiClient } from "~/lib/api-client";
+import { href, redirect } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,13 +23,21 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const isAuthenticated = session.has("userId");
   const token = session.get("token");
-  if (!token) return { isAuthenticated: false, user: null };
 
-  const { data: user } = await apiClient.GET("/auth/me", {
+  // if (!token) return { isAuthenticated: false, user: null };
+  if (!token) {
+    return redirect(href("/login"));
+  }
+
+  const { data: user, error: userError } = await apiClient.GET("/auth/me", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+
+  if (userError || !user) {
+    return redirect("/login");
+  }
 
   const { data: cart } = await apiClient.GET("/cart", {
     headers: {

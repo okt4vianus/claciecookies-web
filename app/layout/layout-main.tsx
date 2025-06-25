@@ -117,7 +117,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                           className="px-2 sm:px-3"
                           variant="secondary"
                         >
-                          {user.email}
+                          {user.username}
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
@@ -156,7 +156,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button size="sm" className="px-2 sm:px-3">
-                        {user.email}
+                        {user.username}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
