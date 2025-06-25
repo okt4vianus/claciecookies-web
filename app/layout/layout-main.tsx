@@ -53,7 +53,6 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* <nav className="bg-background text-foreground border-b border-border shadow-sm"> */}
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-foreground border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="py-3 flex items-center gap-2 sm:gap-4 md:justify-between">
