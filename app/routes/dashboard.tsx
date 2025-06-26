@@ -52,11 +52,12 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
   const { isAuthenticated, user, cart } = loaderData;
+
   const userInfo = {
-    name: user?.fullName,
-    email: user?.email,
-    phone: "+62 812 3456 7890",
-    joinDate: user?.createdAt,
+    name: user.fullName,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    joinDate: user.createdAt,
     avatar:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
     verified: true,

@@ -71,7 +71,7 @@ export function Profile({ userInfo }: { userInfo: any }) {
               </label>
               <input
                 type="tel"
-                defaultValue={userInfo.phone}
+                defaultValue={userInfo.phoneNumber}
                 className="w-full px-4 py-3 border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 placeholder="Enter your phone number"
               />
