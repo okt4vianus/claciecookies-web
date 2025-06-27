@@ -1,7 +1,7 @@
 import { getFormProps, getInputProps, useForm, type FormMetadata } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { CreditCardIcon, MapPinIcon, TruckIcon, UserIcon, ShoppingCartIcon } from "lucide-react";
-import { Form, href, Link, redirect, useActionData, useNavigation } from "react-router";
+import { Form, href, Link, redirect, useActionData, useFetcher, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -13,7 +13,7 @@ import { Badge } from "~/components/ui/badge";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/checkout";
-import { CheckoutSchema, CheckoutUserSchema, CheckoutAddressSchema } from "~/modules/checkout/schema";
+import { CheckoutSchema, CheckoutUserProfileSchema, CheckoutAddressSchema } from "~/modules/checkout/schema";
 
 export function meta() {
   return [
@@ -106,14 +106,13 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   // @ts-ignore
   const primaryAddress = addresses[0];
 
-  const [formUser, fieldsUser] = useForm({
+  const fetcherUserProfile = useFetcher(); // React Router
+  const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
+  const [formUserProfile, fieldsUserProfile] = useForm({
+    // Conform
+    defaultValue: profile,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: CheckoutUserSchema });
-    },
-    defaultValue: {
-      fullName: profile?.fullName ?? "",
-      email: profile?.email ?? "",
-      phoneNumber: profile?.phoneNumber ?? "",
+      return parseWithZod(formData, { schema: CheckoutUserProfileSchema });
     },
   });
 
@@ -155,50 +154,61 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
         <p className="text-muted-foreground mt-2">Complete your information to finish your purchase</p>
       </div>
 
-      <Form method="post" {...getFormProps(formCheckout)}>
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Form */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Customer Information */}
-            <CheckoutCardSection icon={UserIcon} title="Customer Information">
-              <Form method="post" action="/action/user/profile" className="space-y-4" {...getFormProps(formUser)}>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={fieldsUser.fullName.id}>Full Name *</Label>
-                    <Input
-                      {...getInputProps(fieldsUser.fullName, { type: "text" })}
-                      placeholder="Enter your full name"
-                    />
-                    {fieldsUser.fullName.errors && (
-                      <p className="text-sm text-destructive mt-1">{fieldsUser.fullName.errors}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor={fieldsUser.email.id}>Email *</Label>
-                    <Input {...getInputProps(fieldsUser.email, { type: "email" })} placeholder="email@example.com" />
-                    {fieldsUser.email.errors && (
-                      <p className="text-sm text-destructive mt-1">{fieldsUser.email.errors}</p>
-                    )}
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor={fieldsUser.phoneNumber.id}>Phone Number *</Label>
-                    <Input {...getInputProps(fieldsUser.phoneNumber, { type: "tel" })} placeholder="08xxxxxxxxxx" />
-                    {fieldsUser.phoneNumber.errors && (
-                      <p className="text-sm text-destructive mt-1">{fieldsUser.phoneNumber.errors}</p>
-                    )}
-                  </div>
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Form */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Customer Information */}
+          <CheckoutCardSection icon={UserIcon} title="Customer Information">
+            <fetcherUserProfile.Form
+              method="post"
+              action="/action/user/profile"
+              className="space-y-4"
+              {...getFormProps(formUserProfile)}
+            >
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={fieldsUserProfile.fullName.id}>Full Name *</Label>
+                  <Input
+                    {...getInputProps(fieldsUserProfile.fullName, { type: "text" })}
+                    placeholder="Enter your full name"
+                  />
+                  {fieldsUserProfile.fullName.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsUserProfile.fullName.errors}</p>
+                  )}
                 </div>
-                <Button type="submit" size="sm">
-                  Save
-                </Button>
-              </Form>
-            </CheckoutCardSection>
 
-            {/* Shipping Address */}
-            <CheckoutCardSection icon={MapPinIcon} title="Shipping Address">
-              {/* {addresses.length > 1 && (
+                <div>
+                  <Label htmlFor={fieldsUserProfile.email.id}>Email *</Label>
+                  <Input
+                    {...getInputProps(fieldsUserProfile.email, { type: "email" })}
+                    placeholder="email@example.com"
+                  />
+                  {fieldsUserProfile.email.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsUserProfile.email.errors}</p>
+                  )}
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor={fieldsUserProfile.phoneNumber.id}>Phone Number *</Label>
+                  <Input
+                    {...getInputProps(fieldsUserProfile.phoneNumber, { type: "tel" })}
+                    placeholder="08xxxxxxxxxx"
+                  />
+                  {fieldsUserProfile.phoneNumber.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsUserProfile.phoneNumber.errors}</p>
+                  )}
+                </div>
+              </div>
+              <Button type="submit" size="sm" disabled={isUserProfileSubmitting}>
+                {isUserProfileSubmitting && "Saving..."}
+                {!isUserProfileSubmitting && "Save"}
+              </Button>
+            </fetcherUserProfile.Form>
+          </CheckoutCardSection>
+
+          {/* Shipping Address */}
+          <CheckoutCardSection icon={MapPinIcon} title="Shipping Address">
+            {/* {addresses.length > 1 && (
                 <div className="mb-4">
                   <Label>Saved Addresses</Label>
                   <div className="space-y-2 mt-2">
@@ -242,194 +252,193 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 </div>
               )} */}
 
-              <Form method="post" action="/action/user/address" className="space-y-4" {...getFormProps(formAddress)}>
+            <Form method="post" action="/action/user/address" className="space-y-4" {...getFormProps(formAddress)}>
+              <div>
+                <Label htmlFor={fieldsAddress.street.id}>Full Address *</Label>
+                <Textarea
+                  {...getInputProps(fieldsAddress.street, { type: "text" })}
+                  placeholder="Enter your complete address"
+                  rows={3}
+                />
+                {fieldsAddress.street.errors && (
+                  <p className="text-sm text-destructive mt-1">{fieldsAddress.street.errors}</p>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsAddress.street.id}>Full Address *</Label>
-                  <Textarea
-                    {...getInputProps(fieldsAddress.street, { type: "text" })}
-                    placeholder="Enter your complete address"
-                    rows={3}
-                  />
-                  {fieldsAddress.street.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsAddress.street.errors}</p>
+                  <Label htmlFor={fieldsAddress.city.id}>City *</Label>
+                  <Input {...getInputProps(fieldsAddress.city, { type: "text" })} placeholder="City name" />
+                  {fieldsAddress.city.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.city.errors}</p>
                   )}
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={fieldsAddress.city.id}>City *</Label>
-                    <Input {...getInputProps(fieldsAddress.city, { type: "text" })} placeholder="City name" />
-                    {fieldsAddress.city.errors && (
-                      <p className="text-sm text-destructive mt-1">{fieldsAddress.city.errors}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor={fieldsAddress.postalCode.id}>Postal Code *</Label>
-                    <Input
-                      {...getInputProps(fieldsAddress.postalCode, {
-                        type: "text",
-                      })}
-                      placeholder="12345"
-                    />
-                    {fieldsAddress.postalCode.errors && (
-                      <p className="text-sm text-destructive mt-1">{fieldsAddress.postalCode.errors}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={fieldsAddress.province.id}>Province</Label>
-                    <Input {...getInputProps(fieldsAddress.province, { type: "text" })} placeholder="Province" />
-                    {fieldsAddress.province.errors && (
-                      <p className="text-sm text-destructive mt-1">{fieldsAddress.province.errors}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor={fieldsAddress.country.id}>Country</Label>
-                    <Input {...getInputProps(fieldsAddress.country, { type: "text" })} placeholder="Country" />
-                    {fieldsAddress.country.errors && (
-                      <p className="text-sm text-destructive mt-1">{fieldsAddress.country.errors}</p>
-                    )}
-                  </div>
-                </div>
-                <Button type="submit" size="sm">
-                  Save
-                </Button>
-              </Form>
-            </CheckoutCardSection>
-
-            {/* Shipping Method */}
-            <CheckoutCardSection icon={TruckIcon} title="Shipping Method">
-              <RadioGroup defaultValue="regular" name={fieldsCheckout.shippingMethod.name}>
-                {SHIPPING_OPTIONS.map((option) => (
-                  <RadioOption
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    description={option.description}
-                    price={option.price}
-                    name={fieldsCheckout.shippingMethod.name}
+                <div>
+                  <Label htmlFor={fieldsAddress.postalCode.id}>Postal Code *</Label>
+                  <Input
+                    {...getInputProps(fieldsAddress.postalCode, {
+                      type: "text",
+                    })}
+                    placeholder="12345"
                   />
-                ))}
-              </RadioGroup>
-              <input
-                {...getInputProps(fieldsCheckout.shippingMethod, {
-                  type: "hidden",
-                })}
-              />
-              {fieldsCheckout.shippingMethod.errors && (
-                <p className="text-sm text-destructive">{fieldsCheckout.shippingMethod.errors}</p>
-              )}
-            </CheckoutCardSection>
-
-            {/* Payment Method */}
-            <CheckoutCardSection icon={CreditCardIcon} title="Payment Method">
-              <RadioGroup defaultValue="bank_transfer" name={fieldsCheckout.paymentMethod.name}>
-                {PAYMENT_OPTIONS.map((option) => (
-                  <RadioOption
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    description={option.description}
-                    name={fieldsCheckout.paymentMethod.name}
-                  />
-                ))}
-              </RadioGroup>
-              <input
-                {...getInputProps(fieldsCheckout.paymentMethod, {
-                  type: "hidden",
-                })}
-              />
-              {fieldsCheckout.paymentMethod.errors && (
-                <p className="text-sm text-destructive">{fieldsCheckout.paymentMethod.errors}</p>
-              )}
-            </CheckoutCardSection>
-
-            {/* Notes */}
-            <CheckoutCardSection icon={ShoppingCartIcon} title="Additional Notes">
-              <Textarea
-                {...getInputProps(fieldsCheckout.notes, { type: "text" })}
-                placeholder="Notes for seller (optional)"
-                rows={3}
-              />
-              {fieldsCheckout.notes.errors && (
-                <p className="text-sm text-destructive mt-1">{fieldsCheckout.notes.errors}</p>
-              )}
-            </CheckoutCardSection>
-          </div>
-
-          {/* Order Summary Sidebar */}
-          <div className="space-y-6">
-            {/* Order Items */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {cart.items.map((item) => (
-                  <div key={item.id} className="flex gap-3">
-                    <img
-                      src={item.product.images?.[0]?.url ?? "/placeholder.jpg"}
-                      alt={item.product.name}
-                      className="w-12 h-12 rounded object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm truncate">{item.product.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {item.quantity} x Rp
-                        {item.product.price.toLocaleString("id-ID")}
-                      </p>
-                    </div>
-                    <div className="font-semibold text-sm">Rp {item.subTotalPrice.toLocaleString("id-ID")}</div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Total */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Total</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Subtotal ({cart.items.length} items)</span>
-                  <span>Rp {cart.totalPrice.toLocaleString("id-ID")}</span>
+                  {fieldsAddress.postalCode.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.postalCode.errors}</p>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span>Shipping Cost</span>
-                  <span>Rp {shippingCost.toLocaleString("id-ID")}</span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={fieldsAddress.province.id}>Province</Label>
+                  <Input {...getInputProps(fieldsAddress.province, { type: "text" })} placeholder="Province" />
+                  {fieldsAddress.province.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.province.errors}</p>
+                  )}
                 </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span className="text-primary">Rp {totalWithShipping.toLocaleString("id-ID")}</span>
+                <div>
+                  <Label htmlFor={fieldsAddress.country.id}>Country</Label>
+                  <Input {...getInputProps(fieldsAddress.country, { type: "text" })} placeholder="Country" />
+                  {fieldsAddress.country.errors && (
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.country.errors}</p>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Processing..." : "Pay Now"}
+              </div>
+              <Button type="submit" size="sm">
+                Save
               </Button>
-              <Button variant="outline" size="lg" asChild className="w-full">
-                <Link to="/cart">Back to Cart</Link>
-              </Button>
-            </div>
+            </Form>
+          </CheckoutCardSection>
 
-            <div className="text-center text-sm text-muted-foreground">
-              <p>🔒 Your information is secure and encrypted</p>
-            </div>
-          </div>
+          {/* Shipping Method */}
+          <CheckoutCardSection icon={TruckIcon} title="Shipping Method">
+            <RadioGroup defaultValue="regular" name={fieldsCheckout.shippingMethod.name}>
+              {SHIPPING_OPTIONS.map((option) => (
+                <RadioOption
+                  key={option.value}
+                  value={option.value}
+                  label={option.label}
+                  description={option.description}
+                  price={option.price}
+                  name={fieldsCheckout.shippingMethod.name}
+                />
+              ))}
+            </RadioGroup>
+            <input
+              {...getInputProps(fieldsCheckout.shippingMethod, {
+                type: "hidden",
+              })}
+            />
+            {fieldsCheckout.shippingMethod.errors && (
+              <p className="text-sm text-destructive">{fieldsCheckout.shippingMethod.errors}</p>
+            )}
+          </CheckoutCardSection>
+
+          {/* Payment Method */}
+          <CheckoutCardSection icon={CreditCardIcon} title="Payment Method">
+            <RadioGroup defaultValue="bank_transfer" name={fieldsCheckout.paymentMethod.name}>
+              {PAYMENT_OPTIONS.map((option) => (
+                <RadioOption
+                  key={option.value}
+                  value={option.value}
+                  label={option.label}
+                  description={option.description}
+                  name={fieldsCheckout.paymentMethod.name}
+                />
+              ))}
+            </RadioGroup>
+            <input
+              {...getInputProps(fieldsCheckout.paymentMethod, {
+                type: "hidden",
+              })}
+            />
+            {fieldsCheckout.paymentMethod.errors && (
+              <p className="text-sm text-destructive">{fieldsCheckout.paymentMethod.errors}</p>
+            )}
+          </CheckoutCardSection>
+
+          {/* Notes */}
+          <CheckoutCardSection icon={ShoppingCartIcon} title="Additional Notes">
+            <Textarea
+              {...getInputProps(fieldsCheckout.notes, { type: "text" })}
+              placeholder="Notes for seller (optional)"
+              rows={3}
+            />
+            {fieldsCheckout.notes.errors && (
+              <p className="text-sm text-destructive mt-1">{fieldsCheckout.notes.errors}</p>
+            )}
+          </CheckoutCardSection>
         </div>
 
-        {/* Form Errors */}
-        {formCheckout.errors && (
-          <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive font-medium">{formCheckout.errors}</p>
+        {/* Order Summary Sidebar */}
+        <div className="space-y-6">
+          {/* Order Items */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {cart.items.map((item) => (
+                <div key={item.id} className="flex gap-3">
+                  <img
+                    src={item.product.images?.[0]?.url ?? "/placeholder.jpg"}
+                    alt={item.product.name}
+                    className="w-12 h-12 rounded object-cover"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm truncate">{item.product.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {item.quantity} x Rp
+                      {item.product.price.toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                  <div className="font-semibold text-sm">Rp {item.subTotalPrice.toLocaleString("id-ID")}</div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Total */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Total</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span>Subtotal ({cart.items.length} items)</span>
+                <span>Rp {cart.totalPrice.toLocaleString("id-ID")}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Shipping Cost</span>
+                <span>Rp {shippingCost.toLocaleString("id-ID")}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between text-lg font-bold">
+                <span>Total</span>
+                <span className="text-primary">Rp {totalWithShipping.toLocaleString("id-ID")}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? "Processing..." : "Pay Now"}
+            </Button>
+            <Button variant="outline" size="lg" asChild className="w-full">
+              <Link to="/cart">Back to Cart</Link>
+            </Button>
           </div>
-        )}
-      </Form>
+
+          <div className="text-center text-sm text-muted-foreground">
+            <p>🔒 Your information is secure and encrypted</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Form Errors */}
+      {formCheckout.errors && (
+        <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-sm text-destructive font-medium">{formCheckout.errors}</p>
+        </div>
+      )}
     </div>
   );
 }
