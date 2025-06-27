@@ -33,10 +33,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(href("/dashboard"));
   }
 
-  return data(
-    { error: session.get("error") },
-    { headers: { "Set-Cookie": await commitSession(session) } }
-  );
+  return data({ error: session.get("error") }, { headers: { "Set-Cookie": await commitSession(session) } });
 }
 
 const loginSchema = z.object({
@@ -73,9 +70,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     return submission.reply({
       formErrors: [error.message],
-      fieldErrors: fields.includes(target)
-        ? { [target]: [`${target} does not exist`] }
-        : undefined,
+      fieldErrors: fields.includes(target) ? { [target]: [`${target} does not exist`] } : undefined,
     });
   }
 
@@ -93,7 +88,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
   const lastResult = actionData;
 
   const [form, fields] = useForm({
-    shouldValidate: "onBlur",
+    shouldValidate: "onSubmit",
     lastResult,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: loginSchema });
@@ -116,15 +111,10 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
         <div className="max-w-md mx-auto w-full">
           {/* Desktop Title - Show only on desktop */}
           <div className="hidden lg:block text-center mb-8">
-            <h1
-              className="text-4xl xl:text-5xl font-bold mb-4 text-gray-400"
-              style={{ fontFamily: "Dancing Script" }}
-            >
+            <h1 className="text-4xl xl:text-5xl font-bold mb-4 text-gray-400" style={{ fontFamily: "Dancing Script" }}>
               Welcome Back
             </h1>
-            <p className="text-lg xl:text-xl text-gray-400">
-              Login to your Clacie account
-            </p>
+            <p className="text-lg xl:text-xl text-gray-400">Login to your Clacie account</p>
           </div>
 
           {/* Mobile Hero - Show only on mobile/tablet */}
@@ -135,24 +125,14 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
             >
               <div className="absolute inset-0 bg-black/40 rounded-lg"></div>
               <div className="relative z-10 text-center text-white">
-                <h1
-                  className="text-3xl sm:text-4xl font-bold mb-3"
-                  style={{ fontFamily: "Dancing Script" }}
-                >
+                <h1 className="text-3xl sm:text-4xl font-bold mb-3" style={{ fontFamily: "Dancing Script" }}>
                   Welcome Back
                 </h1>
-                <p className="text-base sm:text-lg opacity-90">
-                  Login to your Clacie account
-                </p>
+                <p className="text-base sm:text-lg opacity-90">Login to your Clacie account</p>
               </div>
             </div>
           </div>
-          <Form
-            method="post"
-            id={form.id}
-            onSubmit={form.onSubmit}
-            className="space-y-4 sm:space-y-6"
-          >
+          <Form method="post" id={form.id} onSubmit={form.onSubmit} className="space-y-4 sm:space-y-6">
             {form.errors && <AlertError errors={form.errors} />}
 
             <div className="space-y-1 sm:space-y-2">
@@ -167,9 +147,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
                 className="border-gray-300"
                 placeholder="Enter your email"
               />
-              {fields.email.errors && (
-                <AlertErrorSimple errors={fields.email.errors} />
-              )}
+              {fields.email.errors && <AlertErrorSimple errors={fields.email.errors} />}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -195,9 +173,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
                 </button>
               </div>
 
-              {fields.password.errors && (
-                <AlertErrorSimple errors={fields.password.errors} />
-              )}
+              {fields.password.errors && <AlertErrorSimple errors={fields.password.errors} />}
             </div>
 
             <Button type="submit" className="w-full">
@@ -210,27 +186,17 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
               href="/auth/google"
               className="w-full flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 transition-colors touch-manipulation py-2 px-4 rounded-md bg-white hover:bg-gray-50"
             >
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/2875/2875404.png"
-                alt="Google"
-                className="w-5 h-5"
-              />
+              <img src="https://cdn-icons-png.flaticon.com/512/2875/2875404.png" alt="Google" className="w-5 h-5" />
               <span className="text-sm font-medium">Login with Google</span>
             </a>
 
             <div className="text-center space-y-3 sm:space-y-2">
-              <a
-                href="/forgot-password"
-                className="block text-sm text-amber-600 hover:text-amber-700 underline"
-              >
+              <a href="/forgot-password" className="block text-sm text-amber-600 hover:text-amber-700 underline">
                 Forgot your password?
               </a>
               <p className="text-sm text-gray-600">
                 Don't have an account?{" "}
-                <a
-                  href="/register"
-                  className="text-amber-600 hover:text-amber-700 font-medium underline"
-                >
+                <a href="/register" className="text-amber-600 hover:text-amber-700 font-medium underline">
                   Register here
                 </a>
               </p>
@@ -240,9 +206,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
           <Separator className="my-6 sm:my-8" />
 
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-3 sm:mb-4">
-              Or continue with
-            </p>
+            <p className="text-sm text-gray-500 mb-3 sm:mb-4">Or continue with</p>
             <div className="flex justify-center">
               <a
                 href="https://www.instagram.com/clacie.cookies"

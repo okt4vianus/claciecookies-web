@@ -36,12 +36,9 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (submission.status !== "success") return submission.reply();
 
-  const { data: registerResponse, error } = await apiClient.POST(
-    "/auth/register",
-    {
-      body: submission.value,
-    }
-  );
+  const { data: registerResponse, error } = await apiClient.POST("/auth/register", {
+    body: submission.value,
+  });
 
   if (error || !registerResponse) {
     const fields = ["username", "email"];
@@ -49,9 +46,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     return submission.reply({
       formErrors: [error.message],
-      fieldErrors: fields.includes(target)
-        ? { [target]: [`${target} already exists`] }
-        : undefined,
+      fieldErrors: fields.includes(target) ? { [target]: [`${target} already exists`] } : undefined,
     });
   }
 
@@ -62,7 +57,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
   const lastResult = actionData;
 
   const [form, fields] = useForm({
-    shouldValidate: "onBlur",
+    shouldValidate: "onSubmit",
     lastResult,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: registerSchema });
@@ -84,8 +79,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
             Register New Account
           </h1>
           <p className="text-base sm:text-lg lg:text-xl opacity-90">
-            Join Clacie with your new account and start ordering delicious
-            cookies
+            Join Clacie with your new account and start ordering delicious cookies
           </p>
         </div>
       </section>
@@ -94,12 +88,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
 
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
         <div className="max-w-md mx-auto w-full">
-          <Form
-            method="post"
-            id={form.id}
-            onSubmit={form.onSubmit}
-            className="space-y-4 sm:space-y-6"
-          >
+          <Form method="post" id={form.id} onSubmit={form.onSubmit} className="space-y-4 sm:space-y-6">
             {form.errors && <AlertError errors={form.errors} />}
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="fullName" className="text-sm font-medium block">
@@ -113,9 +102,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
                 className="border-gray-300"
                 placeholder="Create your display name"
               />
-              {fields.fullName.errors && (
-                <AlertErrorSimple errors={fields.fullName.errors} />
-              )}
+              {fields.fullName.errors && <AlertErrorSimple errors={fields.fullName.errors} />}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -130,9 +117,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
                 className="border-gray-300"
                 placeholder="Choose a unique username"
               />
-              {fields.username.errors && (
-                <AlertErrorSimple errors={fields.username.errors} />
-              )}
+              {fields.username.errors && <AlertErrorSimple errors={fields.username.errors} />}
             </div>
 
             <div className="space-y-1 sm:space-y-2">
@@ -147,9 +132,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
                 className="border-gray-300"
                 placeholder="Enter your email address"
               />
-              {fields.email.errors && (
-                <AlertErrorSimple errors={fields.email.errors} />
-              )}
+              {fields.email.errors && <AlertErrorSimple errors={fields.email.errors} />}
             </div>
 
             {/* <div className="space-y-1 sm:space-y-2">
@@ -180,13 +163,9 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
                   className="border-gray-300"
                   placeholder="Create a strong password"
                 />
-                {fields.password.errors && (
-                  <AlertErrorSimple errors={fields.password.errors} />
-                )}
+                {fields.password.errors && <AlertErrorSimple errors={fields.password.errors} />}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Password must be at least 6 characters long
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters long</p>
             </div>
 
             {/* <div className="space-y-1 sm:space-y-2">
@@ -216,10 +195,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <a
-                  href="/login"
-                  className="text-amber-600 hover:text-amber-700 font-medium underline"
-                >
+                <a href="/login" className="text-amber-600 hover:text-amber-700 font-medium underline">
                   Login here
                 </a>
               </p>
@@ -229,9 +205,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
           <Separator className="my-6 sm:my-8" />
 
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-3 sm:mb-4">
-              Or follow us for updates
-            </p>
+            <p className="text-sm text-gray-500 mb-3 sm:mb-4">Or follow us for updates</p>
             <div className="flex justify-center">
               <a
                 href="https://www.instagram.com/clacie.cookies"

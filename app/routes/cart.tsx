@@ -1,14 +1,7 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import {
-  Form,
-  href,
-  Link,
-  redirect,
-  useActionData,
-  useNavigation,
-} from "react-router";
+import { Form, href, Link, redirect, useActionData, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { apiClient } from "~/lib/api-client";
@@ -97,9 +90,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto p-2 sm:p-6 py-2.5">
           <div className="text-left py-3">
-            <h1 className="text-xl sm:text-xl font-bold text-foreground mb-2">
-              Shopping Cart
-            </h1>
+            <h1 className="text-xl sm:text-xl font-bold text-foreground mb-2">Shopping Cart</h1>
             <p>0 items</p>
           </div>
 
@@ -108,9 +99,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
             <div className="lg:col-span-2">
               <div className="rounded-2xl border p-12 text-center">
                 <h3 className="text-lg font-semibold mb-2">Cart is Empty</h3>
-                <p className="text-muted-foreground mb-6">
-                  No products in your cart yet
-                </p>
+                <p className="text-muted-foreground mb-6">No products in your cart yet</p>
                 <Button asChild>
                   <Link to="/products">Start Shopping</Link>
                 </Button>
@@ -149,9 +138,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-2 sm:p-6 py-2.5">
         <div className="text-left py-3">
-          <h1 className="text-xl sm:text-xl font-bold text-foreground mb-2">
-            Shopping Cart
-          </h1>
+          <h1 className="text-xl sm:text-xl font-bold text-foreground mb-2">Shopping Cart</h1>
           <p>{cart.items.length} items</p>
         </div>
 
@@ -180,10 +167,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
                       <div className="flex-shrink-0 w-16 h-16">
                         <Link to={`/products/${item.product.slug}`}>
                           <img
-                            src={
-                              item.product.images?.[0]?.url ??
-                              "/placeholder.jpg"
-                            }
+                            src={item.product.images?.[0]?.url ?? "/placeholder.jpg"}
                             alt={item.product.name}
                             className="rounded-lg object-cover w-18 h-18 hover:scale-105 transition-transform duration-300"
                           />
@@ -196,9 +180,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
                           </h3>
                         </Link>
                         {/* Show stock info */}
-                        <p className="text-xs text-muted-foreground">
-                          Stock: {item.product.stockQuantity}
-                        </p>
+                        <p className="text-xs text-muted-foreground">Stock: {item.product.stockQuantity}</p>
                       </div>
                     </div>
 
@@ -219,9 +201,7 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
 
                     {/* Subtotal */}
                     <div className="sm:col-span-2 text-center sm:text-left order-3 sm:order-none">
-                      <p className="text-foreground mt-4 sm:mt-0">
-                        Rp {item.subTotalPrice.toLocaleString("id-ID")}
-                      </p>
+                      <p className="text-foreground mt-4 sm:mt-0">Rp {item.subTotalPrice.toLocaleString("id-ID")}</p>
                     </div>
                   </div>
                 ))}
@@ -233,16 +213,12 @@ export default function CartRoute({ loaderData }: Route.ComponentProps) {
           <div className="shadow-xl rounded-2xl p-6 h-fit border-2 border-border flex flex-col justify-between overflow-hidden relative">
             <div>
               <div className="text-center">
-                <h2 className="text-xl font-bold text-foreground mb-4">
-                  Order Summary
-                </h2>
+                <h2 className="text-xl font-bold text-foreground mb-4">Order Summary</h2>
               </div>
 
               <div className="bg-secondary/30 rounded-xl p-4 border border-border">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-medium">
-                    Total:
-                  </span>
+                  <span className="text-muted-foreground font-medium">Total:</span>
                   <span className="text-xl font-bold text-foreground">
                     Rp {cart.totalPrice.toLocaleString("id-ID")}
                   </span>
@@ -278,7 +254,7 @@ function QuantityForm({ item }: { item: any }) {
   const [form, fields] = useForm({
     id: `quantity-form-${item.id}`,
     lastResult,
-    shouldValidate: "onBlur",
+    shouldValidate: "onSubmit",
     shouldRevalidate: "onInput",
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: UpdateCartItemQuantitySchema });
@@ -296,9 +272,7 @@ function QuantityForm({ item }: { item: any }) {
 
     const formElement = document.getElementById(form.id) as HTMLFormElement;
     if (formElement) {
-      const quantityInput = formElement.querySelector(
-        '[name="quantity"]'
-      ) as HTMLInputElement;
+      const quantityInput = formElement.querySelector('[name="quantity"]') as HTMLInputElement;
       if (quantityInput) {
         quantityInput.value = finalQuantity.toString();
         formElement.requestSubmit();
@@ -312,11 +286,7 @@ function QuantityForm({ item }: { item: any }) {
 
   return (
     <div>
-      <Form
-        method="post"
-        {...getFormProps(form)}
-        className="flex items-center gap-3 justify-center"
-      >
+      <Form method="post" {...getFormProps(form)} className="flex items-center gap-3 justify-center">
         <input {...getInputProps(fields.itemId, { type: "hidden" })} />
 
         <Button
@@ -344,10 +314,7 @@ function QuantityForm({ item }: { item: any }) {
             }}
           />
           {fields.quantity.errors && (
-            <div
-              id={fields.quantity.errorId}
-              className="text-sm text-destructive mt-1"
-            >
+            <div id={fields.quantity.errorId} className="text-sm text-destructive mt-1">
               {fields.quantity.errors}
             </div>
           )}
@@ -366,10 +333,7 @@ function QuantityForm({ item }: { item: any }) {
       </Form>
 
       {form.errors && (
-        <p
-          id={form.errorId}
-          className="text-sm text-destructive mt-2 text-center"
-        >
+        <p id={form.errorId} className="text-sm text-destructive mt-2 text-center">
           {form.errors}
         </p>
       )}
