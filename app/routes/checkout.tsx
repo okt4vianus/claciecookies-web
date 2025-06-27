@@ -26,7 +26,11 @@ import { Badge } from "~/components/ui/badge";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/checkout";
-import { CheckoutSchema } from "~/modules/checkout/schema";
+import {
+  CheckoutSchema,
+  CheckoutUserSchema,
+  CheckoutAddressSchema,
+} from "~/modules/checkout/schema";
 
 export function meta() {
   return [
@@ -46,11 +50,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(href("/login"));
   }
 
-  const [profileResponse, cartResponse] = await Promise.all([
+  const [profileResponse, cartResponse, addressesResponse] = await Promise.all([
     apiClient.GET("/auth/profile", {
       headers: { Authorization: `Bearer ${token}` },
     }),
     apiClient.GET("/cart", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    apiClient.GET("/auth/addresses", {
       headers: { Authorization: `Bearer ${token}` },
     }),
   ]);
@@ -66,6 +73,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return {
     cart: cartResponse.data,
     profile: profileResponse.error ? null : profileResponse.data,
+    addresses: addressesResponse.error ? [] : addressesResponse.data,
   };
 }
 
@@ -166,25 +174,40 @@ function FormSection({
 }
 
 export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
-  const { cart, profile } = loaderData;
+  const { cart, profile, addresses } = loaderData;
   const navigation = useNavigation();
   const lastResult = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
+
+  console.log("PROFILE DATA:", profile);
+  console.log("ADDRESSES DATA:", addresses);
+
+  // Get the primary address (first address or marked as primary)
+  const primaryAddress =
+    addresses.find((addr: any) => addr.isPrimary) || addresses[0];
 
   const [formUser, fieldsUser] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: CheckoutUserSchema });
     },
-    // TODO
-    defaultValue: {},
+    defaultValue: {
+      fullName: profile?.fullName ?? "",
+      email: profile?.email ?? "",
+      phoneNumber: profile?.phoneNumber ?? "",
+    },
   });
 
   const [formAddress, fieldsAddress] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: CheckoutAddressSchema });
     },
-    // TODO
-    defaultValue: {},
+    defaultValue: {
+      street: primaryAddress?.street ?? "",
+      city: primaryAddress?.city ?? "",
+      postalCode: primaryAddress?.postalCode ?? "",
+      province: primaryAddress?.province ?? "",
+      country: primaryAddress?.country ?? "Indonesia",
+    },
   });
 
   const [formCheckout, fieldsCheckout] = useForm({
@@ -254,7 +277,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                     Phone Number *
                   </Label>
                   <Input
-                    {...getInputProps(fieldsCheckout.phoneNumber, {
+                    {...getInputProps(fieldsUser.phoneNumber, {
                       type: "tel",
                     })}
                     placeholder="08xxxxxxxxxx"
@@ -266,10 +289,62 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                   )}
                 </div>
               </div>
+              {!profile && (
+                <div className="flex justify-start pt-2">
+                  <Button type="submit" size="sm">
+                    Save Customer Info
+                  </Button>
+                </div>
+              )}
             </FormSection>
 
             {/* Shipping Address */}
             <FormSection icon={MapPinIcon} title="Shipping Address">
+              {addresses.length > 1 && (
+                <div className="mb-4">
+                  <Label>Saved Addresses</Label>
+                  <div className="space-y-2 mt-2">
+                    {addresses.map((address: any, index: number) => (
+                      <div
+                        key={address.id}
+                        className="p-3 border rounded-lg cursor-pointer hover:bg-accent"
+                        onClick={() => {
+                          // Update form with selected address
+                          formAddress.update({
+                            name: fieldsAddress.street.name,
+                            value: address.street,
+                          });
+                          formAddress.update({
+                            name: fieldsAddress.city.name,
+                            value: address.city,
+                          });
+                          formAddress.update({
+                            name: fieldsAddress.postalCode.name,
+                            value: address.postalCode,
+                          });
+                        }}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">{address.label}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {address.street}, {address.city}{" "}
+                              {address.postalCode}
+                            </p>
+                          </div>
+                          {address.isPrimary && (
+                            <Badge variant="secondary" className="text-xs">
+                              Primary
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Separator className="my-4" />
+                </div>
+              )}
+
               <div>
                 <Label htmlFor={fieldsAddress.street.id}>Full Address *</Label>
                 <Textarea
@@ -277,9 +352,11 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                   placeholder="Enter your complete address"
                   rows={3}
                 />
-                <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.street.errors}
-                </p>
+                {fieldsAddress.street.errors && (
+                  <p className="text-sm text-destructive mt-1">
+                    {fieldsAddress.street.errors}
+                  </p>
+                )}
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
@@ -307,6 +384,32 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                   {fieldsAddress.postalCode.errors && (
                     <p className="text-sm text-destructive mt-1">
                       {fieldsAddress.postalCode.errors}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={fieldsAddress.province.id}>Province</Label>
+                  <Input
+                    {...getInputProps(fieldsAddress.province, { type: "text" })}
+                    placeholder="Province"
+                  />
+                  {fieldsAddress.province.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsAddress.province.errors}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor={fieldsAddress.country.id}>Country</Label>
+                  <Input
+                    {...getInputProps(fieldsAddress.country, { type: "text" })}
+                    placeholder="Country"
+                  />
+                  {fieldsAddress.country.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsAddress.country.errors}
                     </p>
                   )}
                 </div>
