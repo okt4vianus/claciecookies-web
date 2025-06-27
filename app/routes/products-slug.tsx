@@ -1,6 +1,6 @@
 import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Form, href, Link, redirect, useNavigation } from "react-router";
+import { Form, href, Link, redirect, useNavigate, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -8,12 +8,7 @@ import { Label } from "~/components/ui/label";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/products-slug";
-import {
-  getFormProps,
-  getInputProps,
-  useForm,
-  useInputControl,
-} from "@conform-to/react";
+import { getFormProps, getInputProps, useForm, useInputControl } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { AddProductToCartSchema } from "~/modules/product/schema";
 import { toast } from "sonner";
@@ -40,12 +35,9 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { data: product, error } = await apiClient.GET(
-    "/products/{identifier}",
-    {
-      params: { path: { identifier: params.slug } },
-    }
-  );
+  const { data: product, error } = await apiClient.GET("/products/{identifier}", {
+    params: { path: { identifier: params.slug } },
+  });
 
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
   if (!product) throw new Response("Product not found", { status: 404 });
@@ -66,7 +58,7 @@ export async function action({ request }: Route.ActionArgs) {
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  console.log({ cartItem, error });
+  // console.log({ cartItem, error });
 
   if (error) {
     return submission.reply({
@@ -78,12 +70,10 @@ export async function action({ request }: Route.ActionArgs) {
   return redirect("/cart");
 }
 
-export default function ProductSlugRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
+export default function ProductSlugRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { product } = loaderData;
-  const navigation = useNavigation();
+  const navigate = useNavigate(); // redirect
+  const navigation = useNavigation(); // loading state
   const isSubmitting = navigation.state === "submitting";
 
   // Can be refactored as custom useToastMessage hook
@@ -91,14 +81,12 @@ export default function ProductSlugRoute({
 
   useEffect(() => {
     if (message) {
-      toast.warning(
-        <>
-          {message}.{" "}
-          <Link to="/cart" className="underline text-primary hover:text-accent">
-            → View your cart 🛒
-          </Link>
-        </>
-      );
+      toast.warning(message, {
+        action: {
+          label: "View Cart",
+          onClick: () => navigate("/cart"),
+        },
+      });
     }
   }, [message]);
 
@@ -119,9 +107,7 @@ export default function ProductSlugRoute({
   const quantityControl = useInputControl(fields.quantity);
 
   // Transform string to number for business logic
-  const quantity: number = quantityControl.value
-    ? Number(quantityControl.value)
-    : 1;
+  const quantity: number = quantityControl.value ? Number(quantityControl.value) : 1;
 
   const handleIncrease = () => {
     if (quantity < product.stockQuantity) {
@@ -160,17 +146,11 @@ export default function ProductSlugRoute({
 
           <div className="flex flex-col justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-primary mb-6 border-b border-primary pb-1">
-                {product.name}
-              </h1>
-              <p className="text-muted-foreground mb-10">
-                {product.description}
-              </p>
+              <h1 className="text-2xl font-bold text-primary mb-6 border-b border-primary pb-1">{product.name}</h1>
+              <p className="text-muted-foreground mb-10">{product.description}</p>
 
               <div className="text-lg font-medium mb-2">
-                <span className="text-primary font-semibold">
-                  Rp {product.price.toLocaleString()}
-                </span>
+                <span className="text-primary font-semibold">Rp {product.price.toLocaleString()}</span>
               </div>
             </div>
 
@@ -213,9 +193,7 @@ export default function ProductSlugRoute({
                       variant="ghost"
                       size="icon"
                       onClick={handleIncrease}
-                      disabled={
-                        isSubmitting || quantity >= product.stockQuantity
-                      }
+                      disabled={isSubmitting || quantity >= product.stockQuantity}
                       className="border-1 border-gray-300 rounded-full w-8 h-8 p-0 disabled:opacity-30"
                     >
                       <Plus className="h-4 w-4" />
@@ -223,12 +201,7 @@ export default function ProductSlugRoute({
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  className="flex items-center gap-2"
-                  disabled={isSubmitting}
-                >
+                <Button type="submit" variant="secondary" className="flex items-center gap-2" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <LoaderIcon className="h-4 w-4 animate-spin" />
@@ -244,9 +217,7 @@ export default function ProductSlugRoute({
               </div>
             </Form>
 
-            <p className="text-sm text-muted-foreground mb-4">
-              Stock: {product.stockQuantity}
-            </p>
+            <p className="text-sm text-muted-foreground mb-4">Stock: {product.stockQuantity}</p>
           </div>
         </CardContent>
       </Card>
