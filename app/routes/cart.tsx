@@ -280,10 +280,6 @@ function QuantityForm({ item }: { item: any }) {
     }
   };
 
-  // 📝 TODO: Toast / Sonner
-  // Show stock warning if quantity is at maximum
-  // item.quantity >= stockQuantity
-
   return (
     <div>
       <Form method="post" {...getFormProps(form)} className="flex items-center gap-3 justify-center">

@@ -13,7 +13,8 @@ import { Badge } from "~/components/ui/badge";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/checkout";
-import { CheckoutSchema, CheckoutUserProfileSchema, CheckoutAddressSchema } from "~/modules/checkout/schema";
+import { CheckoutSchema, CheckoutAddressSchema } from "~/modules/checkout/schema";
+import { UserProfileSchema } from "~/modules/user/schema";
 
 export function meta() {
   return [
@@ -112,7 +113,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
     // Conform
     defaultValue: profile,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: CheckoutUserProfileSchema });
+      return parseWithZod(formData, { schema: UserProfileSchema });
     },
   });
 

@@ -1,6 +1,6 @@
 import { parseWithZod } from "@conform-to/zod";
 import type { Route } from "./+types/profile";
-import { CheckoutUserProfileSchema } from "~/modules/checkout/schema";
+import { UserProfileSchema } from "~/modules/user/schema";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 
@@ -12,7 +12,7 @@ export async function action({ request }: Route.ActionArgs) {
   const token = session.get("token");
 
   const formData = await request.formData();
-  const submission = parseWithZod(formData, { schema: CheckoutUserProfileSchema });
+  const submission = parseWithZod(formData, { schema: UserProfileSchema });
   if (submission.status !== "success") return submission.reply();
 
   const { data } = await apiClient.PATCH("/auth/profile", {
