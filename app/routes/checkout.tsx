@@ -1,20 +1,7 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import {
-  CreditCardIcon,
-  MapPinIcon,
-  TruckIcon,
-  UserIcon,
-  ShoppingCartIcon,
-} from "lucide-react";
-import {
-  Form,
-  href,
-  Link,
-  redirect,
-  useActionData,
-  useNavigation,
-} from "react-router";
+import { CreditCardIcon, MapPinIcon, TruckIcon, UserIcon, ShoppingCartIcon } from "lucide-react";
+import { Form, href, Link, redirect, useActionData, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -26,11 +13,7 @@ import { Badge } from "~/components/ui/badge";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/checkout";
-import {
-  CheckoutSchema,
-  CheckoutUserSchema,
-  CheckoutAddressSchema,
-} from "~/modules/checkout/schema";
+import { CheckoutSchema, CheckoutUserSchema, CheckoutAddressSchema } from "~/modules/checkout/schema";
 
 export function meta() {
   return [
@@ -57,16 +40,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     apiClient.GET("/cart", {
       headers: { Authorization: `Bearer ${token}` },
     }),
+    // @ts-ignore
     apiClient.GET("/auth/addresses", {
       headers: { Authorization: `Bearer ${token}` },
     }),
   ]);
 
-  if (
-    cartResponse.error ||
-    !cartResponse.data ||
-    cartResponse.data.items.length === 0
-  ) {
+  if (cartResponse.error || !cartResponse.data || cartResponse.data.items.length === 0) {
     return redirect(href("/cart"));
   }
 
@@ -92,6 +72,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     // TODO: Change endpoint
+    // @ts-ignore
     const { data: order, error } = await apiClient.POST("/auth/checkout", {
       body: submission.value,
       headers: { Authorization: `Bearer ${token}` },
@@ -103,7 +84,7 @@ export async function action({ request }: Route.ActionArgs) {
       });
     }
 
-    // TODO
+    // @ts-ignore
     return redirect(href(`/orders/${order.id}`));
   } catch {
     return submission.reply({
@@ -183,8 +164,8 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   console.log("ADDRESSES DATA:", addresses);
 
   // Get the primary address (first address or marked as primary)
-  const primaryAddress =
-    addresses.find((addr: any) => addr.isPrimary) || addresses[0];
+  // @ts-ignore
+  const primaryAddress = addresses[0];
 
   const [formUser, fieldsUser] = useForm({
     onValidate({ formData }) {
@@ -223,10 +204,8 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   });
 
   const shippingCost =
-    SHIPPING_OPTIONS.find(
-      (option) =>
-        option.value === (fieldsCheckout.shippingMethod.value || "regular")
-    )?.price || 15000;
+    SHIPPING_OPTIONS.find((option) => option.value === (fieldsCheckout.shippingMethod.value || "regular"))?.price ||
+    15000;
 
   const totalWithShipping = cart.totalPrice + shippingCost;
 
@@ -234,9 +213,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Checkout</h1>
-        <p className="text-muted-foreground mt-2">
-          Complete your information to finish your purchase
-        </p>
+        <p className="text-muted-foreground mt-2">Complete your information to finish your purchase</p>
       </div>
 
       <Form method="post" {...getFormProps(formCheckout)}>
@@ -248,34 +225,22 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={fieldsUser.fullName.id}>Full Name *</Label>
-                  <Input
-                    {...getInputProps(fieldsUser.fullName, { type: "text" })}
-                    placeholder="Enter your full name"
-                  />
+                  <Input {...getInputProps(fieldsUser.fullName, { type: "text" })} placeholder="Enter your full name" />
                   {fieldsUser.fullName.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsUser.fullName.errors}
-                    </p>
+                    <p className="text-sm text-destructive mt-1">{fieldsUser.fullName.errors}</p>
                   )}
                 </div>
 
                 <div>
                   <Label htmlFor={fieldsUser.email.id}>Email *</Label>
-                  <Input
-                    {...getInputProps(fieldsUser.email, { type: "email" })}
-                    placeholder="email@example.com"
-                  />
+                  <Input {...getInputProps(fieldsUser.email, { type: "email" })} placeholder="email@example.com" />
                   {fieldsUser.email.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsUser.email.errors}
-                    </p>
+                    <p className="text-sm text-destructive mt-1">{fieldsUser.email.errors}</p>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor={fieldsUser.phoneNumber.id}>
-                    Phone Number *
-                  </Label>
+                  <Label htmlFor={fieldsUser.phoneNumber.id}>Phone Number *</Label>
                   <Input
                     {...getInputProps(fieldsUser.phoneNumber, {
                       type: "tel",
@@ -283,9 +248,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                     placeholder="08xxxxxxxxxx"
                   />
                   {fieldsUser.phoneNumber.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsUser.phoneNumber.errors}
-                    </p>
+                    <p className="text-sm text-destructive mt-1">{fieldsUser.phoneNumber.errors}</p>
                   )}
                 </div>
               </div>
@@ -300,7 +263,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
 
             {/* Shipping Address */}
             <FormSection icon={MapPinIcon} title="Shipping Address">
-              {addresses.length > 1 && (
+              {/* {addresses.length > 1 && (
                 <div className="mb-4">
                   <Label>Saved Addresses</Label>
                   <div className="space-y-2 mt-2">
@@ -328,8 +291,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                           <div>
                             <p className="font-medium">{address.label}</p>
                             <p className="text-sm text-muted-foreground">
-                              {address.street}, {address.city}{" "}
-                              {address.postalCode}
+                              {address.street}, {address.city} {address.postalCode}
                             </p>
                           </div>
                           {address.isPrimary && (
@@ -343,7 +305,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                   </div>
                   <Separator className="my-4" />
                 </div>
-              )}
+              )} */}
 
               <div>
                 <Label htmlFor={fieldsAddress.street.id}>Full Address *</Label>
@@ -353,28 +315,19 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                   rows={3}
                 />
                 {fieldsAddress.street.errors && (
-                  <p className="text-sm text-destructive mt-1">
-                    {fieldsAddress.street.errors}
-                  </p>
+                  <p className="text-sm text-destructive mt-1">{fieldsAddress.street.errors}</p>
                 )}
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={fieldsAddress.city.id}>City *</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.city, { type: "text" })}
-                    placeholder="City name"
-                  />
+                  <Input {...getInputProps(fieldsAddress.city, { type: "text" })} placeholder="City name" />
                   {fieldsAddress.city.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.city.errors}
-                    </p>
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.city.errors}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsAddress.postalCode.id}>
-                    Postal Code *
-                  </Label>
+                  <Label htmlFor={fieldsAddress.postalCode.id}>Postal Code *</Label>
                   <Input
                     {...getInputProps(fieldsAddress.postalCode, {
                       type: "text",
@@ -382,35 +335,23 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                     placeholder="12345"
                   />
                   {fieldsAddress.postalCode.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.postalCode.errors}
-                    </p>
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.postalCode.errors}</p>
                   )}
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={fieldsAddress.province.id}>Province</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.province, { type: "text" })}
-                    placeholder="Province"
-                  />
+                  <Input {...getInputProps(fieldsAddress.province, { type: "text" })} placeholder="Province" />
                   {fieldsAddress.province.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.province.errors}
-                    </p>
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.province.errors}</p>
                   )}
                 </div>
                 <div>
                   <Label htmlFor={fieldsAddress.country.id}>Country</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.country, { type: "text" })}
-                    placeholder="Country"
-                  />
+                  <Input {...getInputProps(fieldsAddress.country, { type: "text" })} placeholder="Country" />
                   {fieldsAddress.country.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.country.errors}
-                    </p>
+                    <p className="text-sm text-destructive mt-1">{fieldsAddress.country.errors}</p>
                   )}
                 </div>
               </div>
@@ -418,10 +359,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
 
             {/* Shipping Method */}
             <FormSection icon={TruckIcon} title="Shipping Method">
-              <RadioGroup
-                defaultValue="regular"
-                name={fieldsCheckout.shippingMethod.name}
-              >
+              <RadioGroup defaultValue="regular" name={fieldsCheckout.shippingMethod.name}>
                 {SHIPPING_OPTIONS.map((option) => (
                   <RadioOption
                     key={option.value}
@@ -439,18 +377,13 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 })}
               />
               {fieldsCheckout.shippingMethod.errors && (
-                <p className="text-sm text-destructive">
-                  {fieldsCheckout.shippingMethod.errors}
-                </p>
+                <p className="text-sm text-destructive">{fieldsCheckout.shippingMethod.errors}</p>
               )}
             </FormSection>
 
             {/* Payment Method */}
             <FormSection icon={CreditCardIcon} title="Payment Method">
-              <RadioGroup
-                defaultValue="bank_transfer"
-                name={fieldsCheckout.paymentMethod.name}
-              >
+              <RadioGroup defaultValue="bank_transfer" name={fieldsCheckout.paymentMethod.name}>
                 {PAYMENT_OPTIONS.map((option) => (
                   <RadioOption
                     key={option.value}
@@ -467,9 +400,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 })}
               />
               {fieldsCheckout.paymentMethod.errors && (
-                <p className="text-sm text-destructive">
-                  {fieldsCheckout.paymentMethod.errors}
-                </p>
+                <p className="text-sm text-destructive">{fieldsCheckout.paymentMethod.errors}</p>
               )}
             </FormSection>
 
@@ -481,9 +412,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 rows={3}
               />
               {fieldsCheckout.notes.errors && (
-                <p className="text-sm text-destructive mt-1">
-                  {fieldsCheckout.notes.errors}
-                </p>
+                <p className="text-sm text-destructive mt-1">{fieldsCheckout.notes.errors}</p>
               )}
             </FormSection>
           </div>
@@ -504,17 +433,13 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                       className="w-12 h-12 rounded object-cover"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm truncate">
-                        {item.product.name}
-                      </h3>
+                      <h3 className="font-medium text-sm truncate">{item.product.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         {item.quantity} x Rp
                         {item.product.price.toLocaleString("id-ID")}
                       </p>
                     </div>
-                    <div className="font-semibold text-sm">
-                      Rp {item.subTotalPrice.toLocaleString("id-ID")}
-                    </div>
+                    <div className="font-semibold text-sm">Rp {item.subTotalPrice.toLocaleString("id-ID")}</div>
                   </div>
                 ))}
               </CardContent>
@@ -537,21 +462,14 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">
-                    Rp {totalWithShipping.toLocaleString("id-ID")}
-                  </span>
+                  <span className="text-primary">Rp {totalWithShipping.toLocaleString("id-ID")}</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isSubmitting}
-                className="w-full"
-              >
+              <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
                 {isSubmitting ? "Processing..." : "Pay Now"}
               </Button>
               <Button variant="outline" size="lg" asChild className="w-full">
@@ -568,9 +486,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
         {/* Form Errors */}
         {formCheckout.errors && (
           <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive font-medium">
-              {formCheckout.errors}
-            </p>
+            <p className="text-sm text-destructive font-medium">{formCheckout.errors}</p>
           </div>
         )}
       </Form>
