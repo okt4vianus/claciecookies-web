@@ -19,6 +19,15 @@ export default [
     route("dashboard", "routes/dashboard.tsx"),
   ]),
 
+  route("/action/user/profile", "routes/action/user/profile.ts"),
+  route("/action/user/address", "routes/action/user/address.ts"),
+  route(
+    "/action/user/shipping-method",
+    "routes/action/user/shipping-method.ts"
+  ),
+  route("/action/user/payment-method", "routes/action/user/payment-method.ts"),
+  route("/action/user/notes", "routes/action/user/notes.ts"),
+
   //   layout("layout/admin.tsx", [
   //     index("routes/admin/dashboard.tsx"),
   //     route("admin/products ", "routes/admin/products.tsx"),

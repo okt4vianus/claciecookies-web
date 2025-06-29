@@ -11,16 +11,6 @@ export const CheckoutSchema = z.object({
   // Address
 });
 
-// User information schema
-export const CheckoutUserSchema = z.object({
-  fullName: z.string().min(1, { message: "Full name is required" }),
-  email: z.string().email({ message: "Invalid email format" }),
-  phoneNumber: z
-    .string()
-    .min(8, { message: "Phone number too short" })
-    .max(15, { message: "Phone number too long" }),
-});
-
 // Address schema
 export const CheckoutAddressSchema = z.object({
   street: z.string().min(1, "Address is required"),

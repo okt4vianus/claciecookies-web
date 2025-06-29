@@ -1,7 +1,26 @@
-import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import {
+  getFormProps,
+  getInputProps,
+  useForm,
+  type FormMetadata,
+} from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { CreditCardIcon, MapPinIcon, TruckIcon, UserIcon, ShoppingCartIcon } from "lucide-react";
-import { Form, href, Link, redirect, useActionData, useNavigation } from "react-router";
+import {
+  CreditCardIcon,
+  MapPinIcon,
+  TruckIcon,
+  UserIcon,
+  ShoppingCartIcon,
+} from "lucide-react";
+import {
+  Form,
+  href,
+  Link,
+  redirect,
+  useActionData,
+  useFetcher,
+  useNavigation,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -13,7 +32,11 @@ import { Badge } from "~/components/ui/badge";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/checkout";
-import { CheckoutSchema, CheckoutUserSchema, CheckoutAddressSchema } from "~/modules/checkout/schema";
+import {
+  CheckoutSchema,
+  CheckoutAddressSchema,
+} from "~/modules/checkout/schema";
+import { UserProfileSchema } from "~/modules/user/schema";
 
 export function meta() {
   return [
@@ -46,7 +69,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     }),
   ]);
 
-  if (cartResponse.error || !cartResponse.data || cartResponse.data.items.length === 0) {
+  if (
+    cartResponse.error ||
+    !cartResponse.data ||
+    cartResponse.data.items.length === 0
+  ) {
     return redirect(href("/cart"));
   }
 
@@ -93,67 +120,6 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-const SHIPPING_OPTIONS = [
-  {
-    value: "regular",
-    label: "Regular (3-5 business days)",
-    description: "Standard shipping",
-    price: 15000,
-  },
-  {
-    value: "express",
-    label: "Express (1-2 business days)",
-    description: "Fast shipping",
-    price: 25000,
-  },
-  {
-    value: "same_day",
-    label: "Same Day (Today)",
-    description: "Manado area only",
-    price: 50000,
-  },
-];
-
-const PAYMENT_OPTIONS = [
-  {
-    value: "bank_transfer",
-    label: "Bank Transfer",
-    description: "BCA, Mandiri, BNI, BRI",
-  },
-  {
-    value: "e_wallet",
-    label: "E-Wallet",
-    description: "GoPay, OVO, Dana, ShopeePay",
-  },
-  {
-    value: "cod",
-    label: "Cash on Delivery (COD)",
-    description: "Pay when order is delivered",
-  },
-];
-
-function FormSection({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3">
-          <Icon className="h-5 w-5 text-primary" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
-    </Card>
-  );
-}
-
 export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   const { cart, profile, addresses } = loaderData;
   const navigation = useNavigation();
@@ -167,14 +133,13 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   // @ts-ignore
   const primaryAddress = addresses[0];
 
-  const [formUser, fieldsUser] = useForm({
+  const fetcherUserProfile = useFetcher(); // React Router
+  const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
+  const [formUserProfile, fieldsUserProfile] = useForm({
+    // Conform
+    defaultValue: profile,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: CheckoutUserSchema });
-    },
-    defaultValue: {
-      fullName: profile?.fullName ?? "",
-      email: profile?.email ?? "",
-      phoneNumber: profile?.phoneNumber ?? "",
+      return parseWithZod(formData, { schema: UserProfileSchema });
     },
   });
 
@@ -204,8 +169,10 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   });
 
   const shippingCost =
-    SHIPPING_OPTIONS.find((option) => option.value === (fieldsCheckout.shippingMethod.value || "regular"))?.price ||
-    15000;
+    SHIPPING_OPTIONS.find(
+      (option) =>
+        option.value === (fieldsCheckout.shippingMethod.value || "regular")
+    )?.price || 15000;
 
   const totalWithShipping = cart.totalPrice + shippingCost;
 
@@ -213,57 +180,86 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Checkout</h1>
-        <p className="text-muted-foreground mt-2">Complete your information to finish your purchase</p>
+        <p className="text-muted-foreground mt-2">
+          Complete your information to finish your purchase
+        </p>
       </div>
 
-      <Form method="post" {...getFormProps(formCheckout)}>
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Form */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Customer Information */}
-            <FormSection icon={UserIcon} title="Customer Information">
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Form */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Customer Information */}
+          <CheckoutCardSection icon={UserIcon} title="Customer Information">
+            <fetcherUserProfile.Form
+              method="post"
+              action="/action/user/profile"
+              className="space-y-4"
+              {...getFormProps(formUserProfile)}
+            >
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsUser.fullName.id}>Full Name *</Label>
-                  <Input {...getInputProps(fieldsUser.fullName, { type: "text" })} placeholder="Enter your full name" />
-                  {fieldsUser.fullName.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsUser.fullName.errors}</p>
+                  <Label htmlFor={fieldsUserProfile.fullName.id}>
+                    Full Name *
+                  </Label>
+                  <Input
+                    {...getInputProps(fieldsUserProfile.fullName, {
+                      type: "text",
+                    })}
+                    placeholder="Enter your full name"
+                  />
+                  {fieldsUserProfile.fullName.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsUserProfile.fullName.errors}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor={fieldsUser.email.id}>Email *</Label>
-                  <Input {...getInputProps(fieldsUser.email, { type: "email" })} placeholder="email@example.com" />
-                  {fieldsUser.email.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsUser.email.errors}</p>
+                  <Label htmlFor={fieldsUserProfile.email.id}>Email *</Label>
+                  <Input
+                    {...getInputProps(fieldsUserProfile.email, {
+                      type: "email",
+                    })}
+                    placeholder="email@example.com"
+                  />
+                  {fieldsUserProfile.email.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsUserProfile.email.errors}
+                    </p>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor={fieldsUser.phoneNumber.id}>Phone Number *</Label>
+                  <Label htmlFor={fieldsUserProfile.phoneNumber.id}>
+                    Phone Number *
+                  </Label>
                   <Input
-                    {...getInputProps(fieldsUser.phoneNumber, {
+                    {...getInputProps(fieldsUserProfile.phoneNumber, {
                       type: "tel",
                     })}
                     placeholder="08xxxxxxxxxx"
                   />
-                  {fieldsUser.phoneNumber.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsUser.phoneNumber.errors}</p>
+                  {fieldsUserProfile.phoneNumber.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsUserProfile.phoneNumber.errors}
+                    </p>
                   )}
                 </div>
               </div>
-              {!profile && (
-                <div className="flex justify-start pt-2">
-                  <Button type="submit" size="sm">
-                    Save Customer Info
-                  </Button>
-                </div>
-              )}
-            </FormSection>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isUserProfileSubmitting}
+              >
+                {isUserProfileSubmitting && "Saving..."}
+                {!isUserProfileSubmitting && "Save"}
+              </Button>
+            </fetcherUserProfile.Form>
+          </CheckoutCardSection>
 
-            {/* Shipping Address */}
-            <FormSection icon={MapPinIcon} title="Shipping Address">
-              {/* {addresses.length > 1 && (
+          {/* Shipping Address */}
+          <CheckoutCardSection icon={MapPinIcon} title="Shipping Address">
+            {/* {addresses.length > 1 && (
                 <div className="mb-4">
                   <Label>Saved Addresses</Label>
                   <div className="space-y-2 mt-2">
@@ -307,6 +303,12 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 </div>
               )} */}
 
+            <Form
+              method="post"
+              action="/action/user/address"
+              className="space-y-4"
+              {...getFormProps(formAddress)}
+            >
               <div>
                 <Label htmlFor={fieldsAddress.street.id}>Full Address *</Label>
                 <Textarea
@@ -315,19 +317,28 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                   rows={3}
                 />
                 {fieldsAddress.street.errors && (
-                  <p className="text-sm text-destructive mt-1">{fieldsAddress.street.errors}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {fieldsAddress.street.errors}
+                  </p>
                 )}
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={fieldsAddress.city.id}>City *</Label>
-                  <Input {...getInputProps(fieldsAddress.city, { type: "text" })} placeholder="City name" />
+                  <Input
+                    {...getInputProps(fieldsAddress.city, { type: "text" })}
+                    placeholder="City name"
+                  />
                   {fieldsAddress.city.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsAddress.city.errors}</p>
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsAddress.city.errors}
+                    </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsAddress.postalCode.id}>Postal Code *</Label>
+                  <Label htmlFor={fieldsAddress.postalCode.id}>
+                    Postal Code *
+                  </Label>
                   <Input
                     {...getInputProps(fieldsAddress.postalCode, {
                       type: "text",
@@ -335,161 +346,201 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                     placeholder="12345"
                   />
                   {fieldsAddress.postalCode.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsAddress.postalCode.errors}</p>
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsAddress.postalCode.errors}
+                    </p>
                   )}
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={fieldsAddress.province.id}>Province</Label>
-                  <Input {...getInputProps(fieldsAddress.province, { type: "text" })} placeholder="Province" />
+                  <Input
+                    {...getInputProps(fieldsAddress.province, { type: "text" })}
+                    placeholder="Province"
+                  />
                   {fieldsAddress.province.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsAddress.province.errors}</p>
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsAddress.province.errors}
+                    </p>
                   )}
                 </div>
                 <div>
                   <Label htmlFor={fieldsAddress.country.id}>Country</Label>
-                  <Input {...getInputProps(fieldsAddress.country, { type: "text" })} placeholder="Country" />
+                  <Input
+                    {...getInputProps(fieldsAddress.country, { type: "text" })}
+                    placeholder="Country"
+                  />
                   {fieldsAddress.country.errors && (
-                    <p className="text-sm text-destructive mt-1">{fieldsAddress.country.errors}</p>
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsAddress.country.errors}
+                    </p>
                   )}
                 </div>
               </div>
-            </FormSection>
-
-            {/* Shipping Method */}
-            <FormSection icon={TruckIcon} title="Shipping Method">
-              <RadioGroup defaultValue="regular" name={fieldsCheckout.shippingMethod.name}>
-                {SHIPPING_OPTIONS.map((option) => (
-                  <RadioOption
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    description={option.description}
-                    price={option.price}
-                    name={fieldsCheckout.shippingMethod.name}
-                  />
-                ))}
-              </RadioGroup>
-              <input
-                {...getInputProps(fieldsCheckout.shippingMethod, {
-                  type: "hidden",
-                })}
-              />
-              {fieldsCheckout.shippingMethod.errors && (
-                <p className="text-sm text-destructive">{fieldsCheckout.shippingMethod.errors}</p>
-              )}
-            </FormSection>
-
-            {/* Payment Method */}
-            <FormSection icon={CreditCardIcon} title="Payment Method">
-              <RadioGroup defaultValue="bank_transfer" name={fieldsCheckout.paymentMethod.name}>
-                {PAYMENT_OPTIONS.map((option) => (
-                  <RadioOption
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    description={option.description}
-                    name={fieldsCheckout.paymentMethod.name}
-                  />
-                ))}
-              </RadioGroup>
-              <input
-                {...getInputProps(fieldsCheckout.paymentMethod, {
-                  type: "hidden",
-                })}
-              />
-              {fieldsCheckout.paymentMethod.errors && (
-                <p className="text-sm text-destructive">{fieldsCheckout.paymentMethod.errors}</p>
-              )}
-            </FormSection>
-
-            {/* Notes */}
-            <FormSection icon={ShoppingCartIcon} title="Additional Notes">
-              <Textarea
-                {...getInputProps(fieldsCheckout.notes, { type: "text" })}
-                placeholder="Notes for seller (optional)"
-                rows={3}
-              />
-              {fieldsCheckout.notes.errors && (
-                <p className="text-sm text-destructive mt-1">{fieldsCheckout.notes.errors}</p>
-              )}
-            </FormSection>
-          </div>
-
-          {/* Order Summary Sidebar */}
-          <div className="space-y-6">
-            {/* Order Items */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {cart.items.map((item) => (
-                  <div key={item.id} className="flex gap-3">
-                    <img
-                      src={item.product.images?.[0]?.url ?? "/placeholder.jpg"}
-                      alt={item.product.name}
-                      className="w-12 h-12 rounded object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm truncate">{item.product.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {item.quantity} x Rp
-                        {item.product.price.toLocaleString("id-ID")}
-                      </p>
-                    </div>
-                    <div className="font-semibold text-sm">Rp {item.subTotalPrice.toLocaleString("id-ID")}</div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Total */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Total</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Subtotal ({cart.items.length} items)</span>
-                  <span>Rp {cart.totalPrice.toLocaleString("id-ID")}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping Cost</span>
-                  <span>Rp {shippingCost.toLocaleString("id-ID")}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span className="text-primary">Rp {totalWithShipping.toLocaleString("id-ID")}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Processing..." : "Pay Now"}
+              <Button type="submit" size="sm">
+                Save
               </Button>
-              <Button variant="outline" size="lg" asChild className="w-full">
-                <Link to="/cart">Back to Cart</Link>
-              </Button>
-            </div>
+            </Form>
+          </CheckoutCardSection>
 
-            <div className="text-center text-sm text-muted-foreground">
-              <p>🔒 Your information is secure and encrypted</p>
-            </div>
-          </div>
+          {/* Shipping Method */}
+          <CheckoutCardSection icon={TruckIcon} title="Shipping Method">
+            <RadioGroup
+              defaultValue="regular"
+              name={fieldsCheckout.shippingMethod.name}
+            >
+              {SHIPPING_OPTIONS.map((option) => (
+                <RadioOption
+                  key={option.value}
+                  value={option.value}
+                  label={option.label}
+                  description={option.description}
+                  price={option.price}
+                  name={fieldsCheckout.shippingMethod.name}
+                />
+              ))}
+            </RadioGroup>
+            <input
+              {...getInputProps(fieldsCheckout.shippingMethod, {
+                type: "hidden",
+              })}
+            />
+            {fieldsCheckout.shippingMethod.errors && (
+              <p className="text-sm text-destructive">
+                {fieldsCheckout.shippingMethod.errors}
+              </p>
+            )}
+          </CheckoutCardSection>
+
+          {/* Payment Method */}
+          <CheckoutCardSection icon={CreditCardIcon} title="Payment Method">
+            <RadioGroup
+              defaultValue="bank_transfer"
+              name={fieldsCheckout.paymentMethod.name}
+            >
+              {PAYMENT_OPTIONS.map((option) => (
+                <RadioOption
+                  key={option.value}
+                  value={option.value}
+                  label={option.label}
+                  description={option.description}
+                  name={fieldsCheckout.paymentMethod.name}
+                />
+              ))}
+            </RadioGroup>
+            <input
+              {...getInputProps(fieldsCheckout.paymentMethod, {
+                type: "hidden",
+              })}
+            />
+            {fieldsCheckout.paymentMethod.errors && (
+              <p className="text-sm text-destructive">
+                {fieldsCheckout.paymentMethod.errors}
+              </p>
+            )}
+          </CheckoutCardSection>
+
+          {/* Notes */}
+          <CheckoutCardSection icon={ShoppingCartIcon} title="Additional Notes">
+            <Textarea
+              {...getInputProps(fieldsCheckout.notes, { type: "text" })}
+              placeholder="Notes for seller (optional)"
+              rows={3}
+            />
+            {fieldsCheckout.notes.errors && (
+              <p className="text-sm text-destructive mt-1">
+                {fieldsCheckout.notes.errors}
+              </p>
+            )}
+          </CheckoutCardSection>
         </div>
 
-        {/* Form Errors */}
-        {formCheckout.errors && (
-          <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive font-medium">{formCheckout.errors}</p>
+        {/* Order Summary Sidebar */}
+        <div className="space-y-6">
+          {/* Order Items */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {cart.items.map((item) => (
+                <div key={item.id} className="flex gap-3">
+                  <img
+                    src={item.product.images?.[0]?.url ?? "/placeholder.jpg"}
+                    alt={item.product.name}
+                    className="w-12 h-12 rounded object-cover"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm truncate">
+                      {item.product.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {item.quantity} x Rp
+                      {item.product.price.toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                  <div className="font-semibold text-sm">
+                    Rp {item.subTotalPrice.toLocaleString("id-ID")}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Total */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Total</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span>Subtotal ({cart.items.length} items)</span>
+                <span>Rp {cart.totalPrice.toLocaleString("id-ID")}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Shipping Cost</span>
+                <span>Rp {shippingCost.toLocaleString("id-ID")}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between text-lg font-bold">
+                <span>Total</span>
+                <span className="text-primary">
+                  Rp {totalWithShipping.toLocaleString("id-ID")}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? "Processing..." : "Pay Now"}
+            </Button>
+            <Button variant="outline" size="lg" asChild className="w-full">
+              <Link to="/cart">Back to Cart</Link>
+            </Button>
           </div>
-        )}
-      </Form>
+
+          <div className="text-center text-sm text-muted-foreground">
+            <p>🔒 Your information is secure and encrypted</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Form Errors */}
+      {formCheckout.errors && (
+        <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-sm text-destructive font-medium">
+            {formCheckout.errors}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -524,5 +575,66 @@ function RadioOption({
         </div>
       </Label>
     </div>
+  );
+}
+
+const SHIPPING_OPTIONS = [
+  {
+    value: "regular",
+    label: "Regular (3-5 business days)",
+    description: "Standard shipping",
+    price: 15000,
+  },
+  {
+    value: "express",
+    label: "Express (1-2 business days)",
+    description: "Fast shipping",
+    price: 25000,
+  },
+  {
+    value: "same_day",
+    label: "Same Day (Today)",
+    description: "Manado area only",
+    price: 50000,
+  },
+];
+
+const PAYMENT_OPTIONS = [
+  {
+    value: "bank_transfer",
+    label: "Bank Transfer",
+    description: "BCA, Mandiri, BNI, BRI",
+  },
+  {
+    value: "e_wallet",
+    label: "E-Wallet",
+    description: "GoPay, OVO, Dana, ShopeePay",
+  },
+  {
+    value: "cod",
+    label: "Cash on Delivery (COD)",
+    description: "Pay when order is delivered",
+  },
+];
+
+function CheckoutCardSection({
+  icon: Icon,
+  title,
+  className,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+} & React.ComponentProps<"div">) {
+  return (
+    <Card className={className}>
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3">
+          <Icon className="h-5 w-5 text-primary" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">{children}</CardContent>
+    </Card>
   );
 }
