@@ -93,7 +93,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
   const lastResult = actionData;
 
   const [form, fields] = useForm({
-    shouldValidate: "onBlur",
+    shouldValidate: "onSubmit",
     lastResult,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: loginSchema });

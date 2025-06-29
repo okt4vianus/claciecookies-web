@@ -62,7 +62,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
   const lastResult = actionData;
 
   const [form, fields] = useForm({
-    shouldValidate: "onBlur",
+    shouldValidate: "onSubmit",
     lastResult,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: registerSchema });

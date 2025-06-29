@@ -278,7 +278,7 @@ function QuantityForm({ item }: { item: any }) {
   const [form, fields] = useForm({
     id: `quantity-form-${item.id}`,
     lastResult,
-    shouldValidate: "onBlur",
+    shouldValidate: "onSubmit",
     shouldRevalidate: "onInput",
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: UpdateCartItemQuantitySchema });
@@ -305,10 +305,6 @@ function QuantityForm({ item }: { item: any }) {
       }
     }
   };
-
-  // 📝 TODO: Toast / Sonner
-  // Show stock warning if quantity is at maximum
-  // item.quantity >= stockQuantity
 
   return (
     <div>
