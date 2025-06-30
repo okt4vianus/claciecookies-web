@@ -52,8 +52,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     cart: cartResponse.data,
-    profile: profileResponse.error ? null : profileResponse.data,
-    addresses: addressResponse.error ? [] : addressResponse.data,
+    profile: profileResponse.data,
+    address: addressResponse.data,
   };
 }
 
@@ -94,25 +94,20 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
-  const { cart, profile, addresses } = loaderData;
+  const { cart, profile, address } = loaderData;
   const navigation = useNavigation();
   const lastResult = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
 
   console.log("PROFILE DATA:", profile);
-  console.log("ADDRESSES DATA:", addresses);
-
-  // Get the primary address (first address or marked as primary)
-  const primaryAddress = Array.isArray(addresses)
-    ? (addresses as Array<{ isDefault?: boolean; [key: string]: any }>).find((addr) => addr.isDefault) || addresses[0]
-    : addresses;
+  console.log("ADDRESS DATA:", address);
 
   const fetcherUserProfile = useFetcher(); // React Router
   const fetcherUserAddress = useFetcher(); // React Router
   const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
   const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
+
   const [formUser, fieldsUser] = useForm({
-    // Conform
     defaultValue: profile,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: UserProfileSchema });
@@ -123,9 +118,9 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: CheckoutAddressSchema });
     },
-    defaultValue: primaryAddress
+    defaultValue: address
       ? {
-          ...primaryAddress,
+          ...address,
         }
       : {},
   });
