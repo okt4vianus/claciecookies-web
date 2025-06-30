@@ -1,8 +1,8 @@
 import { parseWithZod } from "@conform-to/zod";
-import type { Route } from "./+types/profile";
-import { UserProfileSchema } from "~/modules/user/schema";
 import { apiClient } from "~/lib/api-client";
+import { UserProfileSchema } from "~/modules/user/schema";
 import { getSession } from "~/sessions.server";
+import type { Route } from "./+types/profile";
 
 export async function action({ request }: Route.ActionArgs) {
   // TODO: Refactor to have a function which can:

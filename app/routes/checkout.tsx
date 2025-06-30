@@ -56,15 +56,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(href("/login"));
   }
 
-  const [profileResponse, cartResponse, addressesResponse] = await Promise.all([
+  const [profileResponse, cartResponse, addressResponse] = await Promise.all([
     apiClient.GET("/auth/profile", {
       headers: { Authorization: `Bearer ${token}` },
     }),
     apiClient.GET("/cart", {
       headers: { Authorization: `Bearer ${token}` },
     }),
-    // @ts-ignore
-    apiClient.GET("/auth/addresses", {
+    apiClient.GET("/auth/address", {
       headers: { Authorization: `Bearer ${token}` },
     }),
   ]);
@@ -80,7 +79,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return {
     cart: cartResponse.data,
     profile: profileResponse.error ? null : profileResponse.data,
-    addresses: addressesResponse.error ? [] : addressesResponse.data,
+    addresses: addressResponse.error ? [] : addressResponse.data,
   };
 }
 
@@ -130,11 +129,16 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   console.log("ADDRESSES DATA:", addresses);
 
   // Get the primary address (first address or marked as primary)
-  // @ts-ignore
-  const primaryAddress = addresses[0];
+  const primaryAddress = Array.isArray(addresses)
+    ? (addresses as Array<{ isDefault?: boolean; [key: string]: any }>).find(
+        (addr) => addr.isDefault
+      ) || addresses[0]
+    : addresses;
 
   const fetcherUserProfile = useFetcher(); // React Router
+  const fetcherUserAddress = useFetcher(); // React Router
   const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
+  const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
   const [formUserProfile, fieldsUserProfile] = useForm({
     // Conform
     defaultValue: profile,
@@ -143,16 +147,22 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
     },
   });
 
-  const [formAddress, fieldsAddress] = useForm({
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: CheckoutAddressSchema });
-    },
+  const [formUserAddress, fieldsUserAddress] = useForm({
     defaultValue: {
+      recipientName: primaryAddress?.recipientName ?? "",
+      phone: primaryAddress?.phone ?? "",
+      label: primaryAddress?.label ?? "",
       street: primaryAddress?.street ?? "",
       city: primaryAddress?.city ?? "",
       postalCode: primaryAddress?.postalCode ?? "",
       province: primaryAddress?.province ?? "",
       country: primaryAddress?.country ?? "Indonesia",
+      notes: primaryAddress?.notes ?? "",
+      latitude: primaryAddress?.latitude ?? "",
+      longitude: primaryAddress?.longitude ?? "",
+    },
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: CheckoutAddressSchema });
     },
   });
 
@@ -259,129 +269,180 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
 
           {/* Shipping Address */}
           <CheckoutCardSection icon={MapPinIcon} title="Shipping Address">
-            {/* {addresses.length > 1 && (
-                <div className="mb-4">
-                  <Label>Saved Addresses</Label>
-                  <div className="space-y-2 mt-2">
-                    {addresses.map((address: any, index: number) => (
-                      <div
-                        key={address.id}
-                        className="p-3 border rounded-lg cursor-pointer hover:bg-accent"
-                        onClick={() => {
-                          // Update form with selected address
-                          formAddress.update({
-                            name: fieldsAddress.street.name,
-                            value: address.street,
-                          });
-                          formAddress.update({
-                            name: fieldsAddress.city.name,
-                            value: address.city,
-                          });
-                          formAddress.update({
-                            name: fieldsAddress.postalCode.name,
-                            value: address.postalCode,
-                          });
-                        }}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">{address.label}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {address.street}, {address.city} {address.postalCode}
-                            </p>
-                          </div>
-                          {address.isPrimary && (
-                            <Badge variant="secondary" className="text-xs">
-                              Primary
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Separator className="my-4" />
-                </div>
-              )} */}
-
-            <Form
+            <fetcherUserAddress.Form
               method="post"
               action="/action/user/address"
               className="space-y-4"
-              {...getFormProps(formAddress)}
+              {...getFormProps(formUserAddress)}
             >
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={fieldsUserAddress.recipientName.id}>
+                    Recipient Name *
+                  </Label>
+                  <Input
+                    {...getInputProps(fieldsUserAddress.recipientName, {
+                      type: "text",
+                    })}
+                    placeholder="Receiver name"
+                  />
+                  {fieldsUserAddress.recipientName.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsUserAddress.recipientName.errors}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor={fieldsUserAddress.phone.id}>Phone *</Label>
+                  <Input
+                    {...getInputProps(fieldsUserAddress.phone, {
+                      type: "tel",
+                    })}
+                    placeholder="08xxxxxxxxxx"
+                  />
+                  {fieldsUserAddress.phone.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsUserAddress.phone.errors}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div>
-                <Label htmlFor={fieldsAddress.street.id}>Full Address *</Label>
+                <Label htmlFor={fieldsUserAddress.street.id}>
+                  Complete Address - {fieldsUserAddress.label.initialValue} *
+                </Label>
                 <Textarea
-                  {...getInputProps(fieldsAddress.street, { type: "text" })}
-                  placeholder="Enter your complete address"
+                  {...getInputProps(fieldsUserAddress.street, { type: "text" })}
                   rows={3}
+                  placeholder="Street, house no, unit"
                 />
-                {fieldsAddress.street.errors && (
+                {fieldsUserAddress.street.errors && (
                   <p className="text-sm text-destructive mt-1">
-                    {fieldsAddress.street.errors}
+                    {fieldsUserAddress.street.errors}
                   </p>
                 )}
               </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsAddress.city.id}>City *</Label>
+                  <Label htmlFor={fieldsUserAddress.city.id}>City *</Label>
                   <Input
-                    {...getInputProps(fieldsAddress.city, { type: "text" })}
-                    placeholder="City name"
+                    {...getInputProps(fieldsUserAddress.city, { type: "text" })}
                   />
-                  {fieldsAddress.city.errors && (
+                  {fieldsUserAddress.city.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.city.errors}
+                      {fieldsUserAddress.city.errors}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsAddress.postalCode.id}>
+                  <Label htmlFor={fieldsUserAddress.province.id}>
+                    Province *
+                  </Label>
+                  <Input
+                    {...getInputProps(fieldsUserAddress.province, {
+                      type: "text",
+                    })}
+                  />
+                  {fieldsUserAddress.province.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsUserAddress.province.errors}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={fieldsUserAddress.postalCode.id}>
                     Postal Code *
                   </Label>
                   <Input
-                    {...getInputProps(fieldsAddress.postalCode, {
+                    {...getInputProps(fieldsUserAddress.postalCode, {
                       type: "text",
                     })}
-                    placeholder="12345"
                   />
-                  {fieldsAddress.postalCode.errors && (
+                  {fieldsUserAddress.postalCode.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.postalCode.errors}
+                      {fieldsUserAddress.postalCode.errors}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor={fieldsUserAddress.country.id}>Country</Label>
+                  <Input
+                    {...getInputProps(fieldsUserAddress.country, {
+                      type: "text",
+                    })}
+                  />
+                  {fieldsUserAddress.country.errors && (
+                    <p className="text-sm text-destructive mt-1">
+                      {fieldsUserAddress.country.errors}
                     </p>
                   )}
                 </div>
               </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsAddress.province.id}>Province</Label>
+                  <Label htmlFor={fieldsUserAddress.latitude.id}>
+                    Latitude
+                  </Label>
                   <Input
-                    {...getInputProps(fieldsAddress.province, { type: "text" })}
-                    placeholder="Province"
+                    {...getInputProps(fieldsUserAddress.latitude, {
+                      type: "text",
+                    })}
                   />
-                  {fieldsAddress.province.errors && (
+                  {fieldsUserAddress.latitude.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.province.errors}
+                      {fieldsUserAddress.latitude.errors}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsAddress.country.id}>Country</Label>
+                  <Label htmlFor={fieldsUserAddress.longitude.id}>
+                    Longitude
+                  </Label>
                   <Input
-                    {...getInputProps(fieldsAddress.country, { type: "text" })}
-                    placeholder="Country"
+                    {...getInputProps(fieldsUserAddress.longitude, {
+                      type: "text",
+                    })}
                   />
-                  {fieldsAddress.country.errors && (
+                  {fieldsUserAddress.longitude.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.country.errors}
+                      {fieldsUserAddress.longitude.errors}
                     </p>
                   )}
                 </div>
               </div>
-              <Button type="submit" size="sm">
-                Save
+
+              {/* Notes */}
+              <CheckoutCardSection
+                icon={ShoppingCartIcon}
+                title="Additional Notes"
+              >
+                <Textarea
+                  {...getInputProps(fieldsUserAddress.notes, { type: "text" })}
+                  placeholder="Notes for seller (optional)"
+                  rows={3}
+                />
+                {fieldsUserAddress.notes.errors && (
+                  <p className="text-sm text-destructive mt-1">
+                    {fieldsUserAddress.notes.errors}
+                  </p>
+                )}
+              </CheckoutCardSection>
+
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isUserAddressSubmitting}
+              >
+                {isUserAddressSubmitting ? "Saving..." : "Save"}
               </Button>
-            </Form>
+            </fetcherUserAddress.Form>
           </CheckoutCardSection>
 
           {/* Shipping Method */}
@@ -441,7 +502,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
             )}
           </CheckoutCardSection>
 
-          {/* Notes */}
+          {/* Notes
           <CheckoutCardSection icon={ShoppingCartIcon} title="Additional Notes">
             <Textarea
               {...getInputProps(fieldsCheckout.notes, { type: "text" })}
@@ -453,7 +514,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 {fieldsCheckout.notes.errors}
               </p>
             )}
-          </CheckoutCardSection>
+          </CheckoutCardSection> */}
         </div>
 
         {/* Order Summary Sidebar */}
