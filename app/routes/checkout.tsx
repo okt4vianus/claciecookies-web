@@ -63,7 +63,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     apiClient.GET("/cart", {
       headers: { Authorization: `Bearer ${token}` },
     }),
-    apiClient.GET("/auth/address", {
+    apiClient.GET("/address", {
       headers: { Authorization: `Bearer ${token}` },
     }),
   ]);

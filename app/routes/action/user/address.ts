@@ -12,7 +12,7 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = parseWithZod(formData, { schema: CheckoutAddressSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data } = await apiClient.PATCH("/auth/address", {
+  const { data } = await apiClient.PATCH("/address", {
     headers: { Authorization: `Bearer ${token}` },
     body: submission.value,
   });
