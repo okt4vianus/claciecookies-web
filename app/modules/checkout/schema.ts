@@ -22,6 +22,8 @@ export const CheckoutSchema = z.object({
 // });
 
 export const CheckoutAddressSchema = z.object({
+  id: z.string(),
+
   label: z.string().optional().or(z.literal("")),
 
   recipientName: z.string().min(5, "Recipient name is required"),
@@ -34,10 +36,7 @@ export const CheckoutAddressSchema = z.object({
 
   province: z.string().min(5, "Province is required").default("Sulawesi Utara"),
 
-  postalCode: z
-    .string()
-    .min(5, "Postal code must be at least 5 digits")
-    .max(5, "Postal code too long"),
+  postalCode: z.string().min(5, "Postal code must be at least 5 digits").max(5),
 
   country: z.string().default("Indonesia"),
 
@@ -47,8 +46,7 @@ export const CheckoutAddressSchema = z.object({
 
   isDefault: z
     .union([z.boolean(), z.string().transform((v) => v === "true")])
-    .optional()
-    .default(false),
+    .optional(),
 
   // opsional for peta/gps
   latitude: z.coerce.number().optional(),

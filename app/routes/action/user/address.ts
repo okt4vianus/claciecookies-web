@@ -17,5 +17,8 @@ export async function action({ request }: Route.ActionArgs) {
     body: submission.value,
   });
 
+  console.log({ data });
+
+  // return submission.reply();
   return data;
 }

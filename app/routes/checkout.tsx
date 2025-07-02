@@ -78,8 +78,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     cart: cartResponse.data,
-    profile: profileResponse.error ? null : profileResponse.data,
-    addresses: addressResponse.error ? [] : addressResponse.data,
+    profile: profileResponse.data,
+    address: addressResponse.data,
   };
 }
 
@@ -120,50 +120,35 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
-  const { cart, profile, addresses } = loaderData;
+  const { cart, profile, address } = loaderData;
   const navigation = useNavigation();
   const lastResult = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
 
   console.log("PROFILE DATA:", profile);
-  console.log("ADDRESSES DATA:", addresses);
-
-  // Get the primary address (first address or marked as primary)
-  const primaryAddress = Array.isArray(addresses)
-    ? (addresses as Array<{ isDefault?: boolean; [key: string]: any }>).find(
-        (addr) => addr.isDefault
-      ) || addresses[0]
-    : addresses;
+  console.log("ADDRESS DATA:", address);
 
   const fetcherUserProfile = useFetcher(); // React Router
   const fetcherUserAddress = useFetcher(); // React Router
   const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
   const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
-  const [formUserProfile, fieldsUserProfile] = useForm({
-    // Conform
+
+  const [formUser, fieldsUser] = useForm({
     defaultValue: profile,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: UserProfileSchema });
     },
   });
 
-  const [formUserAddress, fieldsUserAddress] = useForm({
-    defaultValue: {
-      recipientName: primaryAddress?.recipientName ?? "",
-      phone: primaryAddress?.phone ?? "",
-      label: primaryAddress?.label ?? "",
-      street: primaryAddress?.street ?? "",
-      city: primaryAddress?.city ?? "",
-      postalCode: primaryAddress?.postalCode ?? "",
-      province: primaryAddress?.province ?? "",
-      country: primaryAddress?.country ?? "Indonesia",
-      notes: primaryAddress?.notes ?? "",
-      latitude: primaryAddress?.latitude ?? "",
-      longitude: primaryAddress?.longitude ?? "",
-    },
+  const [formAddress, fieldsAddress] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: CheckoutAddressSchema });
     },
+    defaultValue: address
+      ? {
+          ...address,
+        }
+      : {},
   });
 
   const [formCheckout, fieldsCheckout] = useForm({
@@ -204,54 +189,52 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
               method="post"
               action="/action/user/profile"
               className="space-y-4"
-              {...getFormProps(formUserProfile)}
+              {...getFormProps(formUser)}
             >
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsUserProfile.fullName.id}>
-                    Full Name *
-                  </Label>
+                  <Label htmlFor={fieldsUser.fullName.id}>Full Name *</Label>
                   <Input
-                    {...getInputProps(fieldsUserProfile.fullName, {
+                    {...getInputProps(fieldsUser.fullName, {
                       type: "text",
                     })}
                     placeholder="Enter your full name"
                   />
-                  {fieldsUserProfile.fullName.errors && (
+                  {fieldsUser.fullName.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserProfile.fullName.errors}
+                      {fieldsUser.fullName.errors}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor={fieldsUserProfile.email.id}>Email *</Label>
+                  <Label htmlFor={fieldsUser.email.id}>Email *</Label>
                   <Input
-                    {...getInputProps(fieldsUserProfile.email, {
+                    {...getInputProps(fieldsUser.email, {
                       type: "email",
                     })}
                     placeholder="email@example.com"
                   />
-                  {fieldsUserProfile.email.errors && (
+                  {fieldsUser.email.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserProfile.email.errors}
+                      {fieldsUser.email.errors}
                     </p>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor={fieldsUserProfile.phoneNumber.id}>
+                  <Label htmlFor={fieldsUser.phoneNumber.id}>
                     Phone Number *
                   </Label>
                   <Input
-                    {...getInputProps(fieldsUserProfile.phoneNumber, {
+                    {...getInputProps(fieldsUser.phoneNumber, {
                       type: "tel",
                     })}
                     placeholder="08xxxxxxxxxx"
                   />
-                  {fieldsUserProfile.phoneNumber.errors && (
+                  {fieldsUser.phoneNumber.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserProfile.phoneNumber.errors}
+                      {fieldsUser.phoneNumber.errors}
                     </p>
                   )}
                 </div>
@@ -273,82 +256,82 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
               method="post"
               action="/action/user/address"
               className="space-y-4"
-              {...getFormProps(formUserAddress)}
+              {...getFormProps(formAddress)}
             >
+              <input {...getInputProps(fieldsAddress.id, { type: "hidden" })} />
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsUserAddress.recipientName.id}>
+                  <Label htmlFor={fieldsAddress.recipientName.id}>
                     Recipient Name *
                   </Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.recipientName, {
+                    {...getInputProps(fieldsAddress.recipientName, {
                       type: "text",
                     })}
                     placeholder="Receiver name"
                   />
-                  {fieldsUserAddress.recipientName.errors && (
+                  {fieldsAddress.recipientName.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.recipientName.errors}
+                      {fieldsAddress.recipientName.errors}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor={fieldsUserAddress.phone.id}>Phone *</Label>
+                  <Label htmlFor={fieldsAddress.phone.id}>Phone *</Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.phone, {
+                    {...getInputProps(fieldsAddress.phone, {
                       type: "tel",
                     })}
                     placeholder="08xxxxxxxxxx"
                   />
-                  {fieldsUserAddress.phone.errors && (
+                  {fieldsAddress.phone.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.phone.errors}
+                      {fieldsAddress.phone.errors}
                     </p>
                   )}
                 </div>
               </div>
 
               <div>
-                <Label htmlFor={fieldsUserAddress.street.id}>
-                  Complete Address - {fieldsUserAddress.label.initialValue} *
+                <Label htmlFor={fieldsAddress.street.id}>
+                  Complete Address - {fieldsAddress.label.initialValue} *
                 </Label>
                 <Textarea
-                  {...getInputProps(fieldsUserAddress.street, { type: "text" })}
+                  {...getInputProps(fieldsAddress.street, { type: "text" })}
                   rows={3}
                   placeholder="Street, house no, unit"
                 />
-                {fieldsUserAddress.street.errors && (
+                {fieldsAddress.street.errors && (
                   <p className="text-sm text-destructive mt-1">
-                    {fieldsUserAddress.street.errors}
+                    {fieldsAddress.street.errors}
                   </p>
                 )}
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsUserAddress.city.id}>City *</Label>
+                  <Label htmlFor={fieldsAddress.city.id}>City *</Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.city, { type: "text" })}
+                    {...getInputProps(fieldsAddress.city, { type: "text" })}
                   />
-                  {fieldsUserAddress.city.errors && (
+                  {fieldsAddress.city.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.city.errors}
+                      {fieldsAddress.city.errors}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsUserAddress.province.id}>
-                    Province *
-                  </Label>
+                  <Label htmlFor={fieldsAddress.province.id}>Province *</Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.province, {
+                    {...getInputProps(fieldsAddress.province, {
                       type: "text",
                     })}
                   />
-                  {fieldsUserAddress.province.errors && (
+                  {fieldsAddress.province.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.province.errors}
+                      {fieldsAddress.province.errors}
                     </p>
                   )}
                 </div>
@@ -356,30 +339,30 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsUserAddress.postalCode.id}>
+                  <Label htmlFor={fieldsAddress.postalCode.id}>
                     Postal Code *
                   </Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.postalCode, {
+                    {...getInputProps(fieldsAddress.postalCode, {
                       type: "text",
                     })}
                   />
-                  {fieldsUserAddress.postalCode.errors && (
+                  {fieldsAddress.postalCode.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.postalCode.errors}
+                      {fieldsAddress.postalCode.errors}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsUserAddress.country.id}>Country</Label>
+                  <Label htmlFor={fieldsAddress.country.id}>Country</Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.country, {
+                    {...getInputProps(fieldsAddress.country, {
                       type: "text",
                     })}
                   />
-                  {fieldsUserAddress.country.errors && (
+                  {fieldsAddress.country.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.country.errors}
+                      {fieldsAddress.country.errors}
                     </p>
                   )}
                 </div>
@@ -387,32 +370,28 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={fieldsUserAddress.latitude.id}>
-                    Latitude
-                  </Label>
+                  <Label htmlFor={fieldsAddress.latitude.id}>Latitude</Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.latitude, {
+                    {...getInputProps(fieldsAddress.latitude, {
                       type: "text",
                     })}
                   />
-                  {fieldsUserAddress.latitude.errors && (
+                  {fieldsAddress.latitude.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.latitude.errors}
+                      {fieldsAddress.latitude.errors}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor={fieldsUserAddress.longitude.id}>
-                    Longitude
-                  </Label>
+                  <Label htmlFor={fieldsAddress.longitude.id}>Longitude</Label>
                   <Input
-                    {...getInputProps(fieldsUserAddress.longitude, {
+                    {...getInputProps(fieldsAddress.longitude, {
                       type: "text",
                     })}
                   />
-                  {fieldsUserAddress.longitude.errors && (
+                  {fieldsAddress.longitude.errors && (
                     <p className="text-sm text-destructive mt-1">
-                      {fieldsUserAddress.longitude.errors}
+                      {fieldsAddress.longitude.errors}
                     </p>
                   )}
                 </div>
@@ -424,13 +403,13 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
                 title="Additional Notes"
               >
                 <Textarea
-                  {...getInputProps(fieldsUserAddress.notes, { type: "text" })}
+                  {...getInputProps(fieldsAddress.notes, { type: "text" })}
                   placeholder="Notes for seller (optional)"
                   rows={3}
                 />
-                {fieldsUserAddress.notes.errors && (
+                {fieldsAddress.notes.errors && (
                   <p className="text-sm text-destructive mt-1">
-                    {fieldsUserAddress.notes.errors}
+                    {fieldsAddress.notes.errors}
                   </p>
                 )}
               </CheckoutCardSection>
