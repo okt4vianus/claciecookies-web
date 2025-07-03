@@ -37,6 +37,7 @@ import {
   CheckoutAddressSchema,
 } from "~/modules/checkout/schema";
 import { UserProfileSchema } from "~/modules/user/schema";
+import { useState } from "react";
 
 export function meta() {
   return [
@@ -125,13 +126,18 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   const lastResult = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
 
-  console.log("PROFILE DATA:", profile);
-  console.log("ADDRESS DATA:", address);
-
   const fetcherUserProfile = useFetcher(); // React Router
   const fetcherUserAddress = useFetcher(); // React Router
+  // const fetcherShippingMethod = useFetcher(); // React Router
+
   const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
   const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
+  // const isShippingMethodSubmitting = fetcherShippingMethod.state === "submitting";
+
+  // State for shipping method
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState(
+    "regular" // default value
+  );
 
   const [formUser, fieldsUser] = useForm({
     defaultValue: profile,
@@ -163,13 +169,22 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
     },
   });
 
+  // const shippingCost =
+  //   SHIPPING_OPTIONS.find(
+  //     (option) =>
+  //       option.value === (fieldsCheckout.shippingMethod.value || "regular")
+  //   )?.price || 15000;
+
   const shippingCost =
-    SHIPPING_OPTIONS.find(
-      (option) =>
-        option.value === (fieldsCheckout.shippingMethod.value || "regular")
-    )?.price || 15000;
+    SHIPPING_OPTIONS.find((option) => option.value === selectedShippingMethod)
+      ?.price || 15000;
 
   const totalWithShipping = cart.totalPrice + shippingCost;
+
+  console.log("PROFILE DATA:", profile);
+  console.log("ADDRESS DATA:", address);
+  console.log("SHIPPING OPTIONS:", selectedShippingMethod, shippingCost);
+  console.log("PAYMENT OPTIONS:", PAYMENT_OPTIONS);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -426,31 +441,37 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
 
           {/* Shipping Method */}
           <CheckoutCardSection icon={TruckIcon} title="Shipping Method">
-            <RadioGroup
-              defaultValue="regular"
-              name={fieldsCheckout.shippingMethod.name}
-            >
-              {SHIPPING_OPTIONS.map((option) => (
-                <RadioOption
-                  key={option.value}
-                  value={option.value}
-                  label={option.label}
-                  description={option.description}
-                  price={option.price}
-                  name={fieldsCheckout.shippingMethod.name}
-                />
-              ))}
-            </RadioGroup>
-            <input
-              {...getInputProps(fieldsCheckout.shippingMethod, {
-                type: "hidden",
-              })}
-            />
-            {fieldsCheckout.shippingMethod.errors && (
-              <p className="text-sm text-destructive">
-                {fieldsCheckout.shippingMethod.errors}
-              </p>
-            )}
+            <div className="space-y-4">
+              <RadioGroup
+                value={selectedShippingMethod}
+                onValueChange={(value) => {
+                  setSelectedShippingMethod(value);
+                }}
+              >
+                {SHIPPING_OPTIONS.map((option) => (
+                  <RadioOption
+                    key={option.value}
+                    value={option.value}
+                    label={option.label}
+                    description={option.description}
+                    price={option.price}
+                    name={fieldsCheckout.shippingMethod.name}
+                  />
+                ))}
+              </RadioGroup>
+
+              {/* <input
+                type="hidden"
+                name={fieldsCheckout.shippingMethod.name}
+                value={selectedShippingMethod}
+              />
+
+              {fieldsCheckout.shippingMethod.errors && (
+                <p className="text-sm text-destructive">
+                  {fieldsCheckout.shippingMethod.errors}
+                </p>
+              )} */}
+            </div>
           </CheckoutCardSection>
 
           {/* Payment Method */}
