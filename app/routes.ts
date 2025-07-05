@@ -17,6 +17,7 @@ export default [
     route("login", "routes/login.tsx"),
     route("logout", "routes/logout.tsx"),
     route("dashboard", "routes/dashboard.tsx"),
+    route("user/address", "routes/address.tsx"),
   ]),
 
   route("/action/user/profile", "routes/action/user/profile.ts"),

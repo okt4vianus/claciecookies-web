@@ -38,10 +38,7 @@ export function meta() {
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
-
-  if (!token) {
-    return redirect(href("/login"));
-  }
+  if (!token) return redirect(href("/login"));
 
   const [
     profileResponse,
@@ -69,6 +66,18 @@ export async function loader({ request }: Route.LoaderArgs) {
     cartResponse.data.items.length === 0
   ) {
     return redirect(href("/cart"));
+  }
+
+  if (profileResponse.error || !profileResponse.data) {
+    return redirect(href("/login"));
+  }
+
+  if (addressResponse.error || !addressResponse.data) {
+    return redirect(href("/user/address"));
+  }
+
+  if (shippingMethodsResponse.error || !shippingMethodsResponse.data) {
+    return redirect(href("/"));
   }
 
   return {
@@ -165,16 +174,10 @@ export default function CheckoutRoute({
     },
   });
 
-  // const shippingCost =
-  //   SHIPPING_OPTIONS.find(
-  //     (option) =>
-  //       option.value === (fieldsCheckout.shippingMethod.value || "regular")
-  //   )?.price || 15000;
-
+  // TODO: Later to just do this in the backend API
   const shippingCost =
-    SHIPPING_OPTIONS.find((option) => option.value === selectedShippingMethod)
+    shippingMethods.find((method) => method.slug === selectedShippingMethod)
       ?.price || 15000;
-
   const totalWithShipping = cart.totalPrice + shippingCost;
 
   console.log("PROFILE DATA:", profile);
@@ -218,13 +221,13 @@ export default function CheckoutRoute({
                   setSelectedShippingMethod(value);
                 }}
               >
-                {SHIPPING_OPTIONS.map((option) => (
+                {shippingMethods.map((method) => (
                   <RadioOption
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    description={option.description}
-                    price={option.price}
+                    key={method.slug}
+                    value={method.slug}
+                    label={method.name}
+                    description={method.description}
+                    price={method.price}
                     name={fieldsCheckout.shippingMethod.name}
                   />
                 ))}
@@ -348,27 +351,28 @@ function RadioOption({
   );
 }
 
-const SHIPPING_OPTIONS = [
-  {
-    value: "regular",
-    label: "Regular (3-5 business days)",
-    description: "Standard shipping",
-    price: 15000,
-  },
-  {
-    value: "express",
-    label: "Express (1-2 business days)",
-    description: "Fast shipping",
-    price: 25000,
-  },
-  {
-    value: "same_day",
-    label: "Same Day (Today)",
-    description: "Manado area only",
-    price: 50000,
-  },
-];
+// const SHIPPING_OPTIONS = [
+//   {
+//     value: "regular",
+//     label: "Regular (3-5 business days)",
+//     description: "Standard shipping",
+//     price: 15000,
+//   },
+//   {
+//     value: "express",
+//     label: "Express (1-2 business days)",
+//     description: "Fast shipping",
+//     price: 25000,
+//   },
+//   {
+//     value: "same_day",
+//     label: "Same Day (Today)",
+//     description: "Manado area only",
+//     price: 50000,
+//   },
+// ];
 
+// TODO: replace by payment-methods from API
 const PAYMENT_OPTIONS = [
   {
     value: "bank_transfer",
