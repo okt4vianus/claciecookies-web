@@ -1,43 +1,29 @@
-import {
-  getFormProps,
-  getInputProps,
-  useForm,
-  type FormMetadata,
-} from "@conform-to/react";
+import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import {
-  CreditCardIcon,
-  MapPinIcon,
-  TruckIcon,
-  UserIcon,
-  ShoppingCartIcon,
-} from "lucide-react";
-import {
-  Form,
-  href,
-  Link,
-  redirect,
-  useActionData,
-  useFetcher,
-  useNavigation,
-} from "react-router";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { Separator } from "~/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { CreditCardIcon, TruckIcon } from "lucide-react";
+import { useState } from "react";
+import { href, Link, redirect, useFetcher, useNavigation } from "react-router";
+
+import CustomerInformation from "@/components/checkout/customerinformation";
+import ShippingAddress from "~/components/checkout/shippingaddress";
+import OrderSummary from "~/components/checkout/checkoutsidebar";
+
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+
 import { apiClient } from "~/lib/api-client";
-import { getSession } from "~/sessions.server";
-import type { Route } from "./+types/checkout";
+
 import {
-  CheckoutSchema,
   CheckoutAddressSchema,
+  CheckoutSchema,
 } from "~/modules/checkout/schema";
 import { UserProfileSchema } from "~/modules/user/schema";
-import { useState } from "react";
+
+import { getSession } from "~/sessions.server";
+import type { Route } from "./+types/checkout";
 
 export function meta() {
   return [
@@ -57,7 +43,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(href("/login"));
   }
 
-  const [profileResponse, cartResponse, addressResponse] = await Promise.all([
+  const [
+    profileResponse,
+    cartResponse,
+    addressResponse,
+    shippingMethodsResponse,
+  ] = await Promise.all([
+    // TODO: Later
+    // GET /checkout end point response for combine profile, cart, address, shipping-method, payment-method
     apiClient.GET("/auth/profile", {
       headers: { Authorization: `Bearer ${token}` },
     }),
@@ -67,6 +60,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     apiClient.GET("/address", {
       headers: { Authorization: `Bearer ${token}` },
     }),
+    apiClient.GET("/shipping-methods"),
   ]);
 
   if (
@@ -81,9 +75,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     cart: cartResponse.data,
     profile: profileResponse.data,
     address: addressResponse.data,
+    shippingMethods: shippingMethodsResponse.data,
   };
 }
 
+// TODO: Later
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
@@ -92,15 +88,13 @@ export async function action({ request }: Route.ActionArgs) {
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: CheckoutSchema });
-
-  if (submission.status !== "success") {
-    return submission.reply();
-  }
+  if (submission.status !== "success") return submission.reply();
 
   try {
     // TODO: Change endpoint
     // @ts-ignore
-    const { data: order, error } = await apiClient.POST("/auth/checkout", {
+    // Post /checkout endpoint combine profile, cart, address, shipping-method, payment-method
+    const { data: order, error } = await apiClient.POST("/checkout", {
       body: submission.value,
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -120,10 +114,12 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
-  const { cart, profile, address } = loaderData;
+export default function CheckoutRoute({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
+  const { cart, profile, address, shippingMethods } = loaderData;
   const navigation = useNavigation();
-  const lastResult = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
 
   const fetcherUserProfile = useFetcher(); // React Router
@@ -158,7 +154,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   });
 
   const [formCheckout, fieldsCheckout] = useForm({
-    lastResult,
+    lastResult: actionData,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: CheckoutSchema });
     },
@@ -199,245 +195,19 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
         {/* Main Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Customer Information */}
-          <CheckoutCardSection icon={UserIcon} title="Customer Information">
-            <fetcherUserProfile.Form
-              method="post"
-              action="/action/user/profile"
-              className="space-y-4"
-              {...getFormProps(formUser)}
-            >
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={fieldsUser.fullName.id}>Full Name *</Label>
-                  <Input
-                    {...getInputProps(fieldsUser.fullName, {
-                      type: "text",
-                    })}
-                    placeholder="Enter your full name"
-                  />
-                  {fieldsUser.fullName.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsUser.fullName.errors}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor={fieldsUser.email.id}>Email *</Label>
-                  <Input
-                    {...getInputProps(fieldsUser.email, {
-                      type: "email",
-                    })}
-                    placeholder="email@example.com"
-                  />
-                  {fieldsUser.email.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsUser.email.errors}
-                    </p>
-                  )}
-                </div>
-
-                <div className="md:col-span-2">
-                  <Label htmlFor={fieldsUser.phoneNumber.id}>
-                    Phone Number *
-                  </Label>
-                  <Input
-                    {...getInputProps(fieldsUser.phoneNumber, {
-                      type: "tel",
-                    })}
-                    placeholder="08xxxxxxxxxx"
-                  />
-                  {fieldsUser.phoneNumber.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsUser.phoneNumber.errors}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isUserProfileSubmitting}
-              >
-                {isUserProfileSubmitting && "Saving..."}
-                {!isUserProfileSubmitting && "Save"}
-              </Button>
-            </fetcherUserProfile.Form>
-          </CheckoutCardSection>
-
+          <CustomerInformation
+            fetcherUserProfile={fetcherUserProfile}
+            formUser={formUser}
+            fieldsUser={fieldsUser}
+            isSubmitting={isUserProfileSubmitting}
+          />
           {/* Shipping Address */}
-          <CheckoutCardSection icon={MapPinIcon} title="Shipping Address">
-            <fetcherUserAddress.Form
-              method="post"
-              action="/action/user/address"
-              className="space-y-4"
-              {...getFormProps(formAddress)}
-            >
-              <input {...getInputProps(fieldsAddress.id, { type: "hidden" })} />
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={fieldsAddress.recipientName.id}>
-                    Recipient Name *
-                  </Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.recipientName, {
-                      type: "text",
-                    })}
-                    placeholder="Receiver name"
-                  />
-                  {fieldsAddress.recipientName.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.recipientName.errors}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor={fieldsAddress.phone.id}>Phone *</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.phone, {
-                      type: "tel",
-                    })}
-                    placeholder="08xxxxxxxxxx"
-                  />
-                  {fieldsAddress.phone.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.phone.errors}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor={fieldsAddress.street.id}>
-                  Complete Address - {fieldsAddress.label.initialValue} *
-                </Label>
-                <Textarea
-                  {...getInputProps(fieldsAddress.street, { type: "text" })}
-                  rows={3}
-                  placeholder="Street, house no, unit"
-                />
-                {fieldsAddress.street.errors && (
-                  <p className="text-sm text-destructive mt-1">
-                    {fieldsAddress.street.errors}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={fieldsAddress.city.id}>City *</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.city, { type: "text" })}
-                  />
-                  {fieldsAddress.city.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.city.errors}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor={fieldsAddress.province.id}>Province *</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.province, {
-                      type: "text",
-                    })}
-                  />
-                  {fieldsAddress.province.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.province.errors}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={fieldsAddress.postalCode.id}>
-                    Postal Code *
-                  </Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.postalCode, {
-                      type: "text",
-                    })}
-                  />
-                  {fieldsAddress.postalCode.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.postalCode.errors}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor={fieldsAddress.country.id}>Country</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.country, {
-                      type: "text",
-                    })}
-                  />
-                  {fieldsAddress.country.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.country.errors}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={fieldsAddress.latitude.id}>Latitude</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.latitude, {
-                      type: "text",
-                    })}
-                  />
-                  {fieldsAddress.latitude.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.latitude.errors}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor={fieldsAddress.longitude.id}>Longitude</Label>
-                  <Input
-                    {...getInputProps(fieldsAddress.longitude, {
-                      type: "text",
-                    })}
-                  />
-                  {fieldsAddress.longitude.errors && (
-                    <p className="text-sm text-destructive mt-1">
-                      {fieldsAddress.longitude.errors}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Notes */}
-              <CheckoutCardSection
-                icon={ShoppingCartIcon}
-                title="Additional Notes"
-              >
-                <Textarea
-                  {...getInputProps(fieldsAddress.notes, { type: "text" })}
-                  placeholder="Notes for seller (optional)"
-                  rows={3}
-                />
-                {fieldsAddress.notes.errors && (
-                  <p className="text-sm text-destructive mt-1">
-                    {fieldsAddress.notes.errors}
-                  </p>
-                )}
-              </CheckoutCardSection>
-
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isUserAddressSubmitting}
-              >
-                {isUserAddressSubmitting ? "Saving..." : "Save"}
-              </Button>
-            </fetcherUserAddress.Form>
-          </CheckoutCardSection>
+          <ShippingAddress
+            fetcherUserAddress={fetcherUserAddress}
+            formAddress={formAddress}
+            fieldsAddress={fieldsAddress}
+            isSubmitting={isUserAddressSubmitting}
+          />
 
           {/* Shipping Method */}
           <CheckoutCardSection icon={TruckIcon} title="Shipping Method">
@@ -501,77 +271,16 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
               </p>
             )}
           </CheckoutCardSection>
-
-          {/* Notes
-          <CheckoutCardSection icon={ShoppingCartIcon} title="Additional Notes">
-            <Textarea
-              {...getInputProps(fieldsCheckout.notes, { type: "text" })}
-              placeholder="Notes for seller (optional)"
-              rows={3}
-            />
-            {fieldsCheckout.notes.errors && (
-              <p className="text-sm text-destructive mt-1">
-                {fieldsCheckout.notes.errors}
-              </p>
-            )}
-          </CheckoutCardSection> */}
         </div>
 
         {/* Order Summary Sidebar */}
-        <div className="space-y-6">
-          {/* Order Items */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {cart.items.map((item) => (
-                <div key={item.id} className="flex gap-3">
-                  <img
-                    src={item.product.images?.[0]?.url ?? "/placeholder.jpg"}
-                    alt={item.product.name}
-                    className="w-12 h-12 rounded object-cover"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm truncate">
-                      {item.product.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {item.quantity} x Rp
-                      {item.product.price.toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                  <div className="font-semibold text-sm">
-                    Rp {item.subTotalPrice.toLocaleString("id-ID")}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Total */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Total</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span>Subtotal ({cart.items.length} items)</span>
-                <span>Rp {cart.totalPrice.toLocaleString("id-ID")}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping Cost</span>
-                <span>Rp {shippingCost.toLocaleString("id-ID")}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span className="text-primary">
-                  Rp {totalWithShipping.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+        <aside className="space-y-6 sticky top-16 self-start">
+          <OrderSummary
+            cartItems={cart.items}
+            totalPrice={cart.totalPrice}
+            shippingCost={shippingCost}
+            totalWithShipping={totalWithShipping}
+          />
 
           {/* Action Buttons */}
           <div className="space-y-3">
@@ -591,7 +300,7 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
           <div className="text-center text-sm text-muted-foreground">
             <p>🔒 Your information is secure and encrypted</p>
           </div>
-        </div>
+        </aside>
       </div>
 
       {/* Form Errors */}
