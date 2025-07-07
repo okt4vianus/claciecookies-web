@@ -4,258 +4,237 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
 import { Phone, Plus, User } from "lucide-react";
+import { useFetcher } from "react-router";
+import { CreateAddressSchema } from "~/modules/user/schema";
 
 export default function UserAddress() {
+  const fetcherAddress = useFetcher();
+
+  const [formAddress, fieldsAddress] = useForm({
+    id: "create-address",
+    lastResult: fetcherAddress.data?.submission,
+    shouldValidate: "onSubmit",
+    onValidate({ formData }) {
+      return parseWithZod(formData, {
+        schema: CreateAddressSchema,
+      });
+    },
+  });
+
   return (
-    <div className="container max-w-3xl mx-auto px-4 py-8">
-      <div className="mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+    <fetcherAddress.Form
+      method="post"
+      action="/action/user/create-address"
+      {...getFormProps(formAddress)}
+    >
+      <div className="container max-w-3xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Manage Address</h1>
-          <p className="text-muted-foreground mt-2">
-            Add, edit, or remove your delivery addresses
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold">Manage Address</h1>
+            <p className="text-muted-foreground mt-2">
+              Add, edit, or remove your delivery addresses
+            </p>
+          </div>
         </div>
 
-        {/* Add New Button */}
-        <Button className="mb-6 flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          New Address
-        </Button>
-      </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">
+              Address Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Label */}
+            <div className="max-w-xs">
+              <Label htmlFor={fieldsAddress.label.id}>Address Label *</Label>
+              <Input
+                {...getInputProps(fieldsAddress.label, { type: "text" })}
+                placeholder="Contoh: Rumah di Manado"
+              />
+              {fieldsAddress.label.errors && (
+                <p className="text-sm text-red-500">
+                  {fieldsAddress.label.errors[0]}
+                </p>
+              )}
+            </div>
 
-      {/* Card Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            Address Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Address Label */}
-          <div className="max-w-xs">
-            <Label htmlFor="label" className="mb-2 block">
-              Address Label *
-            </Label>
-            <Input
-              id="label"
-              name="label"
-              placeholder="Contoh: Rumah di Manado"
-            />
-          </div>
+            {/* Recipient + Phone */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor={fieldsAddress.recipientName.id}>
+                  Recipient Name *
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    {...getInputProps(fieldsAddress.recipientName, {
+                      type: "text",
+                    })}
+                    placeholder="John Doe"
+                    className="pl-10"
+                  />
+                </div>
+                {fieldsAddress.recipientName.errors && (
+                  <p className="text-sm text-red-500">
+                    {fieldsAddress.recipientName.errors[0]}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor={fieldsAddress.phone.id}>Phone Number *</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    {...getInputProps(fieldsAddress.phone, { type: "text" })}
+                    placeholder="08123456789"
+                    className="pl-10"
+                  />
+                </div>
+                {fieldsAddress.phone.errors && (
+                  <p className="text-sm text-red-500">
+                    {fieldsAddress.phone.errors[0]}
+                  </p>
+                )}
+              </div>
+            </div>
 
-          {/* Recipient + Phone */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+            {/* Street */}
             <div>
-              <Label htmlFor="recipientName" className="mb-2 block">
-                Recipient Name *
-              </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Label htmlFor={fieldsAddress.street.id}>Street Address *</Label>
+              <Textarea
+                {...getInputProps(fieldsAddress.street, { type: "text" })}
+                rows={3}
+                placeholder="Jl. Mawar No. 123"
+              />
+              {fieldsAddress.street.errors && (
+                <p className="text-sm text-red-500">
+                  {fieldsAddress.street.errors[0]}
+                </p>
+              )}
+            </div>
+
+            {/* City + Province */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor={fieldsAddress.city.id}>City *</Label>
+                <select
+                  {...getInputProps(fieldsAddress.city, { type: "text" })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select City</option>
+                  <option>Manado</option>
+                  <option>Bitung</option>
+                  <option>Tomohon</option>
+                  <option>Minahasa</option>
+                  <option>Minahasa Utara</option>
+                </select>
+                {fieldsAddress.city.errors && (
+                  <p className="text-sm text-red-500">
+                    {fieldsAddress.city.errors[0]}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor={fieldsAddress.province.id}>Province *</Label>
                 <Input
-                  id="recipientName"
-                  name="recipientName"
-                  placeholder="John Doe"
-                  className="pl-10"
+                  {...getInputProps(fieldsAddress.province, { type: "text" })}
+                  defaultValue="Sulawesi Utara"
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="phone" className="mb-2 block">
-                Phone Number *
-              </Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+
+            {/* Postal Code + Landmark */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor={fieldsAddress.postalCode.id}>
+                  Postal Code *
+                </Label>
                 <Input
-                  id="phone"
-                  name="phone"
-                  placeholder="08123456789"
-                  className="pl-10"
+                  {...getInputProps(fieldsAddress.postalCode, { type: "text" })}
+                  placeholder="95111"
+                />
+              </div>
+              <div>
+                <Label htmlFor={fieldsAddress.landmark.id}>Landmark</Label>
+                <Input
+                  {...getInputProps(fieldsAddress.landmark, { type: "text" })}
+                  placeholder="Dekat minimarket"
                 />
               </div>
             </div>
-          </div>
 
-          {/* Street Address */}
-          <div className="max-w-2xl">
-            <Label htmlFor="street" className="mb-2 block">
-              Street Address *
-            </Label>
-            <Textarea
-              id="street"
-              name="street"
-              placeholder="Jl. Mawar No. 123"
-              rows={3}
-            />
-          </div>
-
-          {/* City + Province */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+            {/* Notes */}
             <div>
-              <Label htmlFor="city" className="mb-2 block">
-                City *
+              <Label htmlFor={fieldsAddress.notes.id}>Notes</Label>
+              <Textarea
+                {...getInputProps(fieldsAddress.notes, { type: "text" })}
+                placeholder="Catatan kurir"
+                rows={2}
+              />
+            </div>
+
+            {/* Lat / Long */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor={fieldsAddress.latitude.id}>Latitude</Label>
+                <Input
+                  {...getInputProps(fieldsAddress.latitude, { type: "number" })}
+                  step="any"
+                />
+              </div>
+              <div>
+                <Label htmlFor={fieldsAddress.longitude.id}>Longitude</Label>
+                <Input
+                  {...getInputProps(fieldsAddress.longitude, {
+                    type: "number",
+                  })}
+                  step="any"
+                />
+              </div>
+            </div>
+
+            {/* Default */}
+            <div className="flex items-center space-x-2">
+              {/* <Checkbox
+                {...getInputProps(fieldsAddress.isDefault, {
+                  type: "checkbox",
+                })}
+              /> */}
+              <Checkbox id="isDefault" />
+              <Label htmlFor={fieldsAddress.isDefault.id}>
+                Set as default address
               </Label>
-              <select
-                id="city"
-                name="city"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                defaultValue=""
+              <Input
+                type="hidden"
+                name={fieldsAddress.isActive.name}
+                value="true"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="submit"
+                disabled={fetcherAddress.state === "submitting"}
+                className="flex-1"
               >
-                <option value="" disabled>
-                  Select City
-                </option>
-                <option>Manado</option>
-                <option>Minahasa Utara</option>
-                <option>Bitung</option>
-                <option>Minahasa</option>
-                <option>Tomohon</option>
-              </select>
+                {fetcherAddress.state === "submitting"
+                  ? "Saving..."
+                  : "Save Address"}
+              </Button>
+              <Button type="button" variant="outline" className="flex-1">
+                Cancel
+              </Button>
             </div>
-            <div>
-              <Label htmlFor="province" className="mb-2 block">
-                Province *
-              </Label>
-              <Input
-                id="province"
-                name="province"
-                defaultValue="Sulawesi Utara"
-                readOnly
-                className="bg-gray-100 cursor-not-allowed"
-              />
-            </div>
-          </div>
-
-          {/* Postal Code + Landmark */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-            <div>
-              <Label htmlFor="postalCode" className="mb-2 block">
-                Postal Code *
-              </Label>
-              <Input id="postalCode" name="postalCode" placeholder="95115" />
-            </div>
-            <div>
-              <Label htmlFor="landmark" className="mb-2 block">
-                Landmark (Optional)
-              </Label>
-              <Input
-                id="landmark"
-                name="landmark"
-                placeholder="Dekat minimarket"
-              />
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className="max-w-2xl">
-            <Label htmlFor="notes" className="mb-2 block">
-              Delivery Notes (Optional)
-            </Label>
-            <Textarea
-              id="notes"
-              name="notes"
-              placeholder="Tambahan instruksi kurir"
-              rows={2}
-            />
-          </div>
-
-          {/* Latitude & Longitude */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-            <div>
-              <Label htmlFor="latitude" className="mb-2 block">
-                Latitude
-              </Label>
-              <Input
-                id="latitude"
-                name="latitude"
-                placeholder="-1.5000"
-                type="number"
-                step="any"
-              />
-            </div>
-            <div>
-              <Label htmlFor="longitude" className="mb-2 block">
-                Longitude
-              </Label>
-              <Input
-                id="longitude"
-                name="longitude"
-                placeholder="124.8000"
-                type="number"
-                step="any"
-              />
-            </div>
-          </div>
-
-          {/* Button: Use Current Location */}
-          <div className="pt-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={async () => {
-                if (!navigator.geolocation) {
-                  alert("Geolocation is not supported by your browser.");
-                  return;
-                }
-
-                navigator.geolocation.getCurrentPosition(
-                  async (position) => {
-                    const { latitude, longitude } = position.coords;
-
-                    console.log("📍 Latitude:", latitude);
-                    console.log("📍 Longitude:", longitude);
-
-                    try {
-                      const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-                      );
-                      const data = await response.json();
-
-                      const city =
-                        data.address.city ||
-                        data.address.town ||
-                        data.address.village ||
-                        "Unknown";
-
-                      const postalCode = data.address.postcode || "Unknown";
-
-                      console.log("🏙️ City:", city);
-                      console.log("📮 Postal Code:", postalCode);
-                    } catch (error) {
-                      console.error(
-                        "❌ Failed to fetch reverse geocoding:",
-                        error
-                      );
-                    }
-                  },
-                  (error) => {
-                    alert("Unable to retrieve your location.");
-                    console.error("❌ Geolocation error:", error);
-                  }
-                );
-              }}
-            >
-              Use Current Location
-            </Button>
-          </div>
-
-          {/* Checkbox */}
-          <div className="flex items-center space-x-2">
-            <Checkbox id="isDefault" />
-            <Label htmlFor="isDefault">Set as default address</Label>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3 pt-4 max-w-md">
-            <Button type="submit" className="flex-1">
-              Save Address
-            </Button>
-            <Button type="button" variant="outline" className="flex-1">
-              Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </fetcherAddress.Form>
   );
 }
