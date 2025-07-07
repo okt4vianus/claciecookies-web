@@ -1,9 +1,4 @@
-import {
-  type RouteConfig,
-  index,
-  layout,
-  route,
-} from "@react-router/dev/routes";
+import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
 
 export default [
   layout("layout/layout-main.tsx", [
@@ -20,14 +15,16 @@ export default [
     route("user/address", "routes/address.tsx"),
   ]),
 
+  // User Profile
   route("/action/user/profile", "routes/action/user/profile.ts"),
-  route("/action/user/address", "routes/action/user/address.ts"),
-  route(
-    "/action/user/shipping-method",
-    "routes/action/user/shipping-method.ts"
-  ),
+
+  // Address
+  route("/action/user/create-address", "routes/action/user/create-address.ts"),
+  route("/action/user/update-address", "routes/action/user/update-address.ts"),
+
+  // Checkout
+  route("/action/user/shipping-method", "routes/action/user/shipping-method.ts"),
   route("/action/user/payment-method", "routes/action/user/payment-method.ts"),
-  route("/action/user/notes", "routes/action/user/notes.ts"),
 
   //   layout("layout/admin.tsx", [
   //     index("routes/admin/dashboard.tsx"),

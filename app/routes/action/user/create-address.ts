@@ -1,5 +1,5 @@
 import { parseWithZod } from "@conform-to/zod";
-import type { Route } from "./+types/address";
+import type { Route } from "./+types/create-address";
 import { CreateAddressSchema } from "~/modules/user/schema";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
@@ -11,6 +11,8 @@ export const action = async ({ request }: Route.ActionArgs) => {
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: CreateAddressSchema });
   if (submission.status !== "success") return submission.reply();
+
+  console.log({ submission });
 
   const { data } = await apiClient.POST("/address", {
     headers: { Authorization: `Bearer ${token}` },

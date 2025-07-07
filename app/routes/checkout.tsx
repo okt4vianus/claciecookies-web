@@ -16,10 +16,7 @@ import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
 import { apiClient } from "~/lib/api-client";
 
-import {
-  CheckoutAddressSchema,
-  CheckoutSchema,
-} from "~/modules/checkout/schema";
+import { CheckoutAddressSchema, CheckoutSchema } from "~/modules/checkout/schema";
 import { UserProfileSchema } from "~/modules/user/schema";
 
 import { getSession } from "~/sessions.server";
@@ -40,12 +37,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const token = session.get("token");
   if (!token) return redirect(href("/login"));
 
-  const [
-    profileResponse,
-    cartResponse,
-    addressResponse,
-    shippingMethodsResponse,
-  ] = await Promise.all([
+  const [profileResponse, cartResponse, addressResponse, shippingMethodsResponse] = await Promise.all([
     // TODO: Later
     // GET /checkout end point response for combine profile, cart, address, shipping-method, payment-method
     apiClient.GET("/auth/profile", {
@@ -60,22 +52,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     apiClient.GET("/shipping-methods"),
   ]);
 
-  if (
-    cartResponse.error ||
-    !cartResponse.data ||
-    cartResponse.data.items.length === 0
-  ) {
+  if (cartResponse.error || !cartResponse.data) {
     return redirect(href("/cart"));
   }
-
   if (profileResponse.error || !profileResponse.data) {
     return redirect(href("/login"));
   }
-
   if (addressResponse.error || !addressResponse.data) {
     return redirect(href("/user/address"));
   }
-
   if (shippingMethodsResponse.error || !shippingMethodsResponse.data) {
     return redirect(href("/"));
   }
@@ -123,10 +108,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function CheckoutRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
+export default function CheckoutRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { cart, profile, address, shippingMethods } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
@@ -175,9 +157,7 @@ export default function CheckoutRoute({
   });
 
   // TODO: Later to just do this in the backend API
-  const shippingCost =
-    shippingMethods.find((method) => method.slug === selectedShippingMethod)
-      ?.price || 15000;
+  const shippingCost = shippingMethods.find((method) => method.slug === selectedShippingMethod)?.price || 15000;
   const totalWithShipping = cart.totalPrice + shippingCost;
 
   console.log("PROFILE DATA:", profile);
@@ -189,9 +169,7 @@ export default function CheckoutRoute({
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Checkout</h1>
-        <p className="text-muted-foreground mt-2">
-          Complete your information to finish your purchase
-        </p>
+        <p className="text-muted-foreground mt-2">Complete your information to finish your purchase</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -249,10 +227,7 @@ export default function CheckoutRoute({
 
           {/* Payment Method */}
           <CheckoutCardSection icon={CreditCardIcon} title="Payment Method">
-            <RadioGroup
-              defaultValue="bank_transfer"
-              name={fieldsCheckout.paymentMethod.name}
-            >
+            <RadioGroup defaultValue="bank_transfer" name={fieldsCheckout.paymentMethod.name}>
               {PAYMENT_OPTIONS.map((option) => (
                 <RadioOption
                   key={option.value}
@@ -269,9 +244,7 @@ export default function CheckoutRoute({
               })}
             />
             {fieldsCheckout.paymentMethod.errors && (
-              <p className="text-sm text-destructive">
-                {fieldsCheckout.paymentMethod.errors}
-              </p>
+              <p className="text-sm text-destructive">{fieldsCheckout.paymentMethod.errors}</p>
             )}
           </CheckoutCardSection>
         </div>
@@ -287,12 +260,7 @@ export default function CheckoutRoute({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isSubmitting}
-              className="w-full"
-            >
+            <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
               {isSubmitting ? "Processing..." : "Pay Now"}
             </Button>
             <Button variant="outline" size="lg" asChild className="w-full">
@@ -309,9 +277,7 @@ export default function CheckoutRoute({
       {/* Form Errors */}
       {formCheckout.errors && (
         <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <p className="text-sm text-destructive font-medium">
-            {formCheckout.errors}
-          </p>
+          <p className="text-sm text-destructive font-medium">{formCheckout.errors}</p>
         </div>
       )}
     </div>
