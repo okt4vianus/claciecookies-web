@@ -11,6 +11,7 @@ import { z } from "zod";
 import { apiClient } from "~/lib/api-client";
 
 import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
+import { commitSession, getSession } from "~/sessions.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -30,6 +31,7 @@ const registerSchema = z.object({
 });
 
 export async function action({ request }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: registerSchema });
@@ -54,8 +56,16 @@ export async function action({ request }: Route.ActionArgs) {
         : undefined,
     });
   }
+  session.set(
+    "toastMessage",
+    `Account created successfully! Welcome, ${submission.value.fullName}.`
+  );
 
-  return redirect(href("/login"));
+  // return redirect(href("/login"));
+
+  return redirect(href("/login"), {
+    headers: { "Set-Cookie": await commitSession(session) },
+  });
 }
 
 export default function RegisterRoute({ actionData }: Route.ComponentProps) {

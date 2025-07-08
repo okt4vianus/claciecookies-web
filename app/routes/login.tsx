@@ -7,7 +7,7 @@ import type { Route } from "./+types/login";
 
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
 import { apiClient } from "~/lib/api-client";
@@ -15,6 +15,7 @@ import { apiClient } from "~/lib/api-client";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { commitSession, getSession } from "~/sessions.server";
 import { ThemeToggle } from "~/components/ui/toggle";
+import { toast } from "sonner";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -29,12 +30,14 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
+  const toastMessage = session.get("toastMessage");
+
   if (session.has("userId")) {
     return redirect(href("/dashboard"));
   }
 
   return data(
-    { error: session.get("error") },
+    { error: session.get("error"), toastMessage },
     { headers: { "Set-Cookie": await commitSession(session) } }
   );
 }
@@ -88,10 +91,20 @@ export async function action({ request }: Route.ActionArgs) {
   });
 }
 
-export default function LoginRoute({ actionData }: Route.ComponentProps) {
+export default function LoginRoute({
+  actionData,
+  loaderData,
+}: Route.ComponentProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const lastResult = actionData;
+  const { toastMessage } = loaderData;
+
+  useEffect(() => {
+    if (toastMessage) {
+      toast.success(toastMessage);
+    }
+  }, [toastMessage]);
 
   const [form, fields] = useForm({
     shouldValidate: "onSubmit",
