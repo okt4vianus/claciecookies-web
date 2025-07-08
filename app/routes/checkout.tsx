@@ -24,6 +24,7 @@ import { UserProfileSchema } from "~/modules/user/schema";
 
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/checkout";
+import { log } from "node:console";
 
 export function meta() {
   return [
@@ -71,6 +72,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (profileResponse.error || !profileResponse.data) {
     return redirect(href("/login"));
   }
+
+  // FIX: Address response is required
+  console.log("Address Response Data:", addressResponse.data);
 
   if (addressResponse.error || !addressResponse.data) {
     return redirect(href("/user/address"));
@@ -133,13 +137,12 @@ export default function CheckoutRoute({
 
   const fetcherUserProfile = useFetcher(); // React Router
   const fetcherUserAddress = useFetcher(); // React Router
-  // const fetcherShippingMethod = useFetcher(); // React Router
 
   const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
   const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
-  // const isShippingMethodSubmitting = fetcherShippingMethod.state === "submitting";
 
-  // State for shipping method
+  // TODO: Combine everything for checkout with Checkout's useForm
+  // Can remove useState later
   const [selectedShippingMethod, setSelectedShippingMethod] = useState(
     "regular" // default value
   );

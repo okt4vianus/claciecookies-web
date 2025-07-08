@@ -81,8 +81,9 @@ export async function action({ request }: Route.ActionArgs) {
 
   session.set("userId", loginResponse.user.id);
   session.set("token", loginResponse.token);
+  session.set("toastMessage", "Welcome back! You have successfully logged in.");
 
-  return redirect(href("/dashboard"), {
+  return redirect(href("/"), {
     headers: { "Set-Cookie": await commitSession(session) },
   });
 }
