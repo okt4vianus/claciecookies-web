@@ -126,12 +126,26 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
+                        {/* <Button
                           size="sm"
                           className="px-2 sm:px-3"
                           variant="secondary"
                         >
                           {user.username}
+                        </Button> */}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="p-0 rounded-full overflow-hidden"
+                        >
+                          <img
+                            src={
+                              user.avatar ??
+                              `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
+                            }
+                            alt={user.username}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
