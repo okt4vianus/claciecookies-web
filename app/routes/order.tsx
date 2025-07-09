@@ -1,19 +1,11 @@
 import {
   CheckCircleIcon,
   ClockIcon,
+  PackageIcon,
   TruckIcon,
   XCircleIcon,
-  PackageIcon,
-  MapPinIcon,
-  CreditCardIcon,
-  PhoneIcon,
-  MailIcon,
 } from "lucide-react";
-import { href, Link, redirect } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Separator } from "~/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { href, redirect } from "react-router";
 import { apiClient } from "~/lib/api-client";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/order.$orderId";

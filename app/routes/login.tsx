@@ -13,9 +13,8 @@ import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
 import { apiClient } from "~/lib/api-client";
 
 import { Eye, EyeOff, LogIn } from "lucide-react";
-import { commitSession, getSession } from "~/sessions.server";
-import { ThemeToggle } from "~/components/ui/toggle";
 import { toast } from "sonner";
+import { commitSession, getSession } from "~/sessions.server";
 
 export function meta({}: Route.MetaArgs) {
   return [

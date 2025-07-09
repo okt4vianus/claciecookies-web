@@ -12,9 +12,9 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { apiClient } from "~/lib/api-client";
+import { UpdateCartItemQuantitySchema } from "~/modules/cart/schema";
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/cart";
-import { UpdateCartItemQuantitySchema } from "~/modules/cart/schema";
 
 export function meta() {
   return [

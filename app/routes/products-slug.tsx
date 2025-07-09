@@ -1,20 +1,3 @@
-import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import {
-  Form,
-  href,
-  Link,
-  redirect,
-  useNavigate,
-  useNavigation,
-} from "react-router";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { apiClient } from "~/lib/api-client";
-import { getSession } from "~/sessions.server";
-import type { Route } from "./+types/products-slug";
 import {
   getFormProps,
   getInputProps,
@@ -22,8 +5,18 @@ import {
   useInputControl,
 } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { AddProductToCartSchema } from "~/modules/product/schema";
+import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
+import { useEffect } from "react";
+import { Form, href, redirect, useNavigate, useNavigation } from "react-router";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { apiClient } from "~/lib/api-client";
+import { AddProductToCartSchema } from "~/modules/product/schema";
+import { getSession } from "~/sessions.server";
+import type { Route } from "./+types/products-slug";
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {

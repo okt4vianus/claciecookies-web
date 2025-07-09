@@ -1,12 +1,12 @@
 import { Package, Settings, User } from "lucide-react";
 import { useState } from "react";
+import { href, redirect } from "react-router";
 import { Orders } from "~/components/dashboard/orders";
 import Overview from "~/components/dashboard/overview";
 import { Profile } from "~/components/dashboard/profile";
-import type { Route } from "./+types/dashboard";
-import { getSession } from "~/sessions.server";
 import { apiClient } from "~/lib/api-client";
-import { href, redirect } from "react-router";
+import { getSession } from "~/sessions.server";
+import type { Route } from "./+types/dashboard";
 
 export function meta({}: Route.MetaArgs) {
   return [

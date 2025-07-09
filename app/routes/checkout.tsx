@@ -5,8 +5,8 @@ import { useState } from "react";
 import { href, Link, redirect, useFetcher, useNavigation } from "react-router";
 
 import CustomerInformation from "@/components/checkout/customerinformation";
-import ShippingAddress from "~/components/checkout/shippingaddress";
 import OrderSummary from "~/components/checkout/checkoutsidebar";
+import ShippingAddress from "~/components/checkout/shippingaddress";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -24,7 +24,6 @@ import { UserProfileSchema } from "~/modules/user/schema";
 
 import { getSession } from "~/sessions.server";
 import type { Route } from "./+types/checkout";
-import { log } from "node:console";
 
 export function meta() {
   return [

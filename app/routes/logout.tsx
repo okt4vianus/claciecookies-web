@@ -1,8 +1,8 @@
+import { LogOut } from "lucide-react";
 import { Form, Link, redirect } from "react-router";
+import { Button } from "~/components/ui/button";
 import { destroySession, getSession } from "~/sessions.server";
 import type { Route } from "./+types/logout";
-import { Button } from "~/components/ui/button";
-import { LogOut } from "lucide-react";
 
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
