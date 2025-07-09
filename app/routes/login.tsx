@@ -31,6 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
   const toastMessage = session.get("toastMessage");
+  session.unset("toastMessage");
 
   if (session.has("userId")) {
     return redirect(href("/dashboard"));
@@ -84,7 +85,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   session.set("userId", loginResponse.user.id);
   session.set("token", loginResponse.token);
-  session.set("toastMessage", "Welcome back! You have successfully logged in.");
+  session.set("toastMessage", `Welcome back, ${loginResponse.user.fullName}.`);
 
   return redirect(href("/"), {
     headers: { "Set-Cookie": await commitSession(session) },

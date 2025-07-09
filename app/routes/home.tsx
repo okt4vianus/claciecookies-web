@@ -22,7 +22,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const toastMessage = session.get("toastMessage");
 
-  // session.unset("toastMessage");
+  session.unset("toastMessage");
 
   const { data: products, error } = await apiClient.GET("/products");
   if (error) throw new Response(`Failed to fetch products`, { status: 500 });
