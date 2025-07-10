@@ -2,7 +2,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { apiClient } from "~/lib/api-client";
 import { CheckoutAddressSchema } from "~/modules/checkout/schema";
 import { getSession } from "~/sessions.server";
-import type { Route } from "./+types/address";
+import type { Route } from "./+types/update-address";
 
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
