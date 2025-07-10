@@ -149,12 +149,6 @@ export default function CheckoutRoute({
 	const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
 	const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
 
-	// TODO: Combine everything for checkout with Checkout's useForm
-	// Can remove useState later
-	// const [selectedShippingMethod, setSelectedShippingMethod] = useState(
-	// 	"same_day", // default value
-	// );
-
 	const [formUser, fieldsUser] = useForm({
 		defaultValue: profile,
 		onValidate({ formData }) {
@@ -186,14 +180,6 @@ export default function CheckoutRoute({
 		},
 		defaultValue: defaultCheckoutValues,
 	});
-
-	// TODO: Later to just do this in the backend API
-
-	// const shippingCost =
-	// 	shippingMethods.find((method) => method.slug === selectedShippingMethod)
-	// 		?.price || 15000;
-	// const totalWithShipping = cart.totalPrice + shippingCost;
-	// const currentShippingMethod = formCheckout.value?.shippingMethod ?? "regular";
 
 	// useState for selected shipping method
 	const [selectedShippingMethod, setSelectedShippingMethod] = useState(
@@ -245,12 +231,6 @@ export default function CheckoutRoute({
 					{/* Shipping Method */}
 					<CheckoutCardSection icon={TruckIcon} title="Shipping Method">
 						<div>
-							{/* <RadioGroup
-								value={selectedShippingMethod}
-								onValueChange={(value) => {
-									setSelectedShippingMethod(value);
-								}}
-							> */}
 							<RadioGroup
 								name={fieldsCheckout.shippingMethod.name}
 								defaultValue={selectedShippingMethod}
@@ -387,46 +367,6 @@ function RadioOption({
 		</div>
 	);
 }
-
-// const SHIPPING_OPTIONS = [
-//   {
-//     value: "regular",
-//     label: "Regular (3-5 business days)",
-//     description: "Standard shipping",
-//     price: 15000,
-//   },
-//   {
-//     value: "express",
-//     label: "Express (1-2 business days)",
-//     description: "Fast shipping",
-//     price: 25000,
-//   },
-//   {
-//     value: "same_day",
-//     label: "Same Day (Today)",
-//     description: "Manado area only",
-//     price: 50000,
-//   },
-// ];
-
-// TODO: replace by payment-methods from API
-const PAYMENT_OPTIONS = [
-	{
-		value: "bank_transfer",
-		label: "Bank Transfer",
-		description: "BCA, Mandiri, BNI, BRI",
-	},
-	{
-		value: "e_wallet",
-		label: "E-Wallet",
-		description: "GoPay, OVO, Dana, ShopeePay",
-	},
-	{
-		value: "cod",
-		label: "Cash on Delivery (COD)",
-		description: "Pay when order is delivered",
-	},
-];
 
 function CheckoutCardSection({
 	icon: Icon,
