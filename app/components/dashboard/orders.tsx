@@ -3,7 +3,7 @@ import type { JSX } from "react";
 
 export function Orders({
   orders,
-  getStatusBadge,
+  // getStatusBadge,
 }: {
   orders: {
     id: string;
@@ -76,9 +76,9 @@ export function Orders({
 
                 {/* Product List */}
                 <div className="space-y-3">
-                  {order.products.map((product, index) => (
+                  {order.products.map((product) => (
                     <div
-                      key={index}
+                      key={product.name}
                       className="flex items-center gap-4 p-3 bg-background/50 rounded-xl border border-border"
                     >
                       <img
@@ -99,7 +99,7 @@ export function Orders({
                         <p className="font-semibold text-foreground">
                           Rp{" "}
                           {(product.price * product.quantity).toLocaleString(
-                            "id-ID"
+                            "id-ID",
                           )}
                         </p>
                       </div>

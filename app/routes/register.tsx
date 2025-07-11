@@ -1,19 +1,17 @@
-import { Form, href, redirect } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
-import type { Route } from "./+types/register";
-
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
+import { Form, href, redirect } from "react-router";
 import { z } from "zod";
-import { apiClient } from "~/lib/api-client";
+import { AlertError, AlertErrorSimple } from "@/components/common/alert-error";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { apiClient } from "@/lib/api-client";
+import { commitSession, getSession } from "@/sessions.server";
+import type { Route } from "./+types/register";
 
-import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
-import { commitSession, getSession } from "~/sessions.server";
-
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "Register - Clacie Cookies" },
     {
@@ -42,11 +40,12 @@ export async function action({ request }: Route.ActionArgs) {
     "/auth/register",
     {
       body: submission.value,
-    }
+    },
   );
 
   if (error || !registerResponse) {
     const fields = ["username", "email"];
+    // biome-ignore lint/suspicious/noExplicitAny: "This is fine"
     const target = (error as any).details?.meta?.target?.[0];
 
     return submission.reply({
@@ -58,7 +57,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
   session.set(
     "toastMessage",
-    `Account created successfully! Welcome, ${submission.value.fullName}.`
+    `Account created successfully! Welcome, ${submission.value.fullName}.`,
   );
 
   // return redirect(href("/login"));

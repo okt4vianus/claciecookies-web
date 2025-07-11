@@ -1,9 +1,9 @@
-import { ProductItems } from "~/components/product/product-items";
-import { apiClient } from "~/lib/api-client";
+import { ProductItems } from "@/components/product/product-items";
+import { apiClient } from "@/lib/api-client";
 import type { Route } from "./+types/search";
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: "Search Results - Clacie Cookies" }];
+export function meta(_: Route.MetaArgs) {
+  return [{ title: "Products found on search results - Clacie Cookies" }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

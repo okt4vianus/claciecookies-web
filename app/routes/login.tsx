@@ -1,22 +1,20 @@
-import { data, Form, href, redirect } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
-import type { Route } from "./+types/login";
-
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { useEffect, useState } from "react";
-import { z } from "zod";
-import { AlertError, AlertErrorSimple } from "~/components/common/alert-error";
-import { apiClient } from "~/lib/api-client";
-
 import { Eye, EyeOff, LogIn } from "lucide-react";
+import { useEffect, useState } from "react";
+import { data, Form, href, redirect } from "react-router";
 import { toast } from "sonner";
-import { commitSession, getSession } from "~/sessions.server";
+import { z } from "zod";
+import { AlertError, AlertErrorSimple } from "@/components/common/alert-error";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { apiClient } from "@/lib/api-client";
+import { commitSession, getSession } from "@/sessions.server";
+import type { Route } from "./+types/login";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "Login - Clacie Cookies" },
     {
@@ -38,7 +36,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return data(
     { error: session.get("error"), toastMessage },
-    { headers: { "Set-Cookie": await commitSession(session) } }
+    { headers: { "Set-Cookie": await commitSession(session) } },
   );
 }
 
@@ -62,6 +60,8 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (error || !loginResponse) {
     const fields = [error.field];
+
+    // biome-ignore lint/suspicious/noExplicitAny: "This is fine"
     const target = (error as any).details?.meta?.target?.[0]; // prisma error format
 
     if (!target) {

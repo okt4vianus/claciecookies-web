@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { data } from "react-router";
 import { toast } from "sonner";
-import { ProductItems } from "~/components/product/product-items";
-import { Separator } from "~/components/ui/separator";
-import { apiClient } from "~/lib/api-client";
-import { commitSession, getSession } from "~/sessions.server";
+import { ProductItems } from "@/components/product/product-items";
+import { Separator } from "@/components/ui/separator";
+import { apiClient } from "@/lib/api-client";
+import { commitSession, getSession } from "@/sessions.server";
 import type { Route } from "./+types/home";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "Clacie Cookies" },
     {
@@ -31,7 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return data(
     { products, toastMessage },
-    { headers: { "Set-Cookie": await commitSession(session) } }
+    { headers: { "Set-Cookie": await commitSession(session) } },
   );
 }
 

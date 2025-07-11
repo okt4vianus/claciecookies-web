@@ -9,13 +9,13 @@ import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Form, href, redirect, useNavigate, useNavigation } from "react-router";
 import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { apiClient } from "~/lib/api-client";
-import { AddProductToCartSchema } from "~/modules/product/schema";
-import { getSession } from "~/sessions.server";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { apiClient } from "@/lib/api-client";
+import { AddProductToCartSchema } from "@/modules/product/schema";
+import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/products-slug";
 
 export function meta({ data }: Route.MetaArgs) {
@@ -39,12 +39,12 @@ export function meta({ data }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
   const { data: product, error } = await apiClient.GET(
     "/products/{identifier}",
     {
       params: { path: { identifier: params.slug } },
-    }
+    },
   );
 
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
@@ -66,7 +66,7 @@ export async function action({ request }: Route.ActionArgs) {
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  // console.log({ cartItem, error });
+  console.log({ cartItem });
 
   if (error) {
     return submission.reply({
@@ -99,7 +99,7 @@ export default function ProductSlugRoute({
         },
       });
     }
-  }, [message]);
+  }, [message, navigate]);
 
   const [form, fields] = useForm({
     id: `product-slug-quantity-form-${product.id}`,

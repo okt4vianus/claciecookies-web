@@ -1,6 +1,18 @@
 import { z } from "zod";
-import { createdAt, description, id, name, price, slug, stockQuantity, updatedAt } from "../common/schema";
-import { ProductImageSchema, UpsertProductImageSchema } from "../product-image/schema";
+import {
+  createdAt,
+  description,
+  id,
+  name,
+  price,
+  slug,
+  stockQuantity,
+  updatedAt,
+} from "../common/schema";
+import {
+  ProductImageSchema,
+  UpsertProductImageSchema,
+} from "../product-image/schema";
 
 export const ProductSchema = z.object({
   //id: id

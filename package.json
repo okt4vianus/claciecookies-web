@@ -6,7 +6,11 @@
     "dev": "bun openapi && react-router dev",
     "build": "bun openapi:prod && react-router build",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc --noEmit",
+    "check": "biome check && bun rr:check",
+    "write": "bun biome:format && bun biome:lint",
+    "biome:format": "biome format --write .",
+    "biome:lint": "biome lint --write .",
+    "rr:check": "react-router typegen && tsc --noEmit",
     "openapi": "openapi-typescript http://localhost:3000/openapi.json --output app/schema.d.ts",
     "openapi:prod": "openapi-typescript https://claciecookies-api.oktavianusrtasak.com/openapi.json --output app/schema.d.ts"
   },

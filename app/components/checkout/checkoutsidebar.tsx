@@ -1,6 +1,6 @@
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
-import type { OrderSummaryProps as OrderSummaryProps } from "@/modules/checkout/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import type { OrderSummaryProps } from "@/modules/checkout/types";
 
 export default function OrderSummary({
   cartItems,

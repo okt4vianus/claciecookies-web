@@ -1,12 +1,12 @@
 import { href, Link } from "react-router";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from "~/components/ui/card";
-import type { paths } from "~/schema";
+} from "@/components/ui/card";
+import type { paths } from "@/schema";
 
 type Products =
   paths["/products"]["get"]["responses"]["200"]["content"]["application/json"];

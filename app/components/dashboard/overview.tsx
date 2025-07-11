@@ -1,6 +1,7 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: "Temporary" */
 import { CreditCard, Package } from "lucide-react";
 import type { JSX } from "react";
-import { StatCard } from "~/components/dashboard/statcard";
+import { StatCard } from "@/components/dashboard/statcard";
 
 export default function Overview({
   userInfo,
@@ -38,6 +39,7 @@ export default function Overview({
             Recent Orders
           </h3>
           <button
+            type="button"
             onClick={() => setActiveTab("orders")}
             className="text-sm text-primary font-medium hover:text-primary/80 transition-colors"
           >
