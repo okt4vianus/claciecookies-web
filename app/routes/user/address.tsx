@@ -6,24 +6,16 @@ import {
 } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { Phone, User } from "lucide-react";
-import { useFetcher } from "react-router";
+import { Form, useFetcher } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthUser } from "~/modules/auth/hooks/use-auth";
 import { CreateAddressSchema } from "~/modules/user/schema";
 
-export default function UserAddress() {
-	// const { q, ...loaderDataFromLayoutMain } =
-	//   useRouteLoaderData("layout/layout-main");
-	// console.log(loaderDataFromLayoutMain);
-
-	// const loaderDataFromRoot = useRouteLoaderData("root");
-	// console.log(loaderDataFromRoot);
-
+export default function UserAddressRoute() {
 	const { user } = useAuthUser();
 
 	const fetcherAddress = useFetcher();
@@ -57,10 +49,12 @@ export default function UserAddress() {
 	});
 
 	return (
-		<fetcherAddress.Form
+		<Form
+			{...getFormProps(formAddress)}
 			method="post"
 			action="/action/user/create-address"
-			{...getFormProps(formAddress)}
+			// TODO: Refactor the form so it can be flexible to which action
+			// action="/action/user/update-address"
 		>
 			<div className="container max-w-3xl mx-auto px-4 py-8">
 				{/* Header */}
@@ -130,7 +124,7 @@ export default function UserAddress() {
 									<Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 									<Input
 										{...getInputProps(fieldsAddress.phoneNumber, {
-											type: "text",
+											type: "tel",
 										})}
 										placeholder="08123456789"
 										className="pl-10"
@@ -240,13 +234,8 @@ export default function UserAddress() {
 							</div>
 						</div>
 
-						{/* Default */}
+						{/* Default isDefault & isActive */}
 						<div className="flex items-center space-x-2">
-							{/* <Checkbox
-                {...getInputProps(fieldsAddress.isDefault, {
-                  type: "checkbox",
-                })}
-              /> */}
 							<Label htmlFor={fieldsAddress.isDefault.id}>
 								<input
 									{...getInputProps(fieldsAddress.isDefault, {
@@ -279,6 +268,6 @@ export default function UserAddress() {
 					</CardContent>
 				</Card>
 			</div>
-		</fetcherAddress.Form>
+		</Form>
 	);
 }
