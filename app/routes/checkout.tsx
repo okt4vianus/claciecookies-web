@@ -12,11 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiClient } from "@/lib/api-client";
-
-import {
-  CheckoutAddressSchema,
-  CheckoutSchema,
-} from "@/modules/checkout/schema";
+import { UpdateAddressSchema } from "@/modules/address/schema";
+import { CreateNewOrderSchema } from "@/modules/checkout/schema";
 import { UserProfileSchema } from "@/modules/user/schema";
 
 import { getSession } from "@/sessions.server";
@@ -92,7 +89,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
-// TODO: Later
 export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
@@ -100,7 +96,7 @@ export async function action({ request }: Route.ActionArgs) {
   if (!token) return redirect(href("/login"));
 
   const formData = await request.formData();
-  const submission = parseWithZod(formData, { schema: CheckoutSchema });
+  const submission = parseWithZod(formData, { schema: CreateNewOrderSchema });
   if (submission.status !== "success") return submission.reply();
 
   try {
@@ -151,7 +147,7 @@ export default function CheckoutRoute({
 
   const [formAddress, fieldsAddress] = useForm({
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: CheckoutAddressSchema });
+      return parseWithZod(formData, { schema: UpdateAddressSchema });
     },
     defaultValue: address
       ? {
@@ -169,7 +165,7 @@ export default function CheckoutRoute({
   const [formCheckout, fieldsCheckout] = useForm({
     lastResult: actionData,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: CheckoutSchema });
+      return parseWithZod(formData, { schema: CreateNewOrderSchema });
     },
     defaultValue: defaultCheckoutValues,
   });
