@@ -45,7 +45,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     paymentMethodsResponse,
   ] = await Promise.all([
     // TODO: Later
-    // GET /checkout end point response for combine profile, cart, address, shipping-method, payment-method
+    // GET /checkout for auth/profile, cart, address, shipping-methods, payment-methods
     apiClient.GET("/auth/profile", {
       headers: { Authorization: `Bearer ${token}` },
     }),
@@ -71,11 +71,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(href("/login"));
   }
 
-  // FIX: Address response is required
-  // console.log("Address Response Data:", addressResponse.data);
-
   if (addressResponse.error || !addressResponse.data) {
-    // console.log("Redirecting to:", href("/user/address"));
     return redirect(href("/user/address"));
   }
 

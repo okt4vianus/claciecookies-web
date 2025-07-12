@@ -14,9 +14,7 @@ export const AddressSchema = z.object({
   recipientName: z
     .string()
     .min(3, "Recipient name must be at least 3 characters"),
-  phoneNumber: z
-    .string()
-    .min(10, "Phone number must be at least 10 characters"),
+  phoneNumber: z.string().min(7, "Phone number must be at least 7 digits"),
   street: z.string().min(5, "Street address must be at least 5 characters"),
   city: z.string().min(3, "City must be at least 3 characters"),
   province: z.string().default("Sulawesi Utara"),
