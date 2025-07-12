@@ -61,12 +61,10 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = parseWithZod(formData, { schema: AddProductToCartSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data: cartItem, error } = await apiClient.PUT("/cart/items", {
+  const { error } = await apiClient.PUT("/cart/items", {
     body: { intent: "add", ...submission.value },
     headers: { Authorization: `Bearer ${token}` },
   });
-
-  console.log({ cartItem });
 
   if (error) {
     return submission.reply({
@@ -75,6 +73,7 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
+  // TODO: Either still redirect or show data/cartItem on alert dialog
   return redirect("/cart");
 }
 
