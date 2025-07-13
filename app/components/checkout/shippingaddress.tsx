@@ -80,10 +80,20 @@ export default function ShippingAddress({
             )}
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-4 ">
             <div>
               <Label htmlFor={fieldsAddress.city.id}>City *</Label>
-              <Input {...getInputProps(fieldsAddress.city, { type: "text" })} />
+              <select
+                {...getInputProps(fieldsAddress.city, { type: "text" })}
+                className="w-full px-3 py-2 border border-gray-600 rounded-md text-sm "
+              >
+                <option value="">Select City</option>
+                <option value="Manado">Manado</option>
+                <option value="Bitung">Bitung</option>
+                <option value="Tomohon">Tomohon</option>
+                <option value="Minahasa">Minahasa</option>
+                <option value="Minahasa Utara">Minahasa Utara</option>
+              </select>
               {fieldsAddress.city.errors && (
                 <p className="text-sm text-destructive mt-1">
                   {fieldsAddress.city.errors}
@@ -96,6 +106,8 @@ export default function ShippingAddress({
                 {...getInputProps(fieldsAddress.province, {
                   type: "text",
                 })}
+                readOnly
+                className="bg-gray-100 cursor-not-allowed"
               />
               {fieldsAddress.province.errors && (
                 <p className="text-sm text-destructive mt-1">
