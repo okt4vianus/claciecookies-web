@@ -103,7 +103,7 @@ export async function action({ request }: Route.ActionArgs) {
     // TODO: Change endpoint
     // @ts-ignore
     // Post /checkout endpoint combine profile, cart, address, shipping-method, payment-method
-    const { data: order, error } = await apiClient.POST("/checkout", {
+    const { data: order, error } = await apiClient.POST("/order", {
       body: submission.value,
       headers: { Authorization: `Bearer ${token}` },
     });
