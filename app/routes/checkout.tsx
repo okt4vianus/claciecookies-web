@@ -100,9 +100,6 @@ export async function action({ request }: Route.ActionArgs) {
   if (submission.status !== "success") return submission.reply();
 
   try {
-    // TODO: Change endpoint
-    // @ts-ignore
-    // Post /checkout endpoint combine profile, cart, address, shipping-method, payment-method
     const { data: order, error } = await apiClient.POST("/order", {
       body: submission.value,
       headers: { Authorization: `Bearer ${token}` },
@@ -115,6 +112,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     // @ts-ignore
+    // TODO: orders/orderId
     return redirect(href(`/orders/${order.id}`));
   } catch {
     return submission.reply({
