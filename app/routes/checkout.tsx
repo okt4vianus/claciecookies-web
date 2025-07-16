@@ -1,8 +1,15 @@
-import { getInputProps, useForm } from "@conform-to/react";
+import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { CreditCardIcon, TruckIcon } from "lucide-react";
 import { useState } from "react";
-import { href, Link, redirect, useFetcher, useNavigation } from "react-router";
+import {
+  data,
+  href,
+  Link,
+  redirect,
+  useFetcher,
+  useNavigation,
+} from "react-router";
 import OrderSummary from "@/components/checkout/checkoutsidebar";
 import CustomerInformation from "@/components/checkout/customerinformation";
 import ShippingAddress from "@/components/checkout/shippingaddress";
@@ -197,8 +204,27 @@ export default function CheckoutRoute({
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <form
+        method="post"
+        className="grid lg:grid-cols-3 gap-8"
+        {...getFormProps(formCheckout)}
+      >
         {/* Main Form */}
+
+        {/* Input for New Create Order Schema */}
+        <input type="hidden" name="addressId" value={address.id} />
+
+        <input
+          type="hidden"
+          name="shippingMethodSlug"
+          value={selectedShippingMethod}
+        />
+        <input
+          type="hidden"
+          name="paymentMethodSlug"
+          value={selectedPaymentMethod}
+        />
+
         <div className="lg:col-span-2 space-y-4">
           {/* Customer Information */}
           <CustomerInformation
@@ -280,7 +306,6 @@ export default function CheckoutRoute({
             )}
           </CheckoutCardSection>
         </div>
-
         {/* Order Summary Sidebar */}
         <aside className="space-y-6 sticky top-16 self-start">
           <OrderSummary
@@ -309,7 +334,7 @@ export default function CheckoutRoute({
             <p>🔒 Your information is secure and encrypted</p>
           </div>
         </aside>
-      </div>
+      </form>
 
       {/* Form Errors */}
       {formCheckout.errors && (
