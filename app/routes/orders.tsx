@@ -1,7 +1,7 @@
 import { href, redirect } from "react-router";
 import { apiClient } from "@/lib/api-client";
 import { getSession } from "@/sessions.server";
-import type { Route } from "./+types/order";
+import type { Route } from "./+types/orders";
 
 // export function meta({ data }: Route.MetaArgs) {
 //   const order = data?.order;
@@ -23,13 +23,12 @@ import type { Route } from "./+types/order";
 export async function loader({ request, params }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
-  const { orderId } = params;
+  const orderId = params.id;
 
   if (!token) {
     return redirect(href("/login"));
   }
 
-  // @ts-ignore
   const { data: order, error } = await apiClient.GET("/orders/{id}", {
     params: { path: { id: orderId } },
     headers: {
@@ -44,7 +43,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return { isAuthenticated: true, order };
 }
 
-export default function OrderDetailRoute(_: Route.ComponentProps) {
+export default function OrderRoute({ loaderData }: Route.ComponentProps) {
+  const order = loaderData.order;
+
+  console.log(order);
+
   return (
     <div>
       <h1>Order Detail Route</h1>

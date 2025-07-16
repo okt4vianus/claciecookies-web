@@ -2,14 +2,7 @@ import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { CreditCardIcon, TruckIcon } from "lucide-react";
 import { useState } from "react";
-import {
-  data,
-  href,
-  Link,
-  redirect,
-  useFetcher,
-  useNavigation,
-} from "react-router";
+import { href, Link, redirect, useFetcher, useNavigation } from "react-router";
 import OrderSummary from "@/components/checkout/checkoutsidebar";
 import CustomerInformation from "@/components/checkout/customerinformation";
 import ShippingAddress from "@/components/checkout/shippingaddress";
@@ -107,7 +100,7 @@ export async function action({ request }: Route.ActionArgs) {
   if (submission.status !== "success") return submission.reply();
 
   try {
-    const { data: order, error } = await apiClient.POST("/order", {
+    const { data: order, error } = await apiClient.POST("/orders", {
       body: submission.value,
       headers: { Authorization: `Bearer ${token}` },
     });
