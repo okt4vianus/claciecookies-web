@@ -51,6 +51,7 @@ export default function OrderRoute({ loaderData }: Route.ComponentProps) {
   return (
     <div>
       <h1>Order Detail Route</h1>
+      <p>order.ordernumber</p>
     </div>
   );
 }
