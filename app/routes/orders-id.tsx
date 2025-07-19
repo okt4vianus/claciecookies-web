@@ -1,7 +1,8 @@
 import { href, redirect } from "react-router";
+import { DebugCode } from "@/components/common/debug-code";
 import { apiClient } from "@/lib/api-client";
 import { getSession } from "@/sessions.server";
-import type { Route } from "./+types/orders";
+import type { Route } from "./+types/orders-id";
 
 // export function meta({ data }: Route.MetaArgs) {
 //   const order = data?.order;
@@ -21,37 +22,27 @@ import type { Route } from "./+types/orders";
 // }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
+  const { id } = params;
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
-  const orderId = params.id;
-
-  if (!token) {
-    return redirect(href("/login"));
-  }
+  if (!token) return redirect(href("/login"));
 
   const { data: order, error } = await apiClient.GET("/orders/{id}", {
-    params: { path: { id: orderId } },
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    params: { path: { id } },
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  if (error) {
-    throw new Response("Order not found", { status: 404 });
-  }
+  if (error) throw new Response(`Order by id ${id} not found`, { status: 404 });
 
   return { isAuthenticated: true, order };
 }
 
 export default function OrderRoute({ loaderData }: Route.ComponentProps) {
-  const order = loaderData.order;
-
-  console.log(order);
+  const { order } = loaderData;
 
   return (
     <div>
       <h1>Order Detail Route</h1>
-      <p>order.ordernumber</p>
+      <DebugCode>{order}</DebugCode>
     </div>
   );
 }

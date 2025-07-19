@@ -22,7 +22,7 @@ export default [
     route("logout", "routes/logout.tsx"),
     route("dashboard", "routes/dashboard.tsx"),
     route("user/address", "routes/user/address.tsx"),
-    route("orders/:id", "routes/orders.tsx"),
+    route("orders/:id", "routes/orders-id.tsx"),
   ]),
 
   // route("/order", "routes/order.tsx"),
