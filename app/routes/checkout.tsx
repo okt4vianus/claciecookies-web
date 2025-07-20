@@ -197,26 +197,8 @@ export default function CheckoutRoute({
         </p>
       </div>
 
-      <form
-        method="post"
-        className="grid lg:grid-cols-3 gap-8"
-        {...getFormProps(formCheckout)}
-      >
+      <div className="grid lg:grid-cols-3 gap-8">
         {/* Main Form */}
-
-        {/* Input for New Create Order Schema */}
-        <input type="hidden" name="addressId" value={address.id} />
-
-        <input
-          type="hidden"
-          name="shippingMethodSlug"
-          value={selectedShippingMethod}
-        />
-        <input
-          type="hidden"
-          name="paymentMethodSlug"
-          value={selectedPaymentMethod}
-        />
 
         <div className="lg:col-span-2 space-y-4">
           {/* Customer Information */}
@@ -310,24 +292,39 @@ export default function CheckoutRoute({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? "Processing..." : "Pay Now"}
-            </Button>
+            <form method="post" {...getFormProps(formCheckout)}>
+              {/* Input for New Create Order Schema */}
+              <input type="hidden" name="addressId" value={address.id} />
+
+              <input
+                type="hidden"
+                name="shippingMethodSlug"
+                value={selectedShippingMethod}
+              />
+              <input
+                type="hidden"
+                name="paymentMethodSlug"
+                value={selectedPaymentMethod}
+              />
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? "Processing..." : "Pay Now"}
+              </Button>
+            </form>
+
             <Button variant="outline" size="lg" asChild className="w-full">
               <Link to="/cart">Back to Cart</Link>
             </Button>
           </div>
-
           <div className="text-center text-sm text-muted-foreground">
             <p>🔒 Your information is secure and encrypted</p>
           </div>
         </aside>
-      </form>
+      </div>
 
       {/* Form Errors */}
       {formCheckout.errors && (
