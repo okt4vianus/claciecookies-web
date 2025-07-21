@@ -11,8 +11,12 @@
     "biome:format": "biome format --write .",
     "biome:lint": "biome lint --write .",
     "rr:check": "react-router typegen && tsc --noEmit",
-    "openapi": "openapi-typescript http://localhost:3000/openapi.json --output app/schema.d.ts",
-    "openapi:prod": "openapi-typescript https://claciecookies-api.oktavianusrtasak.com/openapi.json --output app/schema.d.ts"
+    "openapi": "bun openapi:hono && bun openapi:auth",
+    "openapi:hono": "openapi-typescript http://localhost:3000/openapi.json --output app/schema.d.ts",
+    "openapi:auth": "openapi-typescript openapi/better-auth.json --output app/schema-auth.d.ts",
+    "openapi:prod": "bun openapi:prod:hono && bun openapi:prod:auth",
+    "openapi:prod:hono": "openapi-typescript https://claciecookies-api.oktavianusrtasak.com/openapi.json --output app/schema.d.ts",
+    "openapi:prod:auth": "openapi-typescript openapi/better-auth.json --output app/schema-auth.d.ts"
   },
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
