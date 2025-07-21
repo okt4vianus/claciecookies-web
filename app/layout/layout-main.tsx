@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/toggle";
-import { useAuthUser } from "@/modules/auth/hooks/use-auth";
+import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
 import type { Route } from "./+types/layout-main";
 
 export async function loader({ request }: Route.LoaderArgs) {

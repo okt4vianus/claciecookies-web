@@ -13,9 +13,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiClient } from "@/lib/api-client";
 import { UpdateAddressSchema } from "@/modules/address/schema";
+import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
 import { CreateNewOrderSchema } from "@/modules/checkout/schema";
 import { UserProfileSchema } from "@/modules/user/schema";
-
 import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/checkout";
 
@@ -35,17 +35,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (!token) return redirect(href("/login"));
 
   const [
-    profileResponse,
     cartResponse,
     addressResponse,
     shippingMethodsResponse,
     paymentMethodsResponse,
   ] = await Promise.all([
     // TODO: Later
-    // GET /checkout for auth/profile, cart, address, shipping-methods, payment-methods
-    apiClient.GET("/auth/profile", {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
+    // GET /checkout for cart, address, shipping-methods, payment-methods
     apiClient.GET("/cart", {
       headers: { Authorization: `Bearer ${token}` },
     }),
@@ -64,10 +60,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(href("/cart"));
   }
 
-  if (profileResponse.error || !profileResponse.data) {
-    return redirect(href("/login"));
-  }
-
   if (addressResponse.error || !addressResponse.data) {
     return redirect(href("/user/address"));
   }
@@ -82,7 +74,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     cart: cartResponse.data,
-    profile: profileResponse.data,
     address: addressResponse.data,
     shippingMethods: shippingMethodsResponse.data,
     paymentMethods: paymentMethodsResponse.data,
@@ -125,8 +116,8 @@ export default function CheckoutRoute({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { cart, profile, address, shippingMethods, paymentMethods } =
-    loaderData;
+  const { user } = useAuthUser();
+  const { cart, address, shippingMethods, paymentMethods } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
@@ -137,7 +128,7 @@ export default function CheckoutRoute({
   const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
 
   const [formUser, fieldsUser] = useForm({
-    defaultValue: profile,
+    defaultValue: user,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: UserProfileSchema });
     },
@@ -183,7 +174,7 @@ export default function CheckoutRoute({
       ?.price ?? 15000;
   const totalWithShipping = cart.totalPrice + shippingCost;
 
-  console.log("PROFILE DATA:", profile);
+  console.log("USER DATA:", user);
   console.log("ADDRESS DATA:", address);
   console.log("SHIPPING METHOD:", selectedShippingMethod, shippingCost);
   console.log("PAYMENT METHOD:", selectedPaymentMethod);

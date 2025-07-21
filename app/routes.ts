@@ -36,7 +36,7 @@ export default [
    * Actions
    */
 
-  // User Profile
+  // User Data
   route("/action/user/profile", "routes/action/user/profile.ts"),
 
   // Address
