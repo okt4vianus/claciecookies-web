@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuthUser } from "@/modules/auth/hooks/use-auth";
+import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
 import { CreateAddressSchema } from "@/modules/user/schema";
 
 export default function UserAddressRoute() {

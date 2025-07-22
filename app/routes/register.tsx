@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { apiClient } from "@/lib/api-client";
+import { betterAuthApiClient } from "@/lib/api-client";
 import { commitSession, getSession } from "@/sessions.server";
 import type { Route } from "./+types/register";
 
@@ -24,7 +24,7 @@ export function meta() {
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters long"),
   email: z.string().email("Invalid email format"),
-  fullName: z.string().min(3, "Full name cannot be empty"),
+  name: z.string().min(3, "Full name cannot be empty"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
@@ -36,11 +36,9 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (submission.status !== "success") return submission.reply();
 
-  const { data: registerResponse, error } = await apiClient.POST(
-    "/auth/register",
-    {
-      body: submission.value,
-    },
+  const { data: registerResponse, error } = await betterAuthApiClient.POST(
+    "/sign-up/email",
+    { body: submission.value },
   );
 
   if (error || !registerResponse) {
@@ -49,7 +47,7 @@ export async function action({ request }: Route.ActionArgs) {
     const target = (error as any).details?.meta?.target?.[0];
 
     return submission.reply({
-      formErrors: [error.message],
+      formErrors: ["Failed to register"],
       fieldErrors: fields.includes(target)
         ? { [target]: [`${target} already exists`] }
         : undefined,
@@ -57,7 +55,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
   session.set(
     "toastMessage",
-    `Account created successfully! Welcome, ${submission.value.fullName}.`,
+    `Account created successfully! Welcome, ${submission.value.name}.`,
   );
 
   // return redirect(href("/login"));
@@ -116,14 +114,14 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
               </Label>
               <Input
                 id="fullName"
-                name={fields.fullName.name}
+                name={fields.name.name}
                 type="text"
                 required
                 className="border-gray-300"
                 placeholder="Create your display name"
               />
-              {fields.fullName.errors && (
-                <AlertErrorSimple errors={fields.fullName.errors} />
+              {fields.name.errors && (
+                <AlertErrorSimple errors={fields.name.errors} />
               )}
             </div>
 
