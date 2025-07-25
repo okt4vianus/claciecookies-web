@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { apiClient } from "@/lib/api-client";
+import { betterAuthApiClient } from "@/lib/api-client";
 import { commitSession, getSession } from "@/sessions.server";
 import type { Route } from "./+types/login";
 
@@ -54,37 +54,18 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (submission.status !== "success") return submission.reply();
 
-  const { data: loginResponse, error } = await apiClient.POST("/auth/login", {
-    body: submission.value,
-  });
+  const { data: loginResponse } = await betterAuthApiClient.POST(
+    "/sign-in/email",
+    { body: submission.value },
+  );
 
-  if (error || !loginResponse) {
-    const fields = [error.field];
-
-    // biome-ignore lint/suspicious/noExplicitAny: "This is fine"
-    const target = (error as any).details?.meta?.target?.[0]; // prisma error format
-
-    if (!target) {
-      return submission.reply({
-        formErrors: [error.message],
-        fieldErrors:
-          typeof error.field === "string" && fields.includes(error.field)
-            ? { [error.field]: [`invalid ${error.field}`] }
-            : undefined,
-      });
-    }
-
-    return submission.reply({
-      formErrors: [error.message],
-      fieldErrors: fields.includes(target)
-        ? { [target]: [`${target} does not exist`] }
-        : undefined,
-    });
+  if (!loginResponse) {
+    return submission.reply({ formErrors: ["Failed to login"] });
   }
 
   session.set("userId", loginResponse.user.id);
   session.set("token", loginResponse.token);
-  session.set("toastMessage", `Welcome back, ${loginResponse.user.fullName}.`);
+  session.set("toastMessage", `Welcome back, ${loginResponse.user.name}`);
 
   return redirect(href("/"), {
     headers: { "Set-Cookie": await commitSession(session) },
