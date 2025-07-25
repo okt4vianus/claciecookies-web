@@ -109,11 +109,11 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
           >
             {form.errors && <AlertError errors={form.errors} />}
             <div className="space-y-1 sm:space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium block">
+              <Label htmlFor="name" className="text-sm font-medium block">
                 Full Name
               </Label>
               <Input
-                id="fullName"
+                id="name"
                 name={fields.name.name}
                 type="text"
                 required
