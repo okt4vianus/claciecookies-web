@@ -1,5 +1,5 @@
 import { AlertCircleIcon } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Alert, AlertDescription } from "../ui/alert";
 
 export function AlertError({
   errors,
@@ -13,7 +13,7 @@ export function AlertError({
       <AlertDescription>
         <ul className="text-sm">
           {errors?.map((errorText) => (
-            <li>{errorText}</li>
+            <li key={errorText}>{errorText}</li>
           ))}
         </ul>
       </AlertDescription>
@@ -32,7 +32,7 @@ export function AlertErrorSimple({
       <AlertDescription>
         <ul className="text-xs">
           {errors?.map((errorText) => (
-            <li>{errorText}</li>
+            <li key={errorText}>{errorText}</li>
           ))}
         </ul>
       </AlertDescription>

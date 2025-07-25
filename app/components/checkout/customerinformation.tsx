@@ -25,14 +25,14 @@ export default function CustomerInformation({
         >
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor={fieldsUser.fullName.id}>Full Name *</Label>
+              <Label htmlFor={fieldsUser.name.id}>Full Name *</Label>
               <Input
-                {...getInputProps(fieldsUser.fullName, { type: "text" })}
+                {...getInputProps(fieldsUser.name, { type: "text" })}
                 placeholder="Enter your full name"
               />
-              {fieldsUser.fullName.errors && (
+              {fieldsUser.name.errors && (
                 <p className="text-sm text-destructive mt-1">
-                  {fieldsUser.fullName.errors}
+                  {fieldsUser.name.errors}
                 </p>
               )}
             </div>

@@ -11,7 +11,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import "@fontsource/dancing-script";
 import { Toaster } from "@/components/ui/sonner";
-import { apiClient } from "./lib/api-client";
+import { betterAuthApiClient } from "./lib/api-client";
 import { getSession } from "./sessions.server";
 
 export const links: Route.LinksFunction = () => [
@@ -32,18 +32,32 @@ export async function loader({ request }: Route.LoaderArgs) {
   const isAuthenticated = session.has("userId");
 
   const token = session.get("token");
+  if (!token) {
+    return {
+      isAuthenticated: false,
+      session: null,
+      user: null,
+    };
+  }
 
-  if (!token) return { isAuthenticated: false, user: null };
-
-  const { data: user, error } = await apiClient.GET("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const { data, error } = await betterAuthApiClient.GET("/get-session", {
+    headers: { Authorization: `Bearer ${token}` },
   });
+  if (error) {
+    return {
+      isAuthenticated: false,
+      session: null,
+      user: null,
+    };
+  }
 
-  if (error) return { isAuthenticated: false, user: null };
+  session.set("user", data.user);
 
-  return { isAuthenticated, user };
+  return {
+    isAuthenticated,
+    session: data.session,
+    user: data.user,
+  };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

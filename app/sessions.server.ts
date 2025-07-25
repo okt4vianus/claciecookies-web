@@ -1,8 +1,10 @@
 import { createCookieSessionStorage } from "react-router";
+import type { User } from "@/modules/user/type";
 
 type SessionData = {
-  userId: string;
   token: string;
+  userId: string;
+  user: User;
   toastMessage?: string;
 };
 
