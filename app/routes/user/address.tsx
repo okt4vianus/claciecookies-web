@@ -32,7 +32,7 @@ export default function UserAddressRoute() {
     defaultValue: {
       userId: user?.id,
       label: "Rumah",
-      recipientName: user?.fullName,
+      recipientName: user?.name,
       phoneNumber: user?.phoneNumber || "08123456789",
       street: "Jl. Nama Jalan Raya",
       city: "Manado",

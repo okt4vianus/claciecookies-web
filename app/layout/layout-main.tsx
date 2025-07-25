@@ -124,7 +124,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                         >
                           <img
                             src={
-                              user.avatar ??
+                              user.image ??
                               `https://api.dicebear.com/9.x/initials/svg?seed=${user.username}`
                             }
                             alt={user.username}

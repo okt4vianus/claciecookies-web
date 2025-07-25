@@ -10,6 +10,7 @@ export function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={() => setIsDark(!isDark)}
       aria-label="Toggle Theme"
       className="p-2 rounded-full hover:bg-accent transition"

@@ -51,21 +51,19 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: loginSchema });
-
   if (submission.status !== "success") return submission.reply();
 
-  const { data: loginResponse } = await betterAuthApiClient.POST(
-    "/sign-in/email",
-    { body: submission.value },
-  );
+  const { data } = await betterAuthApiClient.POST("/sign-in/email", {
+    body: submission.value,
+  });
 
-  if (!loginResponse) {
+  if (!data) {
     return submission.reply({ formErrors: ["Failed to login"] });
   }
 
-  session.set("userId", loginResponse.user.id);
-  session.set("token", loginResponse.token);
-  session.set("toastMessage", `Welcome back, ${loginResponse.user.name}`);
+  session.set("userId", data.user.id);
+  session.set("token", data.token);
+  session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
   return redirect(href("/"), {
     headers: { "Set-Cookie": await commitSession(session) },
