@@ -36,6 +36,9 @@ export default [
    * Actions
    */
 
+  // Auth
+  route("/action/auth/google", "routes/action/auth/google.ts"),
+
   // User Data
   route("/action/user/profile", "routes/action/user/profile.ts"),
 
