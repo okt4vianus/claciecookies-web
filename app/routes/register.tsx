@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Form, href, redirect } from "react-router";
 import { z } from "zod";
+import { FormGoogle } from "@/components/auth/form-google";
 import { AlertError, AlertErrorSimple } from "@/components/common/alert-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,10 +114,12 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
         </div>
       </section>
 
-      <Separator />
-
       <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
-        <div className="max-w-md mx-auto w-full">
+        <div className="max-w-md mx-auto w-full space-y-10">
+          <FormGoogle />
+
+          <Separator />
+
           <Form
             method="post"
             id={form.id}
