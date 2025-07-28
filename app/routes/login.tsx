@@ -58,14 +58,8 @@ export async function action({ request }: Route.ActionArgs) {
   });
 
   if (!data || error) {
-    console.log("Better Auth Error:", error);
-    console.error("Better Auth Error1:", error);
     return submission.reply({
-      formErrors: ["Failed to login"],
-      fieldErrors: {
-        email: ["Invalid email or password"],
-        password: ["Invalid email or password"],
-      },
+      formErrors: ["Failed to login. Invalid email or password"],
     });
   }
 
