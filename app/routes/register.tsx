@@ -1,5 +1,7 @@
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { Form, href, redirect } from "react-router";
 import { z } from "zod";
 import { AlertError, AlertErrorSimple } from "@/components/common/alert-error";
@@ -66,6 +68,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function RegisterRoute({ actionData }: Route.ComponentProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
   const lastResult = actionData;
 
   const [form, fields] = useForm({
@@ -84,10 +88,7 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
       >
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10 text-center text-white max-w-lg mx-auto px-4">
-          <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4"
-            style={{ fontFamily: "Dancing Script" }}
-          >
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 font-brand">
             Register New Account
           </h1>
           <p className="text-base sm:text-lg lg:text-xl opacity-90">
@@ -109,11 +110,11 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
           >
             {form.errors && <AlertError errors={form.errors} />}
             <div className="space-y-1 sm:space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium block">
+              <Label htmlFor="name" className="text-sm font-medium block">
                 Full Name
               </Label>
               <Input
-                id="fullName"
+                id="name"
                 name={fields.name.name}
                 type="text"
                 required
@@ -181,12 +182,19 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
                 <Input
                   id="password"
                   name={fields.password.name}
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
                   className="border-gray-300"
                   placeholder="Create a strong password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
                 {fields.password.errors && (
                   <AlertErrorSimple errors={fields.password.errors} />
                 )}

@@ -1,14 +1,15 @@
-import { Package, Settings, User } from "lucide-react";
+import { Package, Settings, UserIcon } from "lucide-react";
 import { useState } from "react";
 import { href, redirect } from "react-router";
 import { Orders } from "@/components/dashboard/orders";
 import Overview from "@/components/dashboard/overview";
 import { Profile } from "@/components/dashboard/profile";
 import { apiClient } from "@/lib/api-client";
+import type { UserComplete } from "@/modules/user/type";
 import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/dashboard";
 
-export function meta({}: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs) {
   return [
     { title: "Dashboard - Clacie Cookies" },
     {
@@ -21,46 +22,36 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const isAuthenticated = session.has("userId");
+  const user = session.get("user");
   const token = session.get("token");
-
-  // if (!token) return { isAuthenticated: false, user: null };
-  if (!token) {
-    return redirect(href("/login"));
-  }
-
-  const { data: user, error: userError } = await apiClient.GET("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (userError || !user) {
-    return redirect("/login");
-  }
+  if (!user || !token) return redirect(href("/login"));
 
   const { data: cart } = await apiClient.GET("/cart", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
+  if (!cart) return redirect(href("/login"));
 
-  return { isAuthenticated, user, cart };
+  return {
+    isAuthenticated: true,
+    user,
+    cart,
+  };
 }
 
 export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { isAuthenticated, user, cart } = loaderData;
+  const { user, cart } = loaderData;
 
-  const userInfo = {
-    name: user.fullName,
+  const userInfo: UserComplete = {
+    ...user,
+    name: user.name,
     email: user.email,
     phoneNumber: user.phoneNumber,
-    joinDate: user.createdAt,
-    avatar:
+    createdAt: user.createdAt,
+    image:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    verified: true,
+    emailVerified: true,
     totalOrders: cart?.items.length || 0,
     totalSpent: cart?.totalPrice || 0,
   };
@@ -84,7 +75,7 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
     })) || [];
 
   const sidebarItems = [
-    { id: "overview", label: "Overview", icon: User },
+    { id: "overview", label: "Overview", icon: UserIcon },
     { id: "orders", label: "My Orders", icon: Package },
     { id: "profile", label: "Profile", icon: Settings },
   ];
@@ -153,7 +144,7 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
             <div className="border border-border rounded-2xl p-6 shadow-lg">
               <div className="flex items-center space-x-3 mb-6">
                 <img
-                  src={userInfo.avatar}
+                  src={userInfo.image}
                   alt="Avatar"
                   className="w-12 h-12 rounded-full border-2 border-border"
                 />
@@ -168,6 +159,7 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
               <div className="space-y-2">
                 {sidebarItems.map((item) => (
                   <button
+                    type="button"
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
                     className={`w-full flex items-center px-3 py-3 rounded-xl text-left transition-all duration-300 ${

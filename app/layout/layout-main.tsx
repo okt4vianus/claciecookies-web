@@ -41,10 +41,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
         <div className="max-w-7xl mx-auto px-4">
           <div className="py-3 flex items-center gap-2 sm:gap-4 md:justify-between">
             <Link to="/" className="flex items-center flex-shrink-0">
-              <span
-                className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-primary hover:text-accent"
-                style={{ fontFamily: "Dancing Script" }}
-              >
+              <span className="text-lg sm:text-xl md:text-2xl font-semibold font-brand tracking-tight text-primary hover:text-accent">
                 Clacie
               </span>
             </Link>
@@ -124,7 +121,7 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                         >
                           <img
                             src={
-                              user.avatar ??
+                              user.image ??
                               `https://api.dicebear.com/9.x/initials/svg?seed=${user.username}`
                             }
                             alt={user.username}

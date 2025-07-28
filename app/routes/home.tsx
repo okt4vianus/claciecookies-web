@@ -55,12 +55,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <div className="absolute inset-0 bg-black/20"></div>
 
         <div className="relative z-10 max-w-lg text-white">
-          <h1
-            className="text-5xl font-bold mb-4"
-            style={{ fontFamily: "Dancing Script" }}
-          >
-            Clacie
-          </h1>
+          <h1 className="text-5xl font-bold mb-4 font-brand">Clacie</h1>
 
           <p className="text-xl" style={{ fontFamily: "sans-serif" }}>
             Cookies you'll fall in love with

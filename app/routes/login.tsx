@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { apiClient } from "@/lib/api-client";
+import { betterAuthApiClient } from "@/lib/api-client";
 import { commitSession, getSession } from "@/sessions.server";
 import type { Route } from "./+types/login";
 
@@ -51,40 +51,27 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: loginSchema });
-
   if (submission.status !== "success") return submission.reply();
 
-  const { data: loginResponse, error } = await apiClient.POST("/auth/login", {
+  const { data, error } = await betterAuthApiClient.POST("/sign-in/email", {
     body: submission.value,
   });
 
-  if (error || !loginResponse) {
-    const fields = [error.field];
-
-    // biome-ignore lint/suspicious/noExplicitAny: "This is fine"
-    const target = (error as any).details?.meta?.target?.[0]; // prisma error format
-
-    if (!target) {
-      return submission.reply({
-        formErrors: [error.message],
-        fieldErrors:
-          typeof error.field === "string" && fields.includes(error.field)
-            ? { [error.field]: [`invalid ${error.field}`] }
-            : undefined,
-      });
-    }
-
+  if (!data || error) {
+    console.log("Better Auth Error:", error);
+    console.error("Better Auth Error1:", error);
     return submission.reply({
-      formErrors: [error.message],
-      fieldErrors: fields.includes(target)
-        ? { [target]: [`${target} does not exist`] }
-        : undefined,
+      formErrors: ["Failed to login"],
+      fieldErrors: {
+        email: ["Invalid email or password"],
+        password: ["Invalid email or password"],
+      },
     });
   }
 
-  session.set("userId", loginResponse.user.id);
-  session.set("token", loginResponse.token);
-  session.set("toastMessage", `Welcome back, ${loginResponse.user.fullName}.`);
+  session.set("userId", data.user.id);
+  session.set("token", data.token);
+  session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
   return redirect(href("/"), {
     headers: { "Set-Cookie": await commitSession(session) },
@@ -130,10 +117,7 @@ export default function LoginRoute({
         <div className="max-w-md mx-auto w-full">
           {/* Desktop Title - Show only on desktop */}
           <div className="hidden lg:block text-center mb-8">
-            <h1
-              className="text-4xl xl:text-5xl font-bold mb-4 text-gray-400"
-              style={{ fontFamily: "Dancing Script" }}
-            >
+            <h1 className="text-4xl xl:text-5xl font-bold mb-4 text-gray-400 font-brand">
               Welcome Back
             </h1>
             <p className="text-lg xl:text-xl text-gray-400">
@@ -149,10 +133,7 @@ export default function LoginRoute({
             >
               <div className="absolute inset-0 bg-black/40 rounded-lg"></div>
               <div className="relative z-10 text-center text-white">
-                <h1
-                  className="text-3xl sm:text-4xl font-bold mb-3"
-                  style={{ fontFamily: "Dancing Script" }}
-                >
+                <h1 className="text-3xl sm:text-4xl font-bold mb-3 font-brand">
                   Welcome Back
                 </h1>
                 <p className="text-base sm:text-lg opacity-90">

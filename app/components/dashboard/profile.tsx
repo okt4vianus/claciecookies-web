@@ -1,6 +1,8 @@
-import { Camera, Mail, Phone, User } from "lucide-react";
+/** biome-ignore-all lint/a11y/noLabelWithoutControl: "Temporary fix" */
+import { CameraIcon, MailIcon, PhoneIcon, UserIcon } from "lucide-react";
+import type { User } from "@/modules/user/type";
 
-export function Profile({ userInfo }: { userInfo: any }) {
+export function Profile({ userInfo }: { userInfo: User }) {
   return (
     <div className="space-y-6">
       <div className="border border-border rounded-2xl p-6 shadow-lg">
@@ -12,12 +14,15 @@ export function Profile({ userInfo }: { userInfo: any }) {
         <div className="flex flex-col sm:flex-row items-center gap-6 mb-4 p-3 bg-secondary/30 rounded-xl border border-border">
           <div className="relative">
             <img
-              src={userInfo.avatar}
+              src={userInfo.image}
               alt="Profile"
               className="w-20 h-20 rounded-full border-4 border-primary/20 shadow-lg"
             />
-            <button className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-lg">
-              <Camera className="w-4 h-4" />
+            <button
+              type="button"
+              className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-lg"
+            >
+              <CameraIcon className="w-4 h-4" />
             </button>
           </div>
           <div className="text-center sm:text-left">
@@ -27,7 +32,7 @@ export function Profile({ userInfo }: { userInfo: any }) {
             <p className="text-muted-foreground">{userInfo.email}</p>
             <p className="text-sm text-muted-foreground mt-1">
               Member since{" "}
-              {new Date(userInfo.joinDate).toLocaleDateString("id-ID", {
+              {new Date(userInfo.createdAt).toLocaleDateString("id-ID", {
                 year: "numeric",
                 month: "long",
               })}
@@ -39,8 +44,11 @@ export function Profile({ userInfo }: { userInfo: any }) {
         <form className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="flex items-center text-sm font-medium text-foreground mb-2">
-                <User className="w-4 h-4 mr-2" />
+              <label
+                htmlFor="name"
+                className="flex items-center text-sm font-medium text-foreground mb-2"
+              >
+                <UserIcon className="w-4 h-4 mr-2" />
                 Full Name
               </label>
               <input
@@ -53,7 +61,7 @@ export function Profile({ userInfo }: { userInfo: any }) {
 
             <div className="space-y-2">
               <label className="flex items-center text-sm font-medium text-foreground mb-2">
-                <Mail className="w-4 h-4 mr-2" />
+                <MailIcon className="w-4 h-4 mr-2" />
                 Email Address
               </label>
               <input
@@ -66,8 +74,8 @@ export function Profile({ userInfo }: { userInfo: any }) {
 
             <div className="space-y-2">
               <label className="flex items-center text-sm font-medium text-foreground mb-2">
-                <Phone className="w-4 h-4 mr-2" />
-                Phone Number
+                <PhoneIcon className="w-4 h-4 mr-2" />
+                PhoneIcon Number
               </label>
               <input
                 type="tel"
@@ -170,7 +178,10 @@ export function Profile({ userInfo }: { userInfo: any }) {
           Security Settings
         </h3>
         <div className="space-y-4">
-          <button className="w-full text-left p-4 border border-border rounded-xl hover:bg-secondary/30 transition-colors">
+          <button
+            type="button"
+            className="w-full text-left p-4 border border-border rounded-xl hover:bg-secondary/30 transition-colors"
+          >
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-medium text-foreground">Change Password</p>
