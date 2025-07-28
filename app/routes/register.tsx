@@ -35,7 +35,6 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: registerSchema });
-
   if (submission.status !== "success") return submission.reply();
 
   const { data: registerResponse, error } = await betterAuthApiClient.POST(
@@ -44,17 +43,33 @@ export async function action({ request }: Route.ActionArgs) {
   );
 
   if (error || !registerResponse) {
-    const fields = ["username", "email"];
-    // biome-ignore lint/suspicious/noExplicitAny: "This is fine"
-    const target = (error as any).details?.meta?.target?.[0];
+    const hasErrorCode = error && "code" in error;
+    const isUsernameTaken =
+      hasErrorCode &&
+      error.code === "USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER";
+    const isEmailExist = hasErrorCode && error.code === "USER_ALREADY_EXISTS";
+
+    if (isUsernameTaken) {
+      return submission.reply({
+        fieldErrors: {
+          username: [`Username ${submission.value.username} already taken`],
+        },
+      });
+    }
+
+    if (isEmailExist) {
+      return submission.reply({
+        fieldErrors: {
+          email: [`Email ${submission.value.email} already exists`],
+        },
+      });
+    }
 
     return submission.reply({
       formErrors: ["Failed to register"],
-      fieldErrors: fields.includes(target)
-        ? { [target]: [`${target} already exists`] }
-        : undefined,
     });
   }
+
   session.set(
     "toastMessage",
     `Account created successfully! Welcome, ${submission.value.name}.`,
