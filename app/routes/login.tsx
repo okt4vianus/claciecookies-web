@@ -64,8 +64,8 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
-  session.set("userId", data.user.id);
   session.set("token", data.token);
+  session.set("userId", data.user.id);
   session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
   return redirect(href("/"), {

@@ -37,7 +37,8 @@ export default [
    */
 
   // Auth
-  route("/action/auth/google", "routes/action/auth/google.ts"),
+  route("/action/auth/google", "routes/action/auth/google.ts"), // sign-in/social
+  route("/auth/callback/google", "routes/auth/callback/google.ts"), // callback from google
 
   // User Data
   route("/action/user/profile", "routes/action/user/profile.ts"),
