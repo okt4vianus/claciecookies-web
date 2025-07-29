@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { data } from "react-router";
 import { toast } from "sonner";
+import { commitAppSession, getAppSession } from "@/app-session.server";
 import { ProductItems } from "@/components/product/product-items";
 import { Separator } from "@/components/ui/separator";
 import { apiClient } from "@/lib/api-client";
-import { commitSession, getSession } from "@/sessions.server";
 import type { Route } from "./+types/home";
 
 export function meta() {
@@ -19,7 +19,7 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const session = await getAppSession(request.headers.get("Cookie"));
   const toastMessage = session.get("toastMessage");
 
   session.unset("toastMessage");
@@ -31,7 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return data(
     { products, toastMessage },
-    { headers: { "Set-Cookie": await commitSession(session) } },
+    { headers: { "Set-Cookie": await commitAppSession(session) } },
   );
 }
 

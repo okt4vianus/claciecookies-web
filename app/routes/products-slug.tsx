@@ -9,13 +9,13 @@ import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Form, href, redirect, useNavigate, useNavigation } from "react-router";
 import { toast } from "sonner";
+import { getAppSession } from "@/app-session.server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiClient } from "@/lib/api-client";
 import { AddProductToCartSchema } from "@/modules/product/schema";
-import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/products-slug";
 
 export function meta({ data }: Route.MetaArgs) {
@@ -53,9 +53,9 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
-  if (!token) return redirect(href("/login"));
+  const session = await getAppSession(request.headers.get("Cookie"));
+  const userId = session.get("userId");
+  if (!userId) return redirect(href("/login"));
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: AddProductToCartSchema });
@@ -63,7 +63,6 @@ export async function action({ request }: Route.ActionArgs) {
 
   const { error } = await apiClient.PUT("/cart/items", {
     body: { intent: "add", ...submission.value },
-    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (error) {

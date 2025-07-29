@@ -1,10 +1,10 @@
-import { getSession } from "@/sessions.server";
+import { getAppSession } from "@/app-session.server";
 import type { Route } from "./+types/shipping-method";
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
-  if (!token) return { status: 401, message: "Unauthorized" };
+  const session = await getAppSession(request.headers.get("Cookie"));
+  const userId = session.get("userId");
+  if (!userId) return { status: 401, message: "Unauthorized" };
 
   return null;
 

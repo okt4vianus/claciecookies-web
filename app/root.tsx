@@ -10,9 +10,10 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import "@fontsource/dancing-script";
+import { getAppSession } from "@/app-session.server";
 import { Toaster } from "@/components/ui/sonner";
 import { betterAuthApiClient } from "./lib/api-client";
-import { getSession } from "./sessions.server";
+import { includeCookie } from "./lib/include-cookie";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -28,11 +29,10 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const isAuthenticated = session.has("userId");
+  const session = await getAppSession(request.headers.get("Cookie"));
+  const userId = session.get("userId");
 
-  const token = session.get("token");
-  if (!token) {
+  if (!userId) {
     return {
       isAuthenticated: false,
       session: null,
@@ -40,9 +40,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     };
   }
 
-  const { data, error } = await betterAuthApiClient.GET("/get-session", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const { data, error } = await betterAuthApiClient.GET(
+    "/get-session",
+    includeCookie(request),
+  );
+
   if (error) {
     return {
       isAuthenticated: false,
@@ -54,7 +56,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   session.set("user", data.user);
 
   return {
-    isAuthenticated,
+    isAuthenticated: true,
     session: data.session,
     user: data.user,
   };

@@ -1,7 +1,7 @@
 import { href, redirect } from "react-router";
+import { getAppSession } from "@/app-session.server";
 import { DebugCode } from "@/components/common/debug-code";
 import { apiClient } from "@/lib/api-client";
-import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/orders-id";
 
 // export function meta({ data }: Route.MetaArgs) {
@@ -23,14 +23,13 @@ import type { Route } from "./+types/orders-id";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { id } = params;
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
+  const session = await getAppSession(request.headers.get("Cookie"));
+  const userId = session.get("userId");
 
-  if (!token) return redirect(href("/login"));
+  if (!userId) return redirect(href("/login"));
 
   const { data: order, error } = await apiClient.GET("/orders/{id}", {
     params: { path: { id } },
-    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (error) throw new Response(`Order by id ${id} not found`, { status: 404 });
