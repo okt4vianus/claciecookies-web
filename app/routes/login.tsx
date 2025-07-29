@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { betterAuthApiClient } from "@/lib/api-client";
+import { includeCookie } from "@/lib/include-cookie";
 import type { Route } from "./+types/login";
 
 export function meta() {
@@ -56,7 +57,10 @@ export async function action({ request }: Route.ActionArgs) {
 
   const { data, error } = await betterAuthApiClient.POST("/sign-in/email", {
     body: submission.value,
+    ...includeCookie(request),
   });
+
+  console.log({ data });
 
   if (!data || error) {
     return submission.reply({

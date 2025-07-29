@@ -1,6 +1,7 @@
 import { href, redirect } from "react-router";
 import { commitAppSession, getAppSession } from "@/app-session.server";
 import { betterAuthApiClient } from "@/lib/api-client";
+import { includeCookie } from "@/lib/include-cookie";
 import type { Route } from "./+types/google";
 
 /**
@@ -8,23 +9,24 @@ import type { Route } from "./+types/google";
  * it will GET /auth/callback/google
  */
 export async function loader({ request }: Route.LoaderArgs) {
-  console.log("Google sign in successful");
+  const appSession = await getAppSession(request.headers.get("Cookie"));
 
-  const session = await getAppSession(request.headers.get("Cookie"));
-
-  const { data, error } = await betterAuthApiClient.GET("/get-session");
-
-  console.log({ data });
+  const { data, error } = await betterAuthApiClient.GET(
+    "/get-session",
+    includeCookie(request),
+  );
 
   if (!data || !data.user.id || error) {
     return redirect(href("/login"));
   }
 
-  session.set("userId", data.user.id);
-  session.set("user", data.user);
-  session.set("toastMessage", `Welcome back, ${data.user.name}`);
+  console.log({ data });
+
+  appSession.set("userId", data.user.id);
+  appSession.set("user", data.user);
+  appSession.set("toastMessage", `Welcome back, ${data.user.name}`);
 
   return redirect(href("/"), {
-    headers: { "Set-Cookie": await commitAppSession(session) },
+    headers: { "Set-Cookie": await commitAppSession(appSession) },
   });
 }
