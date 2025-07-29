@@ -1,5 +1,5 @@
 import { parseWithZod } from "@conform-to/zod";
-import { apiClient } from "@/lib/api-client";
+import { createApiClient } from "@/lib/api-client";
 import { UserProfileSchema } from "@/modules/user/schema";
 import type { Route } from "./+types/profile";
 
@@ -8,7 +8,8 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = parseWithZod(formData, { schema: UserProfileSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data } = await apiClient.PATCH("/auth/profile", {
+  const api = createApiClient(request);
+  const { data } = await api.PATCH("/auth/profile", {
     body: submission.value,
   });
 

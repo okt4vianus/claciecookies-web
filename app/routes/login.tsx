@@ -12,8 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { betterAuthApiClient } from "@/lib/api-client";
-import { includeCookie } from "@/lib/include-cookie";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/login";
 
 export function meta() {
@@ -55,14 +54,12 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = parseWithZod(formData, { schema: loginSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data, error } = await betterAuthApiClient.POST("/sign-in/email", {
+  const api = createBetterAuthClient(request);
+  const { data, error, response } = await api.POST("/sign-in/email", {
     body: submission.value,
-    ...includeCookie(request),
   });
 
-  console.log({ data });
-
-  if (!data || error) {
+  if (!data || error || !response.ok) {
     return submission.reply({
       formErrors: ["Failed to login. Invalid email or password"],
     });
@@ -71,9 +68,14 @@ export async function action({ request }: Route.ActionArgs) {
   session.set("userId", data.user.id);
   session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
-  return redirect(href("/"), {
-    headers: { "Set-Cookie": await commitAppSession(session) },
-  });
+  const sessionCookie = await commitAppSession(session);
+  const authCookie = response.headers.get("Set-Cookie") || "";
+
+  const headers = new Headers();
+  headers.append("Set-Cookie", sessionCookie);
+  headers.append("Set-Cookie", authCookie);
+
+  return redirect(href("/"), { headers });
 }
 
 export default function LoginRoute({

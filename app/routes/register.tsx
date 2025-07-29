@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { betterAuthApiClient } from "@/lib/api-client";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/register";
 
 export function meta() {
@@ -38,10 +38,10 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = parseWithZod(formData, { schema: registerSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data: registerResponse, error } = await betterAuthApiClient.POST(
-    "/sign-up/email",
-    { body: submission.value },
-  );
+  const api = createBetterAuthClient(request);
+  const { data: registerResponse, error } = await api.POST("/sign-up/email", {
+    body: submission.value,
+  });
 
   if (error || !registerResponse) {
     const hasErrorCode = error && "code" in error;

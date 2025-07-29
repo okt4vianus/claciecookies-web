@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiClient } from "@/lib/api-client";
+import { createApiClient } from "@/lib/api-client";
 import { AddProductToCartSchema } from "@/modules/product/schema";
 import type { Route } from "./+types/products-slug";
 
@@ -39,13 +39,11 @@ export function meta({ data }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const { data: product, error } = await apiClient.GET(
-    "/products/{identifier}",
-    {
-      params: { path: { identifier: params.slug } },
-    },
-  );
+export async function loader({ request, params }: Route.LoaderArgs) {
+  const api = createApiClient(request);
+  const { data: product, error } = await api.GET("/products/{identifier}", {
+    params: { path: { identifier: params.slug } },
+  });
 
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
   if (!product) throw new Response("Product not found", { status: 404 });
@@ -61,7 +59,8 @@ export async function action({ request }: Route.ActionArgs) {
   const submission = parseWithZod(formData, { schema: AddProductToCartSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { error } = await apiClient.PUT("/cart/items", {
+  const api = createApiClient(request);
+  const { error } = await api.PUT("/cart/items", {
     body: { intent: "add", ...submission.value },
   });
 

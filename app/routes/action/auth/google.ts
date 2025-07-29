@@ -1,13 +1,14 @@
 import { redirect } from "react-router";
-import { betterAuthApiClient } from "@/lib/api-client";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/google";
 
 export async function loader(_: Route.LoaderArgs) {
   return redirect("/register");
 }
 
-export async function action(_: Route.ActionArgs) {
-  const { data, error } = await betterAuthApiClient.POST("/sign-in/social", {
+export async function action({ request }: Route.ActionArgs) {
+  const api = createBetterAuthClient(request);
+  const { data, error } = await api.POST("/sign-in/social", {
     body: {
       provider: "google",
       callbackURL: `${process.env.FRONTEND_WEB_URL}/auth/callback/google`,

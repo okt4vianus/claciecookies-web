@@ -12,8 +12,7 @@ import "./app.css";
 import "@fontsource/dancing-script";
 import { getAppSession } from "@/app-session.server";
 import { Toaster } from "@/components/ui/sonner";
-import { betterAuthApiClient } from "./lib/api-client";
-import { includeCookie } from "./lib/include-cookie";
+import { createBetterAuthClient } from "./lib/api-client";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -40,10 +39,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     };
   }
 
-  const { data, error } = await betterAuthApiClient.GET(
-    "/get-session",
-    includeCookie(request),
-  );
+  const api = createBetterAuthClient(request);
+  const { data, error } = await api.GET("/get-session");
 
   if (error) {
     return {
