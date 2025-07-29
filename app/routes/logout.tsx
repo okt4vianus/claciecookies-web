@@ -7,11 +7,16 @@ import type { Route } from "./+types/logout";
 export async function action({ request }: Route.ActionArgs) {
   const session = await getAppSession(request.headers.get("Cookie"));
 
-  return redirect("/login", {
-    headers: {
-      "Set-Cookie": await destroyAppSession(session),
-    },
-  });
+  const headers = new Headers();
+  headers.append("Set-Cookie", await destroyAppSession(session));
+  headers.append(
+    "Set-Cookie",
+    [
+      "better-auth.session_token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax; Secure",
+    ].join(""),
+  );
+
+  return redirect("/login", { headers });
 }
 
 export default function LogoutRoute() {

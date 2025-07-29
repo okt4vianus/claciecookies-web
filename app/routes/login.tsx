@@ -68,12 +68,11 @@ export async function action({ request }: Route.ActionArgs) {
   session.set("userId", data.user.id);
   session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
-  const headers = new Headers();
-
   const sessionCookie = await commitAppSession(session);
-  headers.append("Set-Cookie", sessionCookie);
-
   const authCookie = response.headers.get("Set-Cookie") || "";
+
+  const headers = new Headers();
+  headers.append("Set-Cookie", sessionCookie);
   headers.append("Set-Cookie", authCookie);
 
   return redirect(href("/"), { headers });
