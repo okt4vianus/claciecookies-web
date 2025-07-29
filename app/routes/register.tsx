@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Form, href, redirect } from "react-router";
 import { z } from "zod";
+import { commitAppSession, getAppSession } from "@/app-session.server";
 import { FormGoogle } from "@/components/auth/form-google";
 import { AlertError, AlertErrorSimple } from "@/components/common/alert-error";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { betterAuthApiClient } from "@/lib/api-client";
-import { commitSession, getSession } from "@/sessions.server";
 import type { Route } from "./+types/register";
 
 export function meta() {
@@ -32,7 +32,7 @@ const registerSchema = z.object({
 });
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const session = await getAppSession(request.headers.get("Cookie"));
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: registerSchema });
@@ -79,7 +79,7 @@ export async function action({ request }: Route.ActionArgs) {
   // return redirect(href("/login"));
 
   return redirect(href("/login"), {
-    headers: { "Set-Cookie": await commitSession(session) },
+    headers: { "Set-Cookie": await commitAppSession(session) },
   });
 }
 
