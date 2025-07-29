@@ -6,6 +6,7 @@ import type { Route } from "./+types/logout";
 
 export async function action({ request }: Route.ActionArgs) {
   const session = await getAppSession(request.headers.get("Cookie"));
+
   return redirect("/login", {
     headers: {
       "Set-Cookie": await destroyAppSession(session),

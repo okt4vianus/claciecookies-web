@@ -16,10 +16,5 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
   console.log({ data });
 
-  // return submission.reply();
-
-  // atau redirect
   return redirect(href("/checkout"));
-
-  // return data;
 };

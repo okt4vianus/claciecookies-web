@@ -55,13 +55,11 @@ export async function action({ request }: Route.ActionArgs) {
   if (submission.status !== "success") return submission.reply();
 
   const api = createBetterAuthClient(request);
-  const { data, error } = await api.POST("/sign-in/email", {
+  const { data, error, response } = await api.POST("/sign-in/email", {
     body: submission.value,
   });
 
-  console.log({ data });
-
-  if (!data || error) {
+  if (!data || error || !response.ok) {
     return submission.reply({
       formErrors: ["Failed to login. Invalid email or password"],
     });
@@ -70,9 +68,15 @@ export async function action({ request }: Route.ActionArgs) {
   session.set("userId", data.user.id);
   session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
-  return redirect(href("/"), {
-    headers: { "Set-Cookie": await commitAppSession(session) },
-  });
+  const headers = new Headers();
+
+  const sessionCookie = await commitAppSession(session);
+  headers.append("Set-Cookie", sessionCookie);
+
+  const authCookie = response.headers.get("Set-Cookie") || "";
+  headers.append("Set-Cookie", authCookie);
+
+  return redirect(href("/"), { headers });
 }
 
 export default function LoginRoute({
