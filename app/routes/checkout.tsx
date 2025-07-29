@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { apiClient } from "@/lib/api-client";
+import { createApiClient } from "@/lib/api-client";
 import { UpdateAddressSchema } from "@/modules/address/schema";
 import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
 import { CreateNewOrderSchema } from "@/modules/checkout/schema";
@@ -30,7 +30,9 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const api = createApiClient(request);
   const session = await getAppSession(request.headers.get("Cookie"));
+
   const userId = session.get("userId");
   if (!userId) return redirect(href("/login"));
 
@@ -40,12 +42,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     shippingMethodsResponse,
     paymentMethodsResponse,
   ] = await Promise.all([
-    // TODO: Later
-    // GET /checkout for cart, address, shipping-methods, payment-methods
-    apiClient.GET("/cart"),
-    apiClient.GET("/address"),
-    apiClient.GET("/shipping-methods"),
-    apiClient.GET("/payment-methods"),
+    api.GET("/cart"),
+    api.GET("/address"),
+    api.GET("/shipping-methods"),
+    api.GET("/payment-methods"),
   ]);
 
   if (
@@ -77,7 +77,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const api = createApiClient(request);
   const session = await getAppSession(request.headers.get("Cookie"));
+
   const userId = session.get("userId");
   if (!userId) return redirect(href("/login"));
 
@@ -86,7 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
   if (submission.status !== "success") return submission.reply();
 
   try {
-    const { data: order, error } = await apiClient.POST("/orders", {
+    const { data: order, error } = await api.POST("/orders", {
       body: submission.value,
     });
 

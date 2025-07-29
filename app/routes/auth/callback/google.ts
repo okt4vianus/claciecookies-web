@@ -1,7 +1,6 @@
 import { href, redirect } from "react-router";
 import { commitAppSession, getAppSession } from "@/app-session.server";
-import { betterAuthApiClient } from "@/lib/api-client";
-import { includeCookie } from "@/lib/include-cookie";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/google";
 
 /**
@@ -11,10 +10,8 @@ import type { Route } from "./+types/google";
 export async function loader({ request }: Route.LoaderArgs) {
   const appSession = await getAppSession(request.headers.get("Cookie"));
 
-  const { data, error } = await betterAuthApiClient.GET(
-    "/get-session",
-    includeCookie(request),
-  );
+  const api = createBetterAuthClient(request);
+  const { data, error } = await api.GET("/get-session");
 
   if (!data || !data.user.id || error) {
     return redirect(href("/login"));
