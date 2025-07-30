@@ -95,7 +95,7 @@
   },
   "security": [{ "apiKeyCookie": [], "bearerAuth": [] }],
   "servers": [
-    { "url": "https://https://claciecookies-api.oktavianusrtasak.com/api/auth" }
+    { "url": "https://claciecookies-api.oktavianusrtasak.com/api/auth" }
   ],
   "tags": [
     {
