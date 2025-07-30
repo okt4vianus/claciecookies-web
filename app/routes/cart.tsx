@@ -9,11 +9,11 @@ import {
   useActionData,
   useNavigation,
 } from "react-router";
+import { getAppSession } from "@/app-session.server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { apiClient } from "@/lib/api-client";
+import { createApiClient } from "@/lib/api-client";
 import { UpdateCartItemQuantitySchema } from "@/modules/cart/schema";
-import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/cart";
 
 export function meta() {
@@ -27,19 +27,12 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
+  const session = await getAppSession(request.headers.get("Cookie"));
+  const userId = session.get("userId");
+  if (!userId) return redirect(href("/login"));
 
-  if (!token) {
-    // Redirect to login if not authenticated
-    return redirect(href("/login"));
-  }
-
-  const { data: cart, error } = await apiClient.GET("/cart", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const api = createApiClient(request);
+  const { data: cart, error } = await api.GET("/cart");
 
   if (error) {
     console.error("Cart fetch error:", error);
@@ -50,9 +43,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
-  if (!token) return redirect(href("/login"));
+  const api = createApiClient(request);
+  const session = await getAppSession(request.headers.get("Cookie"));
+
+  const userId = session.get("userId");
+  if (!userId) return redirect(href("/login"));
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, {
@@ -68,15 +63,13 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     if (quantity === 0) {
-      await apiClient.DELETE("/cart/items/{id}", {
+      await api.DELETE("/cart/items/{id}", {
         params: { path: { id: itemId } },
-        headers: { Authorization: `Bearer ${token}` },
       });
     } else {
-      await apiClient.PATCH("/cart/items/{id}", {
+      await api.PATCH("/cart/items/{id}", {
         params: { path: { id: itemId } },
         body: { quantity },
-        headers: { Authorization: `Bearer ${token}` },
       });
     }
 

@@ -4,14 +4,14 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Form, href, redirect } from "react-router";
 import { z } from "zod";
+import { commitAppSession, getAppSession } from "@/app-session.server";
 import { FormGoogle } from "@/components/auth/form-google";
 import { AlertError, AlertErrorSimple } from "@/components/common/alert-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { betterAuthApiClient } from "@/lib/api-client";
-import { commitSession, getSession } from "@/sessions.server";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/register";
 
 export function meta() {
@@ -32,16 +32,16 @@ const registerSchema = z.object({
 });
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const session = await getAppSession(request.headers.get("Cookie"));
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: registerSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data: registerResponse, error } = await betterAuthApiClient.POST(
-    "/sign-up/email",
-    { body: submission.value },
-  );
+  const api = createBetterAuthClient(request);
+  const { data: registerResponse, error } = await api.POST("/sign-up/email", {
+    body: submission.value,
+  });
 
   if (error || !registerResponse) {
     const hasErrorCode = error && "code" in error;
@@ -79,7 +79,7 @@ export async function action({ request }: Route.ActionArgs) {
   // return redirect(href("/login"));
 
   return redirect(href("/login"), {
-    headers: { "Set-Cookie": await commitSession(session) },
+    headers: { "Set-Cookie": await commitAppSession(session) },
   });
 }
 

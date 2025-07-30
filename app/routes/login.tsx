@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import { data, Form, href, redirect } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+import { commitAppSession, getAppSession } from "@/app-session.server";
 import { FormGoogle } from "@/components/auth/form-google";
 import { AlertError, AlertErrorSimple } from "@/components/common/alert-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { betterAuthApiClient } from "@/lib/api-client";
-import { commitSession, getSession } from "@/sessions.server";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/login";
 
 export function meta() {
@@ -26,7 +26,7 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const session = await getAppSession(request.headers.get("Cookie"));
 
   const toastMessage = session.get("toastMessage");
   session.unset("toastMessage");
@@ -37,7 +37,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return data(
     { error: session.get("error"), toastMessage },
-    { headers: { "Set-Cookie": await commitSession(session) } },
+    { headers: { "Set-Cookie": await commitAppSession(session) } },
   );
 }
 
@@ -47,30 +47,35 @@ const loginSchema = z.object({
 });
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const session = await getAppSession(request.headers.get("Cookie"));
 
   const formData = await request.formData();
 
   const submission = parseWithZod(formData, { schema: loginSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { data, error } = await betterAuthApiClient.POST("/sign-in/email", {
+  const api = createBetterAuthClient(request);
+  const { data, error, response } = await api.POST("/sign-in/email", {
     body: submission.value,
   });
 
-  if (!data || error) {
+  if (!data || error || !response.ok) {
     return submission.reply({
       formErrors: ["Failed to login. Invalid email or password"],
     });
   }
 
-  session.set("token", data.token);
   session.set("userId", data.user.id);
   session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
-  return redirect(href("/"), {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
+  const sessionCookie = await commitAppSession(session);
+  const authCookie = response.headers.get("Set-Cookie") || "";
+
+  const headers = new Headers();
+  headers.append("Set-Cookie", sessionCookie);
+  headers.append("Set-Cookie", authCookie);
+
+  return redirect(href("/"), { headers });
 }
 
 export default function LoginRoute({

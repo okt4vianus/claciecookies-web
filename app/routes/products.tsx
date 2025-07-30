@@ -1,5 +1,5 @@
 import { ProductItems } from "@/components/product/product-items";
-import { apiClient } from "@/lib/api-client";
+import { createApiClient } from "@/lib/api-client";
 import type { Route } from "./+types/products";
 
 export function meta() {
@@ -12,8 +12,9 @@ export function meta() {
   ];
 }
 
-export async function loader() {
-  const { data: products, error } = await apiClient.GET("/products");
+export async function loader({ request }: Route.LoaderArgs) {
+  const api = createApiClient(request);
+  const { data: products, error } = await api.GET("/products");
   if (error) throw new Response(`Failed to fetch products`, { status: 500 });
   return { products };
 }

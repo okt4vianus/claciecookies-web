@@ -9,13 +9,13 @@ import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Form, href, redirect, useNavigate, useNavigation } from "react-router";
 import { toast } from "sonner";
+import { getAppSession } from "@/app-session.server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiClient } from "@/lib/api-client";
+import { createApiClient } from "@/lib/api-client";
 import { AddProductToCartSchema } from "@/modules/product/schema";
-import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/products-slug";
 
 export function meta({ data }: Route.MetaArgs) {
@@ -39,13 +39,11 @@ export function meta({ data }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const { data: product, error } = await apiClient.GET(
-    "/products/{identifier}",
-    {
-      params: { path: { identifier: params.slug } },
-    },
-  );
+export async function loader({ request, params }: Route.LoaderArgs) {
+  const api = createApiClient(request);
+  const { data: product, error } = await api.GET("/products/{identifier}", {
+    params: { path: { identifier: params.slug } },
+  });
 
   if (error) throw new Response(`Failed to fetch one product ${error.message}`);
   if (!product) throw new Response("Product not found", { status: 404 });
@@ -53,17 +51,17 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
-  if (!token) return redirect(href("/login"));
+  const session = await getAppSession(request.headers.get("Cookie"));
+  const userId = session.get("userId");
+  if (!userId) return redirect(href("/login"));
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: AddProductToCartSchema });
   if (submission.status !== "success") return submission.reply();
 
-  const { error } = await apiClient.PUT("/cart/items", {
+  const api = createApiClient(request);
+  const { error } = await api.PUT("/cart/items", {
     body: { intent: "add", ...submission.value },
-    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (error) {

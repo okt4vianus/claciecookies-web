@@ -3,6 +3,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { CreditCardIcon, TruckIcon } from "lucide-react";
 import { useState } from "react";
 import { href, Link, redirect, useFetcher, useNavigation } from "react-router";
+import { getAppSession } from "@/app-session.server";
 import OrderSummary from "@/components/checkout/checkoutsidebar";
 import CustomerInformation from "@/components/checkout/customerinformation";
 import ShippingAddress from "@/components/checkout/shippingaddress";
@@ -11,12 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { apiClient } from "@/lib/api-client";
+import { createApiClient } from "@/lib/api-client";
 import { UpdateAddressSchema } from "@/modules/address/schema";
 import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
 import { CreateNewOrderSchema } from "@/modules/checkout/schema";
 import { UserProfileSchema } from "@/modules/user/schema";
-import { getSession } from "@/sessions.server";
 import type { Route } from "./+types/checkout";
 
 export function meta() {
@@ -30,9 +30,11 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
-  if (!token) return redirect(href("/login"));
+  const api = createApiClient(request);
+  const session = await getAppSession(request.headers.get("Cookie"));
+
+  const userId = session.get("userId");
+  if (!userId) return redirect(href("/login"));
 
   const [
     cartResponse,
@@ -40,16 +42,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     shippingMethodsResponse,
     paymentMethodsResponse,
   ] = await Promise.all([
-    // TODO: Later
-    // GET /checkout for cart, address, shipping-methods, payment-methods
-    apiClient.GET("/cart", {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-    apiClient.GET("/address", {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-    apiClient.GET("/shipping-methods"),
-    apiClient.GET("/payment-methods"),
+    api.GET("/cart"),
+    api.GET("/address"),
+    api.GET("/shipping-methods"),
+    api.GET("/payment-methods"),
   ]);
 
   if (
@@ -81,19 +77,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
+  const api = createApiClient(request);
+  const session = await getAppSession(request.headers.get("Cookie"));
 
-  if (!token) return redirect(href("/login"));
+  const userId = session.get("userId");
+  if (!userId) return redirect(href("/login"));
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: CreateNewOrderSchema });
   if (submission.status !== "success") return submission.reply();
 
   try {
-    const { data: order, error } = await apiClient.POST("/orders", {
+    const { data: order, error } = await api.POST("/orders", {
       body: submission.value,
-      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (error) {

@@ -1,16 +1,22 @@
 import { LogOut } from "lucide-react";
 import { Form, Link, redirect } from "react-router";
+import { destroyAppSession, getAppSession } from "@/app-session.server";
 import { Button } from "@/components/ui/button";
-import { destroySession, getSession } from "@/sessions.server";
 import type { Route } from "./+types/logout";
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  return redirect("/login", {
-    headers: {
-      "Set-Cookie": await destroySession(session),
-    },
-  });
+  const session = await getAppSession(request.headers.get("Cookie"));
+
+  const headers = new Headers();
+  headers.append("Set-Cookie", await destroyAppSession(session));
+  headers.append(
+    "Set-Cookie",
+    [
+      "better-auth.session_token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax; Secure",
+    ].join(""),
+  );
+
+  return redirect("/login", { headers });
 }
 
 export default function LogoutRoute() {

@@ -1,5 +1,6 @@
-import { redirect } from "react-router";
-import { getSession } from "@/sessions.server";
+import { href, redirect } from "react-router";
+import { commitAppSession, getAppSession } from "@/app-session.server";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/google";
 
 /**
@@ -7,36 +8,22 @@ import type { Route } from "./+types/google";
  * it will GET /auth/callback/google
  */
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const appSession = await getAppSession(request.headers.get("Cookie"));
 
-  const cookieHeader = request.headers.get("Cookie");
-  const token = extractTokenFromCookie(cookieHeader);
+  const api = createBetterAuthClient(request);
+  const { data, error } = await api.GET("/get-session");
 
-  console.log({ request, cookieHeader, token });
-
-  if (token) {
-    console.log({ token });
-
-    session.set("token", token);
-    //   session.set("userId", data.user.id);
-    // session.set("toastMessage", `Welcome back, ${data.user.name}`);
-
-    return redirect("/");
+  if (!data || !data.user.id || error) {
+    return redirect(href("/login"));
   }
 
-  return null;
-}
+  console.log({ data });
 
-function extractTokenFromCookie(cookieHeader: string | null): string | null {
-  if (!cookieHeader) return null;
+  appSession.set("userId", data.user.id);
+  appSession.set("user", data.user);
+  appSession.set("toastMessage", `Welcome back, ${data.user.name}`);
 
-  const cookies = new Map();
-  cookieHeader.split(";").forEach((cookie) => {
-    const [name, value] = cookie.trim().split("=");
-    if (name && value) {
-      cookies.set(name, decodeURIComponent(value));
-    }
+  return redirect(href("/"), {
+    headers: { "Set-Cookie": await commitAppSession(appSession) },
   });
-
-  return cookies.get("better-auth.session_token") || null;
 }
