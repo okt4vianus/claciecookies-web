@@ -7,9 +7,8 @@ import {
 import { parseWithZod } from "@conform-to/zod";
 import { LoaderIcon, Minus, Plus, ShoppingCartIcon } from "lucide-react";
 import { useEffect } from "react";
-import { Form, href, redirect, useNavigate, useNavigation } from "react-router";
+import { Form, redirect, useNavigate, useNavigation } from "react-router";
 import { toast } from "sonner";
-import { getAppSession } from "@/app-session.server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,10 +50,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await getAppSession(request.headers.get("Cookie"));
-  const userId = session.get("userId");
-  if (!userId) return redirect(href("/login"));
-
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: AddProductToCartSchema });
   if (submission.status !== "success") return submission.reply();

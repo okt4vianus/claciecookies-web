@@ -3,7 +3,6 @@ import { parseWithZod } from "@conform-to/zod";
 import { CreditCardIcon, TruckIcon } from "lucide-react";
 import { useState } from "react";
 import { href, Link, redirect, useFetcher, useNavigation } from "react-router";
-import { getAppSession } from "@/app-session.server";
 import OrderSummary from "@/components/checkout/checkoutsidebar";
 import CustomerInformation from "@/components/checkout/customerinformation";
 import ShippingAddress from "@/components/checkout/shippingaddress";
@@ -31,10 +30,6 @@ export function meta() {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const api = createApiClient(request);
-  const session = await getAppSession(request.headers.get("Cookie"));
-
-  const userId = session.get("userId");
-  if (!userId) return redirect(href("/login"));
 
   const [
     cartResponse,
@@ -78,10 +73,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   const api = createApiClient(request);
-  const session = await getAppSession(request.headers.get("Cookie"));
-
-  const userId = session.get("userId");
-  if (!userId) return redirect(href("/login"));
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: CreateNewOrderSchema });
@@ -170,10 +161,10 @@ export default function CheckoutRoute({
       ?.price ?? 15000;
   const totalWithShipping = cart.totalPrice + shippingCost;
 
-  console.log("USER DATA:", user);
-  console.log("ADDRESS DATA:", address);
-  console.log("SHIPPING METHOD:", selectedShippingMethod, shippingCost);
-  console.log("PAYMENT METHOD:", selectedPaymentMethod);
+  // console.log("USER DATA:", user);
+  // console.log("ADDRESS DATA:", address);
+  // console.log("SHIPPING METHOD:", selectedShippingMethod, shippingCost);
+  // console.log("PAYMENT METHOD:", selectedPaymentMethod);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">

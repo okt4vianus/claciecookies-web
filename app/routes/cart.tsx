@@ -3,13 +3,11 @@ import { parseWithZod } from "@conform-to/zod";
 import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import {
   Form,
-  href,
   Link,
   redirect,
   useActionData,
   useNavigation,
 } from "react-router";
-import { getAppSession } from "@/app-session.server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createApiClient } from "@/lib/api-client";
@@ -27,15 +25,10 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getAppSession(request.headers.get("Cookie"));
-  const userId = session.get("userId");
-  if (!userId) return redirect(href("/login"));
-
   const api = createApiClient(request);
   const { data: cart, error } = await api.GET("/cart");
 
   if (error) {
-    console.error("Cart fetch error:", error);
     return { isAuthenticated: true, cart: null };
   }
 
@@ -44,10 +37,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   const api = createApiClient(request);
-  const session = await getAppSession(request.headers.get("Cookie"));
-
-  const userId = session.get("userId");
-  if (!userId) return redirect(href("/login"));
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, {

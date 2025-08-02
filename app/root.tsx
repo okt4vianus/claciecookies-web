@@ -1,4 +1,5 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
@@ -6,13 +7,12 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-
+import "@fontsource/dancing-script";
+import { commitAppSession, getAppSession } from "@/app-session.server";
+import { Toaster } from "@/components/ui/sonner";
+import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/root";
 import "./app.css";
-import "@fontsource/dancing-script";
-import { getAppSession } from "@/app-session.server";
-import { Toaster } from "@/components/ui/sonner";
-import { createBetterAuthClient } from "./lib/api-client";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -29,18 +29,9 @@ export const links: Route.LinksFunction = () => [
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getAppSession(request.headers.get("Cookie"));
-  const userId = session.get("userId");
-
-  if (!userId) {
-    return {
-      isAuthenticated: false,
-      session: null,
-      user: null,
-    };
-  }
 
   const api = createBetterAuthClient(request);
-  const { data, error } = await api.GET("/get-session");
+  const { data: dataSession, error } = await api.GET("/get-session");
 
   if (error) {
     return {
@@ -50,13 +41,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     };
   }
 
-  session.set("user", data.user);
-
-  return {
-    isAuthenticated: true,
-    session: data.session,
-    user: data.user,
-  };
+  return data(
+    {
+      isAuthenticated: true,
+      session: dataSession.session,
+      user: dataSession.user,
+    },
+    { headers: { "Set-Cookie": await commitAppSession(session) } },
+  );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
