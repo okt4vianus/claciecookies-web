@@ -3,6 +3,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import {
   Form,
+  href,
   Link,
   redirect,
   useActionData,
@@ -26,11 +27,8 @@ export function meta() {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const api = createApiClient(request);
-  const { data: cart, error } = await api.GET("/cart");
-
-  if (error) {
-    return { isAuthenticated: true, cart: null };
-  }
+  const { data: cart } = await api.GET("/cart");
+  if (!cart) return redirect(href("/login"));
 
   return { isAuthenticated: true, cart };
 }
