@@ -9,7 +9,6 @@ import {
   useActionData,
   useNavigation,
 } from "react-router";
-import { getAppSession } from "@/app-session.server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createApiClient } from "@/lib/api-client";
@@ -27,27 +26,15 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getAppSession(request.headers.get("Cookie"));
-  const userId = session.get("userId");
-  if (!userId) return redirect(href("/login"));
-
   const api = createApiClient(request);
-  const { data: cart, error } = await api.GET("/cart");
-
-  if (error) {
-    console.error("Cart fetch error:", error);
-    return { isAuthenticated: true, cart: null };
-  }
+  const { data: cart } = await api.GET("/cart");
+  if (!cart) return redirect(href("/login"));
 
   return { isAuthenticated: true, cart };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const api = createApiClient(request);
-  const session = await getAppSession(request.headers.get("Cookie"));
-
-  const userId = session.get("userId");
-  if (!userId) return redirect(href("/login"));
 
   const formData = await request.formData();
   const submission = parseWithZod(formData, {

@@ -17,10 +17,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(href("/login"));
   }
 
-  console.log({ data });
-
-  appSession.set("userId", data.user.id);
-  appSession.set("user", data.user);
   appSession.set("toastMessage", `Welcome back, ${data.user.name}`);
 
   return redirect(href("/"), {

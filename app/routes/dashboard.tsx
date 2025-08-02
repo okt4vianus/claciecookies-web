@@ -1,11 +1,10 @@
 import { Package, Settings, UserIcon } from "lucide-react";
 import { useState } from "react";
 import { href, redirect } from "react-router";
-import { getAppSession } from "@/app-session.server";
 import { Orders } from "@/components/dashboard/orders";
 import Overview from "@/components/dashboard/overview";
 import { Profile } from "@/components/dashboard/profile";
-import { createApiClient } from "@/lib/api-client";
+import { createApiClient, createBetterAuthClient } from "@/lib/api-client";
 import type { UserComplete } from "@/modules/user/type";
 import type { Route } from "./+types/dashboard";
 
@@ -22,18 +21,16 @@ export function meta(_: Route.MetaArgs) {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const api = createApiClient(request);
-  const session = await getAppSession(request.headers.get("Cookie"));
+  const apiAuth = createBetterAuthClient(request);
 
-  const userId = session.get("userId");
-  const user = session.get("user");
-  if (!userId || !user) return redirect(href("/login"));
+  const { data, error } = await apiAuth.GET("/get-session");
+  if (error) return redirect(href("/login"));
 
   const { data: cart } = await api.GET("/cart");
-  if (!cart) return redirect(href("/login"));
 
   return {
     isAuthenticated: true,
-    user,
+    user: data.user,
     cart,
   };
 }
