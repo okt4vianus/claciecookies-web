@@ -31,10 +31,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   const toastMessage = session.get("toastMessage");
   session.unset("toastMessage");
 
-  if (session.has("userId")) {
-    return redirect(href("/dashboard"));
-  }
-
   return data(
     { error: session.get("error"), toastMessage },
     { headers: { "Set-Cookie": await commitAppSession(session) } },
@@ -65,7 +61,6 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
-  session.set("userId", data.user.id);
   session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
   const sessionCookie = await commitAppSession(session);

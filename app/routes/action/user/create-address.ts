@@ -1,5 +1,4 @@
 import { parseWithZod } from "@conform-to/zod";
-import { href, redirect } from "react-router";
 import { createApiClient } from "@/lib/api-client";
 import { CreateAddressSchema } from "@/modules/user/schema";
 import type { Route } from "./+types/create-address";
@@ -14,7 +13,5 @@ export const action = async ({ request }: Route.ActionArgs) => {
     body: submission.value,
   });
 
-  console.log({ data });
-
-  return redirect(href("/checkout"));
+  return data;
 };
