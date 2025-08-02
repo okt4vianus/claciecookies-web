@@ -28,12 +28,12 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getAppSession(request.headers.get("Cookie"));
+  const appSession = await getAppSession(request.headers.get("Cookie"));
 
   const api = createBetterAuthClient(request);
-  const { data: dataSession, error } = await api.GET("/get-session");
+  const { data: dataSession } = await api.GET("/get-session");
 
-  if (error) {
+  if (!dataSession) {
     return {
       isAuthenticated: false,
       session: null,
@@ -47,7 +47,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       session: dataSession.session,
       user: dataSession.user,
     },
-    { headers: { "Set-Cookie": await commitAppSession(session) } },
+    { headers: { "Set-Cookie": await commitAppSession(appSession) } },
   );
 }
 
