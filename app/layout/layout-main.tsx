@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Form, Link, Outlet } from "react-router";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -119,13 +120,18 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
                           variant="ghost"
                           className="p-0 rounded-full overflow-hidden"
                         >
-                          <img
+                          {/* <img
                             src={
                               user.image ??
                               `https://api.dicebear.com/9.x/initials/svg?seed=${user.username}`
                             }
                             alt={user.username}
                             className="w-8 h-8 rounded-full object-cover"
+                          /> */}
+                          <Avatar
+                            src={user.image}
+                            alt={user.username || "User"}
+                            className="border-0"
                           />
                         </Button>
                       </DropdownMenuTrigger>

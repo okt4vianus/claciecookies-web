@@ -4,6 +4,7 @@ import { href, redirect } from "react-router";
 import { Orders } from "@/components/dashboard/orders";
 import Overview from "@/components/dashboard/overview";
 import { Profile } from "@/components/dashboard/profile";
+import { Avatar } from "@/components/ui/avatar";
 import { createApiClient, createBetterAuthClient } from "@/lib/api-client";
 import type { UserComplete } from "@/modules/user/type";
 import type { Route } from "./+types/dashboard";
@@ -46,8 +47,11 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
     email: user.email,
     phoneNumber: user.phoneNumber,
     createdAt: user.createdAt,
+    // image:
+    //   "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
     image:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+      user.image ??
+      `https://api.dicebear.com/9.x/initials/svg?seed=${user.username}`,
     emailVerified: true,
     totalOrders: cart?.items.length || 0,
     totalSpent: cart?.totalPrice || 0,
@@ -140,10 +144,15 @@ export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
           <aside className="lg:col-span-1">
             <div className="border border-border rounded-2xl p-6 shadow-lg">
               <div className="flex items-center space-x-3 mb-6">
-                <img
+                {/* <img
                   src={userInfo.image}
                   alt="Avatar"
                   className="w-12 h-12 rounded-full border-2 border-border"
+                /> */}
+                <Avatar
+                  src={userInfo.image}
+                  alt={userInfo.name || userInfo.email || "User"}
+                  size="w-12 h-12"
                 />
                 <div>
                   <p className="font-medium text-foreground">{userInfo.name}</p>
