@@ -2,7 +2,15 @@ import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { CreditCardIcon, TruckIcon } from "lucide-react";
 import { useState } from "react";
-import { href, Link, redirect, useFetcher, useNavigation } from "react-router";
+import {
+  data,
+  href,
+  Link,
+  redirect,
+  useFetcher,
+  useNavigation,
+} from "react-router";
+import { commitAppSession, getAppSession } from "@/app-session.server";
 import OrderSummary from "@/components/checkout/checkoutsidebar";
 import CustomerInformation from "@/components/checkout/customerinformation";
 import ShippingAddress from "@/components/checkout/shippingaddress";
@@ -14,7 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createApiClient } from "@/lib/api-client";
 import { UpdateAddressSchema } from "@/modules/address/schema";
 import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
-import { CreateNewOrderSchema } from "@/modules/checkout/schema";
+import { CheckoutBodySchema } from "@/modules/checkout/schema";
 import { UserProfileSchema } from "@/modules/user/schema";
 import type { Route } from "./+types/checkout";
 
@@ -29,8 +37,12 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const appSession = await getAppSession(request.headers.get("Cookie"));
+  appSession.unset("toastMessage");
+
   const api = createApiClient(request);
 
+  // TODO: GET /checkout
   const [
     cartResponse,
     addressResponse,
@@ -72,20 +84,25 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const appSession = await getAppSession(request.headers.get("Cookie"));
   const api = createApiClient(request);
 
   const formData = await request.formData();
-  const submission = parseWithZod(formData, { schema: CreateNewOrderSchema });
+  const submission = parseWithZod(formData, { schema: CheckoutBodySchema });
   if (submission.status !== "success") return submission.reply();
 
   try {
-    const { data: order, error } = await api.POST("/orders", {
+    const { data: order, error } = await api.POST("/checkout", {
       body: submission.value,
     });
 
     if (error) {
-      return submission.reply({
-        formErrors: ["Failed to create order. Please try again."],
+      appSession.set(
+        "toastMessage",
+        "Failed to create order. Please check the customer information and address information.",
+      );
+      return data(null, {
+        headers: { "Set-Cookie": await commitAppSession(appSession) },
       });
     }
 
@@ -141,7 +158,7 @@ export default function CheckoutRoute({
   const [formCheckout, fieldsCheckout] = useForm({
     lastResult: actionData,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: CreateNewOrderSchema });
+      return parseWithZod(formData, { schema: CheckoutBodySchema });
     },
     defaultValue: defaultCheckoutValues,
   });
@@ -271,9 +288,7 @@ export default function CheckoutRoute({
           {/* Action Buttons */}
           <div className="space-y-3">
             <form method="post" {...getFormProps(formCheckout)}>
-              {/* Input for New Create Order Schema */}
               <input type="hidden" name="addressId" value={address.id} />
-
               <input
                 type="hidden"
                 name="shippingMethodSlug"

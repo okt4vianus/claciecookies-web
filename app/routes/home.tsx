@@ -28,10 +28,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { data: products, error } = await api.GET("/products");
   if (error) throw new Response(`Failed to fetch products`, { status: 500 });
 
-  // return { products };
+  // TODO: Refactor into GET /products?shuffled
+  const shuffledProducts = [...products]
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 3);
 
   return data(
-    { products, toastMessage },
+    { products: shuffledProducts, toastMessage },
     { headers: { "Set-Cookie": await commitAppSession(session) } },
   );
 }
@@ -44,8 +47,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       toast.success(toastMessage);
     }
   }, [toastMessage]);
-
-  const shuffled = [...products].sort(() => 0.5 - Math.random());
 
   return (
     <>
@@ -98,7 +99,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             Featured Cookies
           </h2>
 
-          <ProductItems products={shuffled.slice(0, 3)} />
+          <ProductItems products={products} />
         </div>
       </section>
     </>

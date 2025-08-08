@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CreateNewOrderSchema = z.object({
+export const CheckoutBodySchema = z.object({
   addressId: z.string(),
   shippingMethodSlug: z.string(),
   paymentMethodSlug: z.string(),

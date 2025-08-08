@@ -27,7 +27,6 @@ export function meta() {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getAppSession(request.headers.get("Cookie"));
-
   const toastMessage = session.get("toastMessage");
   session.unset("toastMessage");
 
@@ -63,11 +62,11 @@ export async function action({ request }: Route.ActionArgs) {
 
   session.set("toastMessage", `Welcome back, ${data.user.name}`);
 
-  const sessionCookie = await commitAppSession(session);
+  const appCookie = await commitAppSession(session);
   const authCookie = response.headers.get("Set-Cookie") || "";
 
   const headers = new Headers();
-  headers.append("Set-Cookie", sessionCookie);
+  headers.append("Set-Cookie", appCookie);
   headers.append("Set-Cookie", authCookie);
 
   return redirect(href("/"), { headers });
