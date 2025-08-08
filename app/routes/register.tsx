@@ -71,16 +71,48 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
-  session.set(
-    "toastMessage",
-    `Account created successfully! Welcome, ${submission.value.name}.`,
-  );
-
-  // return redirect(href("/login"));
-
-  return redirect(href("/login"), {
-    headers: { "Set-Cookie": await commitAppSession(session) },
+  // ✅ Automatically login after successful register
+  const {
+    data: loginData,
+    error: loginError,
+    response: loginResponse,
+  } = await api.POST("/sign-in/email", {
+    body: {
+      email: submission.value.email,
+      password: submission.value.password,
+    },
   });
+
+  if (!loginData || loginError || !loginResponse.ok) {
+    // If login fails, fallback to manual login page
+    session.set(
+      "toastMessage",
+      "Account created successfully, please login manually.",
+    );
+    return redirect(href("/login"), {
+      headers: { "Set-Cookie": await commitAppSession(session) },
+    });
+  }
+
+  session.set("toastMessage", `Welcome, ${loginData.user.name}`);
+
+  const sessionCookie = await commitAppSession(session);
+  const authCookie = loginResponse.headers.get("Set-Cookie") || "";
+
+  const headers = new Headers();
+  headers.append("Set-Cookie", sessionCookie);
+  headers.append("Set-Cookie", authCookie);
+
+  return redirect(href("/"), { headers });
+
+  // session.set(
+  //   "toastMessage",
+  //   `Account created successfully! Welcome, ${submission.value.name}.`,
+  // );
+
+  // return redirect(href("/login"), {
+  //   headers: { "Set-Cookie": await commitAppSession(session) },
+  // });
 }
 
 export default function RegisterRoute({ actionData }: Route.ComponentProps) {
