@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Form, Link, Outlet } from "react-router";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/toggle";
 import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
+import { getNameInitials } from "@/modules/user/helper";
 import type { Route } from "./+types/layout-main";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -108,32 +109,12 @@ export default function MainLayoutRoute({ loaderData }: Route.ComponentProps) {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        {/* <Button
-                          size="sm"
-                          className="px-2 sm:px-3"
-                          variant="secondary"
-                        >
-                          {user.username}
-                        </Button> */}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="p-0 rounded-full overflow-hidden"
-                        >
-                          {/* <img
-                            src={
-                              user.image ??
-                              `https://api.dicebear.com/9.x/initials/svg?seed=${user.username}`
-                            }
-                            alt={user.username}
-                            className="w-8 h-8 rounded-full object-cover"
-                          /> */}
-                          <Avatar
-                            src={user.image}
-                            alt={user.username || "User"}
-                            className="border-0"
-                          />
-                        </Button>
+                        <Avatar className="select-none cursor-pointer">
+                          <AvatarImage src={user.image} />
+                          <AvatarFallback>
+                            {getNameInitials(user.name)}
+                          </AvatarFallback>
+                        </Avatar>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem asChild>
