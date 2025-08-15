@@ -1,4 +1,5 @@
-import { href, Link } from "react-router";
+import { getFormProps, getInputProps } from "@conform-to/react";
+import { Form, href, Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,32 +18,35 @@ export function ProductItems({ products }: { products: Products }) {
       {products.map((product) => {
         const image = product.images?.[0];
         if (!image) return null;
-
+        const productUrl = href("/products/:slug", { slug: product.slug });
         return (
           <li key={product.id}>
             <Card>
               <CardHeader>
-                <picture className="rounded-lg block overflow-hidden">
-                  <img
-                    className="hover:scale-110 transition duration-500 ease-in-out h-70 w-full object-cover"
-                    src={image.url}
-                    alt={image.name || "Product image"}
-                  />
-                </picture>
+                <Link to={productUrl}>
+                  <picture className="rounded-lg block overflow-hidden cursor-pointer">
+                    <img
+                      className="hover:scale-110 transition duration-500 ease-in-out h-70 w-full object-cover"
+                      src={image.url}
+                      alt={image.name || "Product image"}
+                    />
+                  </picture>
+                </Link>
               </CardHeader>
-
               <CardContent>
-                <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-                <p className="font-medium mb-3">
-                  Rp {product.price.toLocaleString("id-ID")}
-                </p>
+                <Link to={productUrl}>
+                  <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
+                  <p className="font-medium mb-3">
+                    Rp {product.price.toLocaleString("id-ID")}
+                  </p>
+                </Link>
               </CardContent>
+
+              {/* TODO: Refactor add to cart */}
               <CardFooter className="mt-auto justify-center">
                 <div>
                   <Button asChild>
-                    <Link to={href("/products/:slug", { slug: product.slug })}>
-                      View Product
-                    </Link>
+                    <Link to={productUrl}>View Product</Link>
                   </Button>
                 </div>
               </CardFooter>
