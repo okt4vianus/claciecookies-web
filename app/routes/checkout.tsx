@@ -3,22 +3,22 @@ import { parseWithZod } from "@conform-to/zod";
 import { CreditCardIcon, TruckIcon } from "lucide-react";
 import { useState } from "react";
 import {
-  data,
+  Form,
   href,
   Link,
   redirect,
   useFetcher,
   useNavigation,
 } from "react-router";
-import { commitAppSession, getAppSession } from "@/app-session.server";
+import { getAppSession } from "@/app-session.server";
+import { CheckoutCardSection } from "@/components/checkout/checkout-card-section";
 import OrderSummary from "@/components/checkout/checkoutsidebar";
 import CustomerInformation from "@/components/checkout/customerinformation";
 import ShippingAddress from "@/components/checkout/shippingaddress";
-import { Badge } from "@/components/ui/badge";
+import { RadioOption } from "@/components/common/radio-option";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
 import { createApiClient } from "@/lib/api-client";
 import { UpdateAddressSchema } from "@/modules/address/schema";
 import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
@@ -84,7 +84,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const appSession = await getAppSession(request.headers.get("Cookie"));
   const api = createApiClient(request);
 
   const formData = await request.formData();
@@ -96,19 +95,16 @@ export async function action({ request }: Route.ActionArgs) {
       body: submission.value,
     });
 
-    if (error) {
-      appSession.set(
-        "toastMessage",
-        "Failed to create order. Please check the customer information and address information.",
-      );
-      return data(null, {
-        headers: { "Set-Cookie": await commitAppSession(appSession) },
+    if (!order || error) {
+      return submission.reply({
+        formErrors: [
+          error?.message ??
+            "Failed to create order. Please check the customer information and address information.",
+        ],
       });
     }
 
-    // @ts-ignore
-    // TODO: orders/orderId
-    return redirect(href(`/orders/${order.id}`));
+    return redirect(href("/orders/:id", { id: order.id }));
   } catch {
     return submission.reply({
       formErrors: ["An error occurred. Please try again."],
@@ -131,6 +127,12 @@ export default function CheckoutRoute({
   const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
   const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
 
+  const defaultCheckoutValues = {
+    paymentMethod: "qris",
+    shippingMethod: "regular",
+    notes: "",
+  };
+
   const [formUser, fieldsUser] = useForm({
     defaultValue: user,
     onValidate({ formData }) {
@@ -142,18 +144,8 @@ export default function CheckoutRoute({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: UpdateAddressSchema });
     },
-    defaultValue: address
-      ? {
-          ...address,
-        }
-      : {},
+    defaultValue: address ? { ...address } : {},
   });
-
-  const defaultCheckoutValues = {
-    paymentMethod: "qris",
-    shippingMethod: "regular",
-    notes: "",
-  };
 
   const [formCheckout, fieldsCheckout] = useForm({
     lastResult: actionData,
@@ -162,6 +154,8 @@ export default function CheckoutRoute({
     },
     defaultValue: defaultCheckoutValues,
   });
+
+  useToast(formCheckout.errors?.join(", "));
 
   // useState for selected shipping method
   const [selectedShippingMethod, setSelectedShippingMethod] = useState(
@@ -287,7 +281,7 @@ export default function CheckoutRoute({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <form method="post" {...getFormProps(formCheckout)}>
+            <Form method="post" {...getFormProps(formCheckout)}>
               <input type="hidden" name="addressId" value={address.id} />
               <input
                 type="hidden"
@@ -307,7 +301,7 @@ export default function CheckoutRoute({
               >
                 {isSubmitting ? "Processing..." : "Pay Now"}
               </Button>
-            </form>
+            </Form>
 
             <Button variant="outline" size="lg" asChild className="w-full">
               <Link to="/cart">Back to Cart</Link>
@@ -328,59 +322,5 @@ export default function CheckoutRoute({
         </div>
       )}
     </div>
-  );
-}
-
-function RadioOption({
-  value,
-  label,
-  description,
-  price,
-}: {
-  value: string;
-  label: string;
-  description: string;
-  price?: number;
-  name: string;
-}) {
-  return (
-    <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-accent transition-colors">
-      <RadioGroupItem value={value} id={value} />
-      <Label htmlFor={value} className="flex-1 cursor-pointer">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="font-medium">{label}</p>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-          {price && (
-            <Badge variant="outline" className="font-semibold">
-              Rp {price.toLocaleString("id-ID")}
-            </Badge>
-          )}
-        </div>
-      </Label>
-    </div>
-  );
-}
-
-function CheckoutCardSection({
-  icon: Icon,
-  title,
-  className,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-} & React.ComponentProps<"div">) {
-  return (
-    <Card className={className}>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3">
-          <Icon className="h-5 w-5 text-primary" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
-    </Card>
   );
 }

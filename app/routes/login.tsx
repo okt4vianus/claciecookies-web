@@ -1,9 +1,8 @@
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { Eye, EyeOff, LogIn } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { data, Form, href, redirect } from "react-router";
-import { toast } from "sonner";
 import { z } from "zod";
 import { commitAppSession, getAppSession } from "@/app-session.server";
 import { FormGoogle } from "@/components/auth/form-google";
@@ -12,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 import { createBetterAuthClient } from "@/lib/api-client";
 import type { Route } from "./+types/login";
 
@@ -81,11 +81,7 @@ export default function LoginRoute({
   const lastResult = actionData;
   const { toastMessage } = loaderData;
 
-  useEffect(() => {
-    if (toastMessage) {
-      toast.success(toastMessage);
-    }
-  }, [toastMessage]);
+  useToast(toastMessage);
 
   const [form, fields] = useForm({
     shouldValidate: "onSubmit",
