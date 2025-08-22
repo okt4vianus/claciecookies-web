@@ -1,5 +1,4 @@
 import { href, redirect } from "react-router";
-import { DebugCode } from "@/components/common/debug-code";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createApiClient } from "@/lib/api-client";
@@ -124,8 +123,6 @@ export default function OrdersIdRoute({ loaderData }: Route.ComponentProps) {
           </table>
         </CardContent>
       </Card>
-
-      <DebugCode>{order}</DebugCode>
     </div>
   );
 }

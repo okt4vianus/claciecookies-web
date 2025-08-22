@@ -9,9 +9,13 @@ export async function action({ request }: Route.ActionArgs) {
   if (submission.status !== "success") return submission.reply();
 
   const api = createApiClient(request);
-  const { data } = await api.PATCH("/auth/profile", {
+  const { data, error } = await api.PATCH("/auth/profile", {
     body: submission.value,
   });
+  if (error) {
+    console.error(error);
+    return null;
+  }
 
   return data;
 }

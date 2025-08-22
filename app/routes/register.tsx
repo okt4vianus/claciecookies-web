@@ -103,16 +103,7 @@ export async function action({ request }: Route.ActionArgs) {
   headers.append("Set-Cookie", sessionCookie);
   headers.append("Set-Cookie", authCookie);
 
-  return redirect(href("/"), { headers });
-
-  // session.set(
-  //   "toastMessage",
-  //   `Account created successfully! Welcome, ${submission.value.name}.`,
-  // );
-
-  // return redirect(href("/login"), {
-  //   headers: { "Set-Cookie": await commitAppSession(session) },
-  // });
+  return redirect(href("/dashboard"), { headers });
 }
 
 export default function RegisterRoute({ actionData }: Route.ComponentProps) {
