@@ -69,7 +69,7 @@ export async function action({ request }: Route.ActionArgs) {
   headers.append("Set-Cookie", appCookie);
   headers.append("Set-Cookie", authCookie);
 
-  return redirect(href("/"), { headers });
+  return redirect(href("/dashboard"), { headers });
 }
 
 export default function LoginRoute({
