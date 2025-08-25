@@ -69,7 +69,7 @@ export async function action({ request }: Route.ActionArgs) {
   headers.append("Set-Cookie", appCookie);
   headers.append("Set-Cookie", authCookie);
 
-  return redirect(href("/"), { headers });
+  return redirect(href("/dashboard"), { headers });
 }
 
 export default function LoginRoute({
@@ -220,7 +220,7 @@ export default function LoginRoute({
             </p>
             <div className="flex justify-center">
               <a
-                href="https://www.instagram.com/clacie.cookies"
+                href="https://www.instagram.com/byclacie"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors touch-manipulation py-2 px-3 rounded-md"
