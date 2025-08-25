@@ -17,10 +17,10 @@ import type { Route } from "./+types/login";
 
 export function meta() {
   return [
-    { title: "Login - Clacie Cookies" },
+    { title: "Login - By Clacie" },
     {
       name: "description",
-      content: "Login to your Clacie Cookies account",
+      content: "Login to your By Clacie account",
     },
   ];
 }

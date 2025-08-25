@@ -11,11 +11,11 @@ import type { Route } from "./+types/dashboard";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Dashboard - Clacie Cookies" },
+    { title: "Dashboard - By Clacie" },
     {
       name: "description",
       content:
-        "Your personal dashboard to manage orders and profile at Clacie Cookies.",
+        "Your personal dashboard to manage orders and profile at By Clacie.",
     },
   ];
 }

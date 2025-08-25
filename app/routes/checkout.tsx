@@ -28,10 +28,10 @@ import type { Route } from "./+types/checkout";
 
 export function meta() {
   return [
-    { title: "Checkout - Clacie Cookies" },
+    { title: "Checkout - By Clacie" },
     {
       name: "description",
-      content: "Complete your Clacie Cookies purchase",
+      content: "Complete your By Clacie purchase",
     },
   ];
 }

@@ -20,7 +20,7 @@ import type { Route } from "./+types/products-slug";
 export function meta({ data }: Route.MetaArgs) {
   if (!data || !data.product) {
     return [
-      { title: "Produk tidak ditemukan - Clacie Cookies" },
+      { title: "Produk tidak ditemukan - By Clacie" },
       {
         name: "description",
         content: "Produk yang Anda cari tidak tersedia atau terjadi kesalahan.",
@@ -30,7 +30,7 @@ export function meta({ data }: Route.MetaArgs) {
 
   const { product } = data;
   return [
-    { title: `${product.name} - Clacie Cookies` },
+    { title: `${product.name} - By Clacie` },
     {
       name: "description",
       content: product.description,

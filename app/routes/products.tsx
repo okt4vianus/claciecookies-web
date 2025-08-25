@@ -4,10 +4,10 @@ import type { Route } from "./+types/products";
 
 export function meta() {
   return [
-    { title: "Product of Clacie Cookies" },
+    { title: "Product of By Clacie" },
     {
       name: "description",
-      content: "All Products by Clacie Cookies",
+      content: "All Products by By Clacie",
     },
   ];
 }

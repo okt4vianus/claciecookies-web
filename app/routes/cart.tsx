@@ -17,7 +17,7 @@ import type { Route } from "./+types/cart";
 
 export function meta() {
   return [
-    { title: "Shopping Cart - Clacie Cookies" },
+    { title: "Shopping Cart - By Clacie" },
     {
       name: "description",
       content: "View and manage products in your shopping cart",

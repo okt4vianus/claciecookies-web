@@ -9,7 +9,7 @@ import type { Route } from "./+types/home";
 
 export function meta() {
   return [
-    { title: "Clacie Cookies" },
+    { title: "By Clacie" },
     {
       name: "description",
       content:

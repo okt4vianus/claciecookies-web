@@ -9,14 +9,14 @@ export function meta({ data }: Route.MetaArgs) {
   return [
     {
       title: order
-        ? `Pesanan ${order.orderNumber} - Clacie Cookies`
-        : "Pesanan - Clacie Cookies",
+        ? `Pesanan ${order.orderNumber} - By Clacie`
+        : "Pesanan - By Clacie",
     },
     {
       name: "description",
       content: order
         ? `Detail pesanan ${order.orderNumber}`
-        : "Detail pesanan Clacie Cookies",
+        : "Detail pesanan By Clacie",
     },
   ];
 }

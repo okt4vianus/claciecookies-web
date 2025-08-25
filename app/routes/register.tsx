@@ -16,10 +16,10 @@ import type { Route } from "./+types/register";
 
 export function meta() {
   return [
-    { title: "Register - Clacie Cookies" },
+    { title: "Register - By Clacie" },
     {
       name: "description",
-      content: "Create your Clacie Cookies account",
+      content: "Create your By Clacie account",
     },
   ];
 }
