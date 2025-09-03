@@ -12,9 +12,9 @@ import {
 } from "react-router";
 import { getAppSession } from "@/app-session.server";
 import { CheckoutCardSection } from "@/components/checkout/checkout-card-section";
-import OrderSummary from "@/components/checkout/checkoutsidebar";
-import CustomerInformation from "@/components/checkout/customerinformation";
-import ShippingAddress from "@/components/checkout/shippingaddress";
+import { OrderSummary } from "@/components/checkout/checkoutsidebar";
+import { CustomerInformation } from "@/components/checkout/customerinformation";
+import { ShippingAddress } from "@/components/checkout/shippingaddress";
 import { RadioOption } from "@/components/common/radio-option";
 import { Button } from "@/components/ui/button";
 import { RadioGroup } from "@/components/ui/radio-group";

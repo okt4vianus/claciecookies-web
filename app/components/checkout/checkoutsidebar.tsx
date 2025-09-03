@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { OrderSummaryProps } from "@/modules/checkout/types";
 
-export default function OrderSummary({
+export function OrderSummary({
   cartItems,
   totalPrice,
   shippingCost,

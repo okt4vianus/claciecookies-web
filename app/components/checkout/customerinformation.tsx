@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { CustomerInformationProps } from "@/modules/checkout/types";
 
-export default function CustomerInformation({
+export function CustomerInformation({
   fetcherUserProfile,
   formUser,
   fieldsUser,

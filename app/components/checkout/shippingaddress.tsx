@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ShippingAddressProps } from "@/modules/checkout/types";
 
-export default function ShippingAddress({
+export function ShippingAddress({
   fetcherUserAddress,
   formAddress,
   fieldsAddress,
