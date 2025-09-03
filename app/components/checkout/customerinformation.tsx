@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { CustomerInformationProps } from "@/modules/checkout/types";
+import { DebugCode } from "../common/debug-code";
 
 export function CustomerInformation({
   fetcherUserProfile,
@@ -63,6 +64,14 @@ export function CustomerInformation({
               )}
             </div>
           </div>
+          <div>
+            {formUser.errors && (
+              <p className="text-sm text-destructive mt-1">{formUser.errors}</p>
+            )}
+          </div>
+
+          <DebugCode>{formUser}</DebugCode>
+
           <Button type="submit" size="sm" disabled={isSubmitting}>
             {isSubmitting ? "Saving..." : "Save"}
           </Button>
