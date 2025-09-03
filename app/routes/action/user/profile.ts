@@ -15,11 +15,8 @@ export async function action({ request }: Route.ActionArgs) {
   if (error) {
     console.error(error);
     return submission.reply({
-      formErrors: [
-        error?.message ??
-          "Failed to update user profile. Please check your valid information.",
-      ],
       fieldErrors: {
+        email: error?.field === "email" ? [error.message] : [],
         phoneNumber: error?.field === "phoneNumber" ? [error.message] : [],
       },
     });
