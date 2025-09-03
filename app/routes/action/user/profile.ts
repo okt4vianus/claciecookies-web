@@ -14,7 +14,12 @@ export async function action({ request }: Route.ActionArgs) {
   });
   if (error) {
     console.error(error);
-    return null;
+    return submission.reply({
+      fieldErrors: {
+        email: error?.field === "email" ? [error.message] : [],
+        phoneNumber: error?.field === "phoneNumber" ? [error.message] : [],
+      },
+    });
   }
 
   return data;

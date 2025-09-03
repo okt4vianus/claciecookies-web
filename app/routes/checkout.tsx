@@ -112,10 +112,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function CheckoutRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
+export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   const { user } = useAuthUser();
   const { cart, address, shippingMethods, paymentMethods } = loaderData;
   const navigation = useNavigation();
@@ -133,26 +130,28 @@ export default function CheckoutRoute({
     notes: "",
   };
 
-  const [formUser, fieldsUser] = useForm({
-    defaultValue: user,
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: UserProfileSchema });
-    },
-  });
-
-  const [formAddress, fieldsAddress] = useForm({
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: UpdateAddressSchema });
-    },
-    defaultValue: address ? { ...address } : {},
-  });
-
   const [formCheckout, fieldsCheckout] = useForm({
-    lastResult: actionData,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: CheckoutBodySchema });
     },
     defaultValue: defaultCheckoutValues,
+  });
+
+  const [formUser, fieldsUser] = useForm({
+    // TODO: Fix why it will load the previous data when using lastResult
+    // lastResult: fetcherUserProfile.data, // User Profile Form Fetcher Action
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: UserProfileSchema });
+    },
+    defaultValue: user,
+  });
+
+  const [formAddress, fieldsAddress] = useForm({
+    // lastResult: fetcherUserAddress.data, // User Address Form Fetcher Action
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: UpdateAddressSchema });
+    },
+    defaultValue: address ? { ...address } : {},
   });
 
   useToast(formCheckout.errors?.join(", "));
