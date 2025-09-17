@@ -25,8 +25,9 @@ export default [
     route("orders/:id", "routes/orders-id.tsx"),
   ]),
 
-  // route("/order", "routes/order.tsx"),
+  route("mapbox", "routes/mapbox.tsx"),
 
+  // route("/order", "routes/order.tsx"),
   //   layout("layout/admin.tsx", [
   //     index("routes/admin/dashboard.tsx"),
   //     route("admin/products ", "routes/admin/products.tsx"),
