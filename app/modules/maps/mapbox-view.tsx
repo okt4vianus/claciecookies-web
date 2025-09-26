@@ -14,7 +14,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 export function MapboxView() {
-  const [coords, setCoords] = useState({
+  const [markerCoordinates, setMarkerCoordinates] = useState({
     latitude: INITIAL_VIEW_STATE.latitude,
     longitude: INITIAL_VIEW_STATE.longitude,
   });
@@ -25,36 +25,20 @@ export function MapboxView() {
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
         initialViewState={INITIAL_VIEW_STATE}
         style={{ width: 600, height: 400 }}
-        //   style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/streets-v9"
-        // onMove={(evt) =>
-        //   setCoords({
-        //     latitude: parseFloat(evt.viewState.latitude.toFixed(8)),
-        //     longitude: parseFloat(evt.viewState.longitude.toFixed(8)),
-        //   })
-        onMove={(evt) =>
-          setCoords((prev) => ({
-            ...prev,
-            latitude: evt.viewState.latitude,
-            longitude: evt.viewState.longitude,
-            //     latitude: parseFloat(evt.viewState.latitude.toFixed(8)),
-            //     longitude: parseFloat(evt.viewState.longitude.toFixed(8)),
-            zoom: evt.viewState.zoom,
-          }))
-        }
       >
         <NavigationControl />
         <GeolocateControl />
         <Marker
-          latitude={INITIAL_VIEW_STATE.latitude}
-          longitude={INITIAL_VIEW_STATE.longitude}
+          latitude={markerCoordinates.latitude}
+          longitude={markerCoordinates.longitude}
           anchor="bottom"
           draggable
-          onDragEnd={(evt) => {
-            setCoords((prev) => ({
-              ...prev,
-              latitude: evt.lngLat.lat,
-              longitude: evt.lngLat.lng,
+          onDragEnd={(event) => {
+            setMarkerCoordinates((previous) => ({
+              ...previous,
+              latitude: event.lngLat.lat,
+              longitude: event.lngLat.lng,
             }));
           }}
         >
@@ -64,9 +48,9 @@ export function MapboxView() {
 
       <div className="p-4">
         <pre className="font-mono">
-          Lat: {coords.latitude.toFixed(6)}
+          Lat: {markerCoordinates.latitude.toFixed(6)}
           <br />
-          Lng: {coords.longitude.toFixed(6)}
+          Lng: {markerCoordinates.longitude.toFixed(6)}
         </pre>
       </div>
     </div>
