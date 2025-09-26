@@ -14,7 +14,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 export function MapboxView() {
-  const [coords, setCoords] = useState({
+  const [mapCoordinates, setMapCoordinates] = useState({
     latitude: INITIAL_VIEW_STATE.latitude,
     longitude: INITIAL_VIEW_STATE.longitude,
   });
@@ -25,44 +25,41 @@ export function MapboxView() {
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
         initialViewState={INITIAL_VIEW_STATE}
         style={{ width: 600, height: 400 }}
-        //   style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/streets-v9"
-        // onMove={(evt) =>
-        //   setCoords({
-        //     latitude: parseFloat(evt.viewState.latitude.toFixed(8)),
-        //     longitude: parseFloat(evt.viewState.longitude.toFixed(8)),
-        //   })
-        onMove={(evt) =>
-          setCoords((prev) => ({
-            ...prev,
-            latitude: evt.viewState.latitude,
-            longitude: evt.viewState.longitude,
-            //     latitude: parseFloat(evt.viewState.latitude.toFixed(8)),
-            //     longitude: parseFloat(evt.viewState.longitude.toFixed(8)),
-            zoom: evt.viewState.zoom,
+        onMove={(event) =>
+          setMapCoordinates((previous) => ({
+            ...previous,
+            latitude: event.viewState.latitude,
+            longitude: event.viewState.longitude,
+            zoom: event.viewState.zoom,
           }))
         }
       >
         <NavigationControl />
         <GeolocateControl />
         <Marker
-          latitude={INITIAL_VIEW_STATE.latitude}
-          longitude={INITIAL_VIEW_STATE.longitude}
+          latitude={mapCoordinates.latitude}
+          longitude={mapCoordinates.longitude}
           anchor="bottom"
-          draggable
-          onDragEnd={(evt) => {
-            setCoords((prev) => ({
-              ...prev,
-              latitude: evt.lngLat.lat,
-              longitude: evt.lngLat.lng,
-            }));
-          }}
+          // draggable
+          // onDragEnd={(event) => {
+          //   console.log({ event });
+          //   setMapCoordinates((prev) => ({
+          //     ...prev,
+          //     latitude: event.lngLat.lat,
+          //     longitude: event.lngLat.lng,
+          //   }));
+          // }}
         >
           <MapPin className="text-red-700 size-10" />
         </Marker>
       </Mapbox>
-      <div className="absolute bottom-2 left-2 px-3 py-1 rounded shadow text-sm font-mono">
-        Lat: {coords.latitude.toFixed(6)}, Lng: {coords.longitude.toFixed(6)}
+      <div className="p-4 py-1">
+        <pre>
+          Latitude: {mapCoordinates.latitude.toFixed(6)}
+          <br />
+          Longitude: {mapCoordinates.longitude.toFixed(6)}
+        </pre>
       </div>
     </div>
   );
