@@ -14,7 +14,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 export function MapboxView() {
-  const [markerCoordinates, setMarkerCoordinates] = useState({
+  const [mapCoordinates, setMapCoordinates] = useState({
     latitude: INITIAL_VIEW_STATE.latitude,
     longitude: INITIAL_VIEW_STATE.longitude,
   });
@@ -26,21 +26,20 @@ export function MapboxView() {
         initialViewState={INITIAL_VIEW_STATE}
         style={{ width: 600, height: 400 }}
         mapStyle="mapbox://styles/mapbox/streets-v9"
+        onMove={(event) => {
+          setMapCoordinates((previous) => ({
+            ...previous,
+            latitude: event.viewState.latitude,
+            longitude: event.viewState.longitude,
+          }));
+        }}
       >
         <NavigationControl />
         <GeolocateControl />
         <Marker
-          latitude={markerCoordinates.latitude}
-          longitude={markerCoordinates.longitude}
+          latitude={mapCoordinates.latitude}
+          longitude={mapCoordinates.longitude}
           anchor="bottom"
-          draggable
-          onDragEnd={(event) => {
-            setMarkerCoordinates((previous) => ({
-              ...previous,
-              latitude: event.lngLat.lat,
-              longitude: event.lngLat.lng,
-            }));
-          }}
         >
           <MapPin className="text-red-700 size-10" />
         </Marker>
@@ -48,9 +47,9 @@ export function MapboxView() {
 
       <div className="p-4">
         <pre className="font-mono">
-          Lat: {markerCoordinates.latitude.toFixed(6)}
+          Lat: {mapCoordinates.latitude.toFixed(6)}
           <br />
-          Lng: {markerCoordinates.longitude.toFixed(6)}
+          Lng: {mapCoordinates.longitude.toFixed(6)}
         </pre>
       </div>
     </div>
