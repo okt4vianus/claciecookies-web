@@ -23,10 +23,10 @@ export default [
     route("dashboard", "routes/dashboard.tsx"),
     route("user/address", "routes/user/address.tsx"),
     route("orders/:id", "routes/orders-id.tsx"),
+    route("mapbox", "routes/mapbox.tsx"),
   ]),
 
   // route("/order", "routes/order.tsx"),
-
   //   layout("layout/admin.tsx", [
   //     index("routes/admin/dashboard.tsx"),
   //     route("admin/products ", "routes/admin/products.tsx"),
