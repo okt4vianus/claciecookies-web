@@ -1,4 +1,4 @@
-import { MapboxView } from "@/modules/maps/mapbox-vies";
+import { MapboxView } from "@/modules/maps/mapbox-view";
 
 export default function MapboxRoute() {
   return (
