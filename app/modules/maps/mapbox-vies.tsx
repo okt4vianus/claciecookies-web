@@ -27,11 +27,20 @@ export function MapboxView() {
         style={{ width: 600, height: 400 }}
         //   style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/streets-v9"
+        // onMove={(evt) =>
+        //   setCoords({
+        //     latitude: parseFloat(evt.viewState.latitude.toFixed(8)),
+        //     longitude: parseFloat(evt.viewState.longitude.toFixed(8)),
+        //   })
         onMove={(evt) =>
-          setCoords({
-            latitude: parseFloat(evt.viewState.latitude.toFixed(8)),
-            longitude: parseFloat(evt.viewState.longitude.toFixed(8)),
-          })
+          setCoords((prev) => ({
+            ...prev,
+            latitude: evt.viewState.latitude,
+            longitude: evt.viewState.longitude,
+            //     latitude: parseFloat(evt.viewState.latitude.toFixed(8)),
+            //     longitude: parseFloat(evt.viewState.longitude.toFixed(8)),
+            zoom: evt.viewState.zoom,
+          }))
         }
       >
         <NavigationControl />
@@ -40,13 +49,20 @@ export function MapboxView() {
           latitude={INITIAL_VIEW_STATE.latitude}
           longitude={INITIAL_VIEW_STATE.longitude}
           anchor="bottom"
+          draggable
+          onDragEnd={(evt) => {
+            setCoords((prev) => ({
+              ...prev,
+              latitude: evt.lngLat.lat,
+              longitude: evt.lngLat.lng,
+            }));
+          }}
         >
           <MapPin className="text-red-700 size-10" />
         </Marker>
       </Mapbox>
-      {/* koordinat center map */}
       <div className="absolute bottom-2 left-2 px-3 py-1 rounded shadow text-sm font-mono">
-        Latitude: {coords.latitude}, Longitude: {coords.longitude}
+        Lat: {coords.latitude.toFixed(6)}, Lng: {coords.longitude.toFixed(6)}
       </div>
     </div>
   );
