@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun openapi && react-router dev",
+    "dev": "react-router dev",
+    "dev:gen": "bun openapi && react-router dev",
     "build": "bun openapi:prod && react-router build",
     "start": "react-router-serve ./build/server/index.js",
     "check": "biome check && bun rr:check",

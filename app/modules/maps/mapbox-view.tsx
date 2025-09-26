@@ -61,8 +61,13 @@ export function MapboxView() {
           <MapPin className="text-red-700 size-10" />
         </Marker>
       </Mapbox>
-      <div className="absolute bottom-2 left-2 px-3 py-1 rounded shadow text-sm font-mono">
-        Lat: {coords.latitude.toFixed(6)}, Lng: {coords.longitude.toFixed(6)}
+
+      <div className="p-4">
+        <pre className="font-mono">
+          Lat: {coords.latitude.toFixed(6)}
+          <br />
+          Lng: {coords.longitude.toFixed(6)}
+        </pre>
       </div>
     </div>
   );
