@@ -13,7 +13,7 @@ const INITIAL_VIEW_STATE = {
   zoom: 17,
 };
 
-export function MapboxView() {
+export function MapboxView({ isDebug = false }: { isDebug?: boolean }) {
   const [mapCoordinates, setMapCoordinates] = useState({
     latitude: INITIAL_VIEW_STATE.latitude,
     longitude: INITIAL_VIEW_STATE.longitude,
@@ -54,13 +54,16 @@ export function MapboxView() {
           <MapPin className="text-red-700 size-10" />
         </Marker>
       </Mapbox>
-      <div className="p-4 py-1">
-        <pre>
-          Latitude: {mapCoordinates.latitude.toFixed(6)}
-          <br />
-          Longitude: {mapCoordinates.longitude.toFixed(6)}
-        </pre>
-      </div>
+
+      {isDebug && (
+        <div className="p-4 py-1">
+          <pre>
+            Latitude: {mapCoordinates.latitude.toFixed(6)}
+            <br />
+            Longitude: {mapCoordinates.longitude.toFixed(6)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }

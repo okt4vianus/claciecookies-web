@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ShippingAddressProps } from "@/modules/checkout/types";
+import { MapboxView } from "@/modules/maps/mapbox-view";
 
 export function ShippingAddress({
   fetcherUserAddress,
@@ -146,33 +147,24 @@ export function ShippingAddress({
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor={fieldsAddress.latitude.id}>Latitude</Label>
-              <Input
-                {...getInputProps(fieldsAddress.latitude, {
-                  type: "text",
-                })}
-              />
-              {fieldsAddress.latitude.errors && (
-                <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.latitude.errors}
-                </p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor={fieldsAddress.longitude.id}>Longitude</Label>
-              <Input
-                {...getInputProps(fieldsAddress.longitude, {
-                  type: "text",
-                })}
-              />
-              {fieldsAddress.longitude.errors && (
-                <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.longitude.errors}
-                </p>
-              )}
-            </div>
+          <div>
+            <MapboxView />
+            <input
+              {...getInputProps(fieldsAddress.latitude, { type: "hidden" })}
+            />
+            <input
+              {...getInputProps(fieldsAddress.longitude, { type: "hidden" })}
+            />
+            {fieldsAddress.latitude.errors && (
+              <p className="text-sm text-destructive mt-1">
+                {fieldsAddress.latitude.errors}
+              </p>
+            )}
+            {fieldsAddress.longitude.errors && (
+              <p className="text-sm text-destructive mt-1">
+                {fieldsAddress.longitude.errors}
+              </p>
+            )}
           </div>
 
           {/* Additional Notes Section */}
