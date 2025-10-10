@@ -119,10 +119,11 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
   const isSubmitting = navigation.state === "submitting";
 
   const fetcherUserProfile = useFetcher(); // React Router
-  const fetcherUserAddress = useFetcher(); // React Router
+  const fetcherShippingAddress = useFetcher(); // React Router
 
   const isUserProfileSubmitting = fetcherUserProfile.state === "submitting";
-  const isUserAddressSubmitting = fetcherUserAddress.state === "submitting";
+  const isShippingAddressSubmitting =
+    fetcherShippingAddress.state === "submitting";
 
   const defaultCheckoutValues = {
     paymentMethod: "qris",
@@ -204,10 +205,10 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
           />
           {/* Shipping Address */}
           <ShippingAddressForm
-            fetcherUserAddress={fetcherUserAddress}
+            fetcherShippingAddress={fetcherShippingAddress}
             formShippingAddress={formShippingAddress}
-            fieldsAddress={fieldsShippingAddress}
-            isSubmitting={isUserAddressSubmitting}
+            fieldsShippingAddress={fieldsShippingAddress}
+            isSubmitting={isShippingAddressSubmitting}
           />
 
           {/* Shipping Method */}

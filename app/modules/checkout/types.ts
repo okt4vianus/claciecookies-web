@@ -15,8 +15,8 @@ export type CustomerInformationFormProps = {
 };
 
 export type ShippingAddressFormProps = {
-  fetcherUserAddress: any;
+  fetcherShippingAddress: any;
   formShippingAddress: any;
-  fieldsAddress: any;
+  fieldsShippingAddress: any;
   isSubmitting: boolean;
 };

@@ -9,9 +9,9 @@ import type { ShippingAddressFormProps } from "@/modules/checkout/types";
 import { MapboxView } from "@/modules/maps/mapbox-view";
 
 export function ShippingAddressForm({
-  fetcherUserAddress,
+  fetcherShippingAddress,
   formShippingAddress,
-  fieldsAddress,
+  fieldsShippingAddress,
   isSubmitting,
 }: ShippingAddressFormProps) {
   return (
@@ -23,69 +23,73 @@ export function ShippingAddressForm({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <fetcherUserAddress.Form
+        <fetcherShippingAddress.Form
           method="post"
           action="/action/user/update-address"
           className="space-y-4"
           {...getFormProps(formShippingAddress)}
         >
-          <input {...getInputProps(fieldsAddress.id, { type: "hidden" })} />
+          <input
+            {...getInputProps(fieldsShippingAddress.id, { type: "hidden" })}
+          />
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor={fieldsAddress.recipientName.id}>
+              <Label htmlFor={fieldsShippingAddress.recipientName.id}>
                 Recipient Name *
               </Label>
               <Input
-                {...getInputProps(fieldsAddress.recipientName, {
+                {...getInputProps(fieldsShippingAddress.recipientName, {
                   type: "text",
                 })}
                 placeholder="Receiver name"
               />
-              {fieldsAddress.recipientName.errors && (
+              {fieldsShippingAddress.recipientName.errors && (
                 <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.recipientName.errors}
+                  {fieldsShippingAddress.recipientName.errors}
                 </p>
               )}
             </div>
 
             <div>
-              <Label htmlFor={fieldsAddress.phoneNumber.id}>Phone *</Label>
+              <Label htmlFor={fieldsShippingAddress.phoneNumber.id}>
+                Phone *
+              </Label>
               <Input
-                {...getInputProps(fieldsAddress.phoneNumber, {
+                {...getInputProps(fieldsShippingAddress.phoneNumber, {
                   type: "tel",
                 })}
                 placeholder="08xxxxxxxxxx"
               />
-              {fieldsAddress.phoneNumber.errors && (
+              {fieldsShippingAddress.phoneNumber.errors && (
                 <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.phoneNumber.errors}
+                  {fieldsShippingAddress.phoneNumber.errors}
                 </p>
               )}
             </div>
           </div>
 
           <div>
-            <Label htmlFor={fieldsAddress.street.id}>
-              Complete Address - {fieldsAddress.label.initialValue} *
+            <Label htmlFor={fieldsShippingAddress.street.id}>
+              Complete Address - {fieldsShippingAddress.label.initialValue} *
             </Label>
             <Textarea
-              {...getInputProps(fieldsAddress.street, { type: "text" })}
+              {...getInputProps(fieldsShippingAddress.street, { type: "text" })}
               rows={3}
               placeholder="Street, house no, unit"
             />
-            {fieldsAddress.street.errors && (
+            {fieldsShippingAddress.street.errors && (
               <p className="text-sm text-destructive mt-1">
-                {fieldsAddress.street.errors}
+                {fieldsShippingAddress.street.errors}
               </p>
             )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 ">
             <div>
-              <Label htmlFor={fieldsAddress.city.id}>City *</Label>
+              <Label htmlFor={fieldsShippingAddress.city.id}>City *</Label>
               <select
-                {...getInputProps(fieldsAddress.city, { type: "text" })}
+                {...getInputProps(fieldsShippingAddress.city, { type: "text" })}
                 className="w-full px-3 py-2 border border-gray-600 rounded-md text-sm "
               >
                 <option value="">Select City</option>
@@ -95,24 +99,26 @@ export function ShippingAddressForm({
                 <option value="Minahasa">Minahasa</option>
                 <option value="Minahasa Utara">Minahasa Utara</option>
               </select>
-              {fieldsAddress.city.errors && (
+              {fieldsShippingAddress.city.errors && (
                 <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.city.errors}
+                  {fieldsShippingAddress.city.errors}
                 </p>
               )}
             </div>
             <div>
-              <Label htmlFor={fieldsAddress.province.id}>Province *</Label>
+              <Label htmlFor={fieldsShippingAddress.province.id}>
+                Province *
+              </Label>
               <Input
-                {...getInputProps(fieldsAddress.province, {
+                {...getInputProps(fieldsShippingAddress.province, {
                   type: "text",
                 })}
                 readOnly
                 className="bg-gray-100 cursor-not-allowed"
               />
-              {fieldsAddress.province.errors && (
+              {fieldsShippingAddress.province.errors && (
                 <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.province.errors}
+                  {fieldsShippingAddress.province.errors}
                 </p>
               )}
             </div>
@@ -120,28 +126,30 @@ export function ShippingAddressForm({
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor={fieldsAddress.postalCode.id}>Postal Code *</Label>
+              <Label htmlFor={fieldsShippingAddress.postalCode.id}>
+                Postal Code *
+              </Label>
               <Input
-                {...getInputProps(fieldsAddress.postalCode, {
+                {...getInputProps(fieldsShippingAddress.postalCode, {
                   type: "text",
                 })}
               />
-              {fieldsAddress.postalCode.errors && (
+              {fieldsShippingAddress.postalCode.errors && (
                 <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.postalCode.errors}
+                  {fieldsShippingAddress.postalCode.errors}
                 </p>
               )}
             </div>
             <div>
-              <Label htmlFor={fieldsAddress.country.id}>Country</Label>
+              <Label htmlFor={fieldsShippingAddress.country.id}>Country</Label>
               <Input
-                {...getInputProps(fieldsAddress.country, {
+                {...getInputProps(fieldsShippingAddress.country, {
                   type: "text",
                 })}
               />
-              {fieldsAddress.country.errors && (
+              {fieldsShippingAddress.country.errors && (
                 <p className="text-sm text-destructive mt-1">
-                  {fieldsAddress.country.errors}
+                  {fieldsShippingAddress.country.errors}
                 </p>
               )}
             </div>
@@ -150,19 +158,23 @@ export function ShippingAddressForm({
           <div>
             <MapboxView />
             <input
-              {...getInputProps(fieldsAddress.latitude, { type: "hidden" })}
+              {...getInputProps(fieldsShippingAddress.latitude, {
+                type: "hidden",
+              })}
             />
             <input
-              {...getInputProps(fieldsAddress.longitude, { type: "hidden" })}
+              {...getInputProps(fieldsShippingAddress.longitude, {
+                type: "hidden",
+              })}
             />
-            {fieldsAddress.latitude.errors && (
+            {fieldsShippingAddress.latitude.errors && (
               <p className="text-sm text-destructive mt-1">
-                {fieldsAddress.latitude.errors}
+                {fieldsShippingAddress.latitude.errors}
               </p>
             )}
-            {fieldsAddress.longitude.errors && (
+            {fieldsShippingAddress.longitude.errors && (
               <p className="text-sm text-destructive mt-1">
-                {fieldsAddress.longitude.errors}
+                {fieldsShippingAddress.longitude.errors}
               </p>
             )}
           </div>
@@ -174,13 +186,13 @@ export function ShippingAddressForm({
               <h4 className="font-medium">Additional Notes</h4>
             </div>
             <Textarea
-              {...getInputProps(fieldsAddress.notes, { type: "text" })}
+              {...getInputProps(fieldsShippingAddress.notes, { type: "text" })}
               placeholder="Notes for seller (optional)"
               rows={3}
             />
-            {fieldsAddress.notes.errors && (
+            {fieldsShippingAddress.notes.errors && (
               <p className="text-sm text-destructive mt-1">
-                {fieldsAddress.notes.errors}
+                {fieldsShippingAddress.notes.errors}
               </p>
             )}
           </div>
@@ -188,7 +200,7 @@ export function ShippingAddressForm({
           <Button type="submit" size="sm" disabled={isSubmitting}>
             {isSubmitting ? "Saving..." : "Save"}
           </Button>
-        </fetcherUserAddress.Form>
+        </fetcherShippingAddress.Form>
       </CardContent>
     </Card>
   );
