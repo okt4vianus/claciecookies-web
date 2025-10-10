@@ -1,4 +1,8 @@
-import { getFormProps, getInputProps } from "@conform-to/react";
+import {
+  getFormProps,
+  getInputProps,
+  useInputControl,
+} from "@conform-to/react";
 import { MapPinIcon, ShoppingCartIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +18,9 @@ export function ShippingAddressForm({
   fieldsShippingAddress,
   isSubmitting,
 }: ShippingAddressFormProps) {
+  const latitudeControl = useInputControl(fieldsShippingAddress.latitude);
+  const longitudeControl = useInputControl(fieldsShippingAddress.longitude);
+
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -158,20 +165,22 @@ export function ShippingAddressForm({
           <div>
             <MapboxView
               isDebug
-              mapCoordinates={{
-                latitude: Number(fieldsShippingAddress.latitude.value),
-                longitude: Number(fieldsShippingAddress.longitude.value),
-              }}
+              latitudeControl={latitudeControl}
+              longitudeControl={longitudeControl}
             />
             <input
-              {...getInputProps(fieldsShippingAddress.latitude, {
-                type: "hidden",
-              })}
+              type="hidden"
+              value={latitudeControl.value}
+              // {...getInputProps(fieldsShippingAddress.latitude, {
+              //   type: "hidden",
+              // })}
             />
             <input
-              {...getInputProps(fieldsShippingAddress.longitude, {
-                type: "hidden",
-              })}
+              type="hidden"
+              value={longitudeControl.value}
+              // {...getInputProps(fieldsShippingAddress.longitude, {
+              //   type: "hidden",
+              // })}
             />
             {fieldsShippingAddress.latitude.errors && (
               <p className="text-sm text-destructive mt-1">

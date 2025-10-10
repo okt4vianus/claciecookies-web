@@ -19,4 +19,10 @@ export const UpdateShippingAddressSchema = z.object({
 
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
+
+  // TODO: Easier to have them combined
+  // coordinates: z.object({
+  //   latitude: z.number().min(-90).max(90),
+  //   longitude: z.number().min(-180).max(180),
+  // }),
 });

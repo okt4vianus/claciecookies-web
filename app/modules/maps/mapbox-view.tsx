@@ -5,19 +5,25 @@ import Mapbox, {
   Marker,
   NavigationControl,
 } from "react-map-gl/mapbox";
+import type { ConformControl } from "../form/type";
 
 interface MapboxViewProps {
-  mapCoordinates: {
-    latitude: number;
-    longitude: number;
-  };
   isDebug?: boolean;
+  latitudeControl: ConformControl;
+  longitudeControl: ConformControl;
 }
 
 export function MapboxView({
-  mapCoordinates,
   isDebug = false,
+  latitudeControl,
+  longitudeControl,
 }: MapboxViewProps) {
+  const mapCoordinates = {
+    latitude: Number(latitudeControl.value),
+    longitude: Number(longitudeControl.value),
+    zoom: 16,
+  };
+
   return (
     <div>
       <Mapbox
@@ -28,14 +34,12 @@ export function MapboxView({
         }}
         style={{ width: 700, height: 300 }}
         mapStyle="mapbox://styles/mapbox/streets-v9"
-        onMove={
-          (event) => {}
-          // setMapCoordinates((previous) => ({
-          //   ...previous,
-          //   latitude: event.viewState.latitude,
-          //   longitude: event.viewState.longitude,
-          // }))
-        }
+        onMove={(event) => {
+          // TODO: Function to pass in here to get the value
+          // changeCoordinates(event.viewState)
+          latitudeControl.change(event.viewState.latitude.toString());
+          longitudeControl.change(event.viewState.longitude.toString());
+        }}
       >
         <NavigationControl />
         <GeolocateControl />
