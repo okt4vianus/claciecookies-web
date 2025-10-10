@@ -1,38 +1,40 @@
 import { MapPin } from "lucide-react";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useState } from "react";
 import Mapbox, {
   GeolocateControl,
   Marker,
   NavigationControl,
 } from "react-map-gl/mapbox";
 
-const INITIAL_VIEW_STATE = {
-  latitude: 1.47413677,
-  longitude: 124.93459595,
-  zoom: 16,
-};
+interface MapboxViewProps {
+  mapCoordinates: {
+    latitude: number;
+    longitude: number;
+  };
+  isDebug?: boolean;
+}
 
-export function MapboxView({ isDebug = false }: { isDebug?: boolean }) {
-  const [mapCoordinates, setMapCoordinates] = useState({
-    latitude: INITIAL_VIEW_STATE.latitude,
-    longitude: INITIAL_VIEW_STATE.longitude,
-  });
-
+export function MapboxView({
+  mapCoordinates,
+  isDebug = false,
+}: MapboxViewProps) {
   return (
     <div>
       <Mapbox
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={{
+          ...mapCoordinates,
+          zoom: 16,
+        }}
         style={{ width: 700, height: 300 }}
         mapStyle="mapbox://styles/mapbox/streets-v9"
-        onMove={(event) =>
-          setMapCoordinates((previous) => ({
-            ...previous,
-            latitude: event.viewState.latitude,
-            longitude: event.viewState.longitude,
-            zoom: event.viewState.zoom,
-          }))
+        onMove={
+          (event) => {}
+          // setMapCoordinates((previous) => ({
+          //   ...previous,
+          //   latitude: event.viewState.latitude,
+          //   longitude: event.viewState.longitude,
+          // }))
         }
       >
         <NavigationControl />
@@ -41,15 +43,6 @@ export function MapboxView({ isDebug = false }: { isDebug?: boolean }) {
           latitude={mapCoordinates.latitude}
           longitude={mapCoordinates.longitude}
           anchor="bottom"
-          // draggable
-          // onDragEnd={(event) => {
-          //   console.log({ event });
-          //   setMapCoordinates((prev) => ({
-          //     ...prev,
-          //     latitude: event.lngLat.lat,
-          //     longitude: event.lngLat.lng,
-          //   }));
-          // }}
         >
           <MapPin className="text-red-700 size-10" />
         </Marker>

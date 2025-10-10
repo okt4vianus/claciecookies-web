@@ -156,7 +156,13 @@ export function ShippingAddressForm({
           </div>
 
           <div>
-            <MapboxView />
+            <MapboxView
+              isDebug
+              mapCoordinates={{
+                latitude: Number(fieldsShippingAddress.latitude.value),
+                longitude: Number(fieldsShippingAddress.longitude.value),
+              }}
+            />
             <input
               {...getInputProps(fieldsShippingAddress.latitude, {
                 type: "hidden",
