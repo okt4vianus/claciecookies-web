@@ -5,15 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { ShippingAddressProps } from "@/modules/checkout/types";
+import type { ShippingAddressFormProps } from "@/modules/checkout/types";
 import { MapboxView } from "@/modules/maps/mapbox-view";
 
-export function ShippingAddress({
+export function ShippingAddressForm({
   fetcherUserAddress,
-  formAddress,
+  formShippingAddress,
   fieldsAddress,
   isSubmitting,
-}: ShippingAddressProps) {
+}: ShippingAddressFormProps) {
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -27,7 +27,7 @@ export function ShippingAddress({
           method="post"
           action="/action/user/update-address"
           className="space-y-4"
-          {...getFormProps(formAddress)}
+          {...getFormProps(formShippingAddress)}
         >
           <input {...getInputProps(fieldsAddress.id, { type: "hidden" })} />
 

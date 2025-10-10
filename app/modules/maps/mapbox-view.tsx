@@ -10,7 +10,7 @@ import Mapbox, {
 const INITIAL_VIEW_STATE = {
   latitude: 1.47413677,
   longitude: 124.93459595,
-  zoom: 17,
+  zoom: 16,
 };
 
 export function MapboxView({ isDebug = false }: { isDebug?: boolean }) {
@@ -24,7 +24,7 @@ export function MapboxView({ isDebug = false }: { isDebug?: boolean }) {
       <Mapbox
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
         initialViewState={INITIAL_VIEW_STATE}
-        style={{ width: 600, height: 400 }}
+        style={{ width: 700, height: 300 }}
         mapStyle="mapbox://styles/mapbox/streets-v9"
         onMove={(event) =>
           setMapCoordinates((previous) => ({

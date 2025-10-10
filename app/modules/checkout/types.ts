@@ -7,16 +7,16 @@ export type OrderSummaryProps = {
   totalWithShipping: number;
 };
 
-export type CustomerInformationProps = {
+export type CustomerInformationFormProps = {
   fetcherUserProfile: any;
   formUser: any;
   fieldsUser: any;
   isSubmitting: boolean;
 };
 
-export type ShippingAddressProps = {
+export type ShippingAddressFormProps = {
   fetcherUserAddress: any;
-  formAddress: any;
+  formShippingAddress: any;
   fieldsAddress: any;
   isSubmitting: boolean;
 };

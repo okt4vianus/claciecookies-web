@@ -14,13 +14,13 @@ import { getAppSession } from "@/app-session.server";
 import { CheckoutCardSection } from "@/components/checkout/checkout-card-section";
 import { OrderSummary } from "@/components/checkout/checkoutsidebar";
 import { CustomerInformation } from "@/components/checkout/customerinformation";
-import { ShippingAddress } from "@/components/checkout/shippingaddress";
+import { ShippingAddressForm } from "@/components/checkout/shipping-address-form";
 import { RadioOption } from "@/components/common/radio-option";
 import { Button } from "@/components/ui/button";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { createApiClient } from "@/lib/api-client";
-import { UpdateAddressSchema } from "@/modules/address/schema";
+import { UpdateShippingAddressSchema } from "@/modules/address/schema";
 import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
 import { CheckoutBodySchema } from "@/modules/checkout/schema";
 import { UserProfileSchema } from "@/modules/user/schema";
@@ -146,12 +146,18 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
     defaultValue: user,
   });
 
-  const [formAddress, fieldsAddress] = useForm({
+  const [formShippingAddress, fieldsShippingAddress] = useForm({
     // lastResult: fetcherUserAddress.data, // User Address Form Fetcher Action
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: UpdateAddressSchema });
+      return parseWithZod(formData, { schema: UpdateShippingAddressSchema });
     },
-    defaultValue: address ? { ...address } : {},
+    defaultValue: address
+      ? {
+          ...address,
+          latitude: 1.490724,
+          longitude: 124.8365736,
+        }
+      : {},
   });
 
   useToast(formCheckout.errors?.join(", "));
@@ -197,10 +203,10 @@ export default function CheckoutRoute({ loaderData }: Route.ComponentProps) {
             isSubmitting={isUserProfileSubmitting}
           />
           {/* Shipping Address */}
-          <ShippingAddress
+          <ShippingAddressForm
             fetcherUserAddress={fetcherUserAddress}
-            formAddress={formAddress}
-            fieldsAddress={fieldsAddress}
+            formShippingAddress={formShippingAddress}
+            fieldsAddress={fieldsShippingAddress}
             isSubmitting={isUserAddressSubmitting}
           />
 
