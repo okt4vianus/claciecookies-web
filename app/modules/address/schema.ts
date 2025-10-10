@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { phoneNumber } from "../common/schema";
 
-export const UpdateAddressSchema = z.object({
+export const UpdateShippingAddressSchema = z.object({
   id: z.string(),
   label: z.string().optional().or(z.literal("")),
   recipientName: z.string().min(3, "Recipient name is required min 3"),
@@ -16,7 +16,13 @@ export const UpdateAddressSchema = z.object({
   isDefault: z
     .union([z.boolean(), z.string().transform((v) => v === "true")])
     .optional(),
-  // TODO: Fix this later to be required
-  latitude: z.coerce.number().optional(),
-  longitude: z.coerce.number().optional(),
+
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+
+  // TODO: Easier to have them combined
+  // coordinates: z.object({
+  //   latitude: z.number().min(-90).max(90),
+  //   longitude: z.number().min(-180).max(180),
+  // }),
 });
